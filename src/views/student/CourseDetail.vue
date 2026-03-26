@@ -1,0 +1,209 @@
+<script setup>
+import { ref, onMounted } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
+import { ElMessage, ElLoading } from 'element-plus'
+import { getSelectCourseDetail, updateCourseProgress } from '../../api/course'
+import { getCourseResourcePage } from '../../api/courseResource'
+import { getHomeworkPage } from '../../api/homework'
+
+const route = useRoute()
+const router = useRouter()
+const courseId = route.params.id
+
+const course = ref(null)
+const resources = ref([])
+const homeworks = ref([])
+const loading = ref(false)
+
+onMounted(async () => {
+  await loadCourseDetail()
+  await loadResources()
+  await loadHomeworks()
+})
+
+const loadCourseDetail = async () => {
+  loading.value = true
+  try {
+    const response = await getSelectCourseDetail(courseId)
+    course.value = response.data
+  } catch (error) {
+    ElMessage.error('获取课程详情失败：' + (error.message || '未知错误'))
+  } finally {
+    loading.value = false
+  }
+}
+
+const loadResources = async () => {
+  try {
+    const response = await getCourseResourcePage({ courseId: courseId, page: 1, size: 100 })
+    resources.value = response.data.records
+  } catch (error) {
+    ElMessage.error('获取教学资源失败：' + (error.message || '未知错误'))
+  }
+}
+
+const loadHomeworks = async () => {
+  try {
+    const response = await getHomeworkPage({ courseId: courseId, page: 1, size: 100 })
+    homeworks.value = response.data.records
+  } catch (error) {
+    ElMessage.error('获取作业失败：' + (error.message || '未知错误'))
+  }
+}
+
+const handleResourceDetail = (resourceId) => {
+  // 这里可以跳转到资源详情页面
+  console.log('查看资源详情：', resourceId)
+}
+
+const handleHomeworkDetail = (homeworkId) => {
+  router.push(`/student/homework-detail/${homeworkId}`)
+}
+
+const handleUpdateProgress = async (progress) => {
+  try {
+    await updateCourseProgress({
+      courseId: courseId,
+      progress: progress,
+      studyTime: course.value.studyTime + 10 // 假设学习了10分钟
+    })
+    ElMessage.success('学习进度更新成功')
+    await loadCourseDetail()
+  } catch (error) {
+    ElMessage.error('更新学习进度失败：' + (error.message || '未知错误'))
+  }
+}
+
+const handleBack = () => {
+  router.push('/student/my-course')
+}
+</script>
+
+<template>
+  <div class="course-detail-container">
+    <div class="header">
+      <h2>课程详情</h2>
+      <el-button @click="handleBack">返回</el-button>
+    </div>
+    
+    <el-card v-if="course" class="course-card">
+      <div class="course-info">
+        <h3>{{ course.courseName }}</h3>
+        <el-descriptions :column="2">
+          <el-descriptions-item label="课程简介">{{ course.courseIntroduction }}</el-descriptions-item>
+          <el-descriptions-item label="课程目标">{{ course.courseObjective }}</el-descriptions-item>
+          <el-descriptions-item label="课程内容">{{ course.courseContent }}</el-descriptions-item>
+          <el-descriptions-item label="课程大纲">{{ course.courseOutline }}</el-descriptions-item>
+          <el-descriptions-item label="学习进度" :span="2">
+            <el-progress :percentage="course.progress" :stroke-width="15" />
+            <div class="progress-info">
+              <span>当前进度：{{ course.progress }}%</span>
+              <span>学习时长：{{ course.studyTime }}分钟</span>
+              <span v-if="course.score">成绩：{{ course.score }}</span>
+            </div>
+          </el-descriptions-item>
+        </el-descriptions>
+      </div>
+      
+      <div class="resources-section">
+        <h3>教学资源</h3>
+        <el-table :data="resources" style="width: 100%">
+          <el-table-column prop="resourceName" label="资源名称" />
+          <el-table-column prop="resourceType" label="资源类型" width="120">
+            <template #default="scope">
+              {{ scope.row.resourceType === 'VIDEO' ? '视频' : scope.row.resourceType === 'MATERIAL' ? '课件' : '参考资料' }}
+            </template>
+          </el-table-column>
+          <el-table-column prop="viewCount" label="查看次数" width="100" />
+          <el-table-column label="操作" width="150">
+            <template #default="scope">
+              <el-button type="primary" size="small" @click="handleResourceDetail(scope.row.id)">查看详情</el-button>
+              <el-button type="success" size="small">下载</el-button>
+            </template>
+          </el-table-column>
+        </el-table>
+      </div>
+      
+      <div class="homeworks-section">
+        <h3>课程作业</h3>
+        <el-table :data="homeworks" style="width: 100%">
+          <el-table-column prop="homeworkName" label="作业名称" />
+          <el-table-column prop="homeworkType" label="作业类型" width="100">
+            <template #default="scope">
+              {{ scope.row.homeworkType === 'HOMEWORK' ? '作业' : '考试' }}
+            </template>
+          </el-table-column>
+          <el-table-column prop="deadline" label="截止时间" width="180" />
+          <el-table-column label="操作" width="150">
+            <template #default="scope">
+              <el-button type="primary" size="small" @click="handleHomeworkDetail(scope.row.id)">查看详情</el-button>
+            </template>
+          </el-table-column>
+        </el-table>
+      </div>
+    </el-card>
+  </div>
+</template>
+
+<style scoped>
+.course-detail-container {
+  background: white;
+  padding: 30px;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 30px;
+}
+
+.header h2 {
+  font-size: 24px;
+  font-weight: bold;
+  color: #333;
+  margin: 0;
+}
+
+.course-card {
+  margin-top: 20px;
+}
+
+.course-info h3 {
+  font-size: 20px;
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 20px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.resources-section,
+.homeworks-section {
+  margin-top: 30px;
+}
+
+.resources-section h3,
+.homeworks-section h3 {
+  font-size: 18px;
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 15px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.progress-info {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 10px;
+  font-size: 14px;
+  color: #666;
+}
+
+.el-table {
+  margin-top: 20px;
+}
+</style>
