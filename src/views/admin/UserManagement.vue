@@ -2,36 +2,55 @@
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useUserStore } from '../../stores/user'
-import { ElMessage, ElTable, ElTableColumn, ElButton, ElDialog, ElForm, ElFormItem, ElInput, ElUpload, ElAvatar, ElMessageBox } from 'element-plus'
-import { Edit, Delete, Plus, User, Camera, Download } from '@element-plus/icons-vue'
+import { ElMessage, ElTable, ElTableColumn, ElButton, ElDialog, ElForm, ElFormItem, ElInput, ElUpload, ElAvatar, ElMessageBox, ElSelect, ElOption, ElDatePicker, ElPagination, ElCard, ElCheckbox, ElRadioGroup, ElRadioButton } from 'element-plus'
+import { Edit, Delete, Plus, User, Camera, Download, Search, Refresh } from '@element-plus/icons-vue'
+import { getUserPage, searchUserPage, getUsernameById } from '../../api/user'
 
 const router = useRouter()
 const userStore = useUserStore()
 
 // 用户列表数据
-const users = ref([
-  {
-    id: 1,
-    username: 'admin',
-    account: 'admin',
-    bio: '管理员账号',
-    avatar: ''
-  },
-  {
-    id: 2,
-    username: 'teacher1',
-    account: 'teacher1',
-    bio: '教师账号',
-    avatar: ''
-  },
-  {
-    id: 3,
-    username: 'student1',
-    account: 'student1',
-    bio: '学生账号',
-    avatar: ''
-  }
-])
+const users = ref([])
+const loading = ref(false)
+
+// 分页相关
+const currentPage = ref(1)
+const pageSize = ref(10)
+const total = ref(0)
+
+// 搜索模式：'advanced' 表示高级搜索，'keyword' 表示关键字搜索
+const searchMode = ref('advanced')
+
+// 高级搜索表单
+const advancedSearchForm = ref({
+  account: '',
+  username: '',
+  roleType: '',
+  filterDeleted: false,
+  startCreateTime: null,
+  endCreateTime: null,
+  sortType: 0,
+  isAsc: true
+})
+
+// 关键字搜索表单
+const keywordSearchForm = ref({
+  account: '',
+  username: '',
+  sortType: 0,
+  isAsc: true
+})
+
+// 用户类型选项
+const roleTypeOptions = [
+  { label: '全部', value: '' },
+  { label: '管理员', value: 'ADMIN' },
+  { label: '教师', value: 'TEACHER' },
+  { label: '学生', value: 'STUDENT' }
+]
+
+// 页面大小选项
+const pageSizeOptions = [10, 20, 50, 100]
 
 // 编辑对话框状态
 const editDialogVisible = ref(false)
@@ -46,12 +65,110 @@ const editForm = ref({
   avatar: ''
 })
 
+// 用户详情对话框
+const detailDialogVisible = ref(false)
+const userDetail = ref({})
+
 onMounted(() => {
   // 检查登录状态
   if (!userStore.token) {
     router.push('/login')
+    return
   }
+  // 加载用户数据
+  loadUsers()
 })
+
+// 加载用户数据
+const loadUsers = async () => {
+  loading.value = true
+  try {
+    let res
+    if (searchMode.value === 'advanced') {
+      // 高级搜索
+      const params = {
+        account: advancedSearchForm.value.account || null,
+        username: advancedSearchForm.value.username || null,
+        roleType: advancedSearchForm.value.roleType || null,
+        filterDeleted: advancedSearchForm.value.filterDeleted,
+        startCreateTime: advancedSearchForm.value.startCreateTime,
+        endCreateTime: advancedSearchForm.value.endCreateTime,
+        sortType: advancedSearchForm.value.sortType,
+        isAsc: advancedSearchForm.value.isAsc,
+        page: currentPage.value,
+        size: pageSize.value
+      }
+      res = await getUserPage(params)
+    } else {
+      // 关键字搜索
+      const params = {
+        account: keywordSearchForm.value.account || null,
+        username: keywordSearchForm.value.username || null,
+        sortType: keywordSearchForm.value.sortType,
+        isAsc: keywordSearchForm.value.isAsc,
+        page: currentPage.value,
+        size: pageSize.value
+      }
+      res = await searchUserPage(params)
+    }
+    
+    if (res.data.code === 200) {
+      users.value = res.data.data.records || []
+      total.value = res.data.data.total || 0
+    } else {
+      ElMessage.error(res.data.message || '获取用户列表失败')
+    }
+  } catch (error) {
+    console.error('加载用户数据失败:', error)
+    ElMessage.error('加载用户数据失败')
+  } finally {
+    loading.value = false
+  }
+}
+
+// 搜索按钮点击
+const handleSearch = () => {
+  currentPage.value = 1
+  loadUsers()
+}
+
+// 重置搜索条件
+const handleReset = () => {
+  if (searchMode.value === 'advanced') {
+    advancedSearchForm.value = {
+      account: '',
+      username: '',
+      roleType: '',
+      filterDeleted: false,
+      startCreateTime: null,
+      endCreateTime: null,
+      sortType: 0,
+      isAsc: true
+    }
+  } else {
+    keywordSearchForm.value = {
+      account: '',
+      username: '',
+      sortType: 0,
+      isAsc: true
+    }
+  }
+  currentPage.value = 1
+  loadUsers()
+}
+
+// 页码改变
+const handlePageChange = (page) => {
+  currentPage.value = page
+  loadUsers()
+}
+
+// 页面大小改变
+const handleSizeChange = (size) => {
+  pageSize.value = size
+  currentPage.value = 1
+  loadUsers()
+}
 
 // 打开编辑对话框
 const handleEdit = (user) => {
@@ -128,8 +245,35 @@ const handleDownloadAvatar = (user) => {
 }
 
 // 查看用户详情
-const handleViewDetail = (user) => {
-  router.push(`/user-detail/${user.id}`)
+const handleViewDetail = async (user) => {
+  try {
+    // 获取用户详细信息
+    userDetail.value = { ...user }
+    detailDialogVisible.value = true
+  } catch (error) {
+    console.error('获取用户详情失败:', error)
+    ElMessage.error('获取用户详情失败')
+  }
+}
+
+// 获取用户类型标签
+const getRoleTypeLabel = (roleType) => {
+  const roleMap = {
+    'ADMIN': '管理员',
+    'TEACHER': '教师',
+    'STUDENT': '学生'
+  }
+  return roleMap[roleType] || roleType
+}
+
+// 获取用户类型标签样式
+const getRoleTypeTagType = (roleType) => {
+  const typeMap = {
+    'ADMIN': 'danger',
+    'TEACHER': 'warning',
+    'STUDENT': 'success'
+  }
+  return typeMap[roleType] || 'info'
 }
 </script>
 
@@ -139,8 +283,139 @@ const handleViewDetail = (user) => {
       <h2>用户管理</h2>
     </div>
     
+    <!-- 搜索模式切换 -->
+    <el-card class="search-mode-card" shadow="never">
+      <el-radio-group v-model="searchMode" @change="handleReset">
+        <el-radio-button label="advanced">高级搜索</el-radio-button>
+        <el-radio-button label="keyword">关键字搜索</el-radio-button>
+      </el-radio-group>
+    </el-card>
+    
+    <!-- 高级搜索区域 -->
+    <el-card v-if="searchMode === 'advanced'" class="search-card" shadow="never">
+      <el-form :model="advancedSearchForm" label-width="100px" class="search-form">
+        <el-row :gutter="20">
+          <el-col :span="8">
+            <el-form-item label="账号">
+              <el-input v-model="advancedSearchForm.account" placeholder="请输入账号" clearable />
+            </el-form-item>
+          </el-col>
+          <el-col :span="8">
+            <el-form-item label="用户名">
+              <el-input v-model="advancedSearchForm.username" placeholder="请输入用户名" clearable />
+            </el-form-item>
+          </el-col>
+          <el-col :span="8">
+            <el-form-item label="用户类型">
+              <el-select v-model="advancedSearchForm.roleType" placeholder="请选择用户类型" clearable style="width: 100%">
+                <el-option
+                  v-for="item in roleTypeOptions"
+                  :key="item.value"
+                  :label="item.label"
+                  :value="item.value"
+                />
+              </el-select>
+            </el-form-item>
+          </el-col>
+        </el-row>
+        <el-row :gutter="20">
+          <el-col :span="8">
+            <el-form-item label="创建时间">
+              <el-date-picker
+                v-model="advancedSearchForm.startCreateTime"
+                type="datetime"
+                placeholder="起始时间"
+                value-format="YYYY-MM-DDTHH:mm:ss"
+                style="width: 100%"
+              />
+            </el-form-item>
+          </el-col>
+          <el-col :span="8">
+            <el-form-item label="至">
+              <el-date-picker
+                v-model="advancedSearchForm.endCreateTime"
+                type="datetime"
+                placeholder="结束时间"
+                value-format="YYYY-MM-DDTHH:mm:ss"
+                style="width: 100%"
+              />
+            </el-form-item>
+          </el-col>
+          <el-col :span="8">
+            <el-form-item>
+              <el-checkbox v-model="advancedSearchForm.filterDeleted">过滤已注销用户</el-checkbox>
+            </el-form-item>
+          </el-col>
+        </el-row>
+        <el-row :gutter="20">
+          <el-col :span="8">
+            <el-form-item label="排序方式">
+              <el-select v-model="advancedSearchForm.sortType" style="width: 100%">
+                <el-option label="按创建时间排序" :value="0" />
+              </el-select>
+            </el-form-item>
+          </el-col>
+          <el-col :span="8">
+            <el-form-item label="排序方向">
+              <el-radio-group v-model="advancedSearchForm.isAsc">
+                <el-radio-button :label="true">升序</el-radio-button>
+                <el-radio-button :label="false">降序</el-radio-button>
+              </el-radio-group>
+            </el-form-item>
+          </el-col>
+          <el-col :span="8">
+            <el-form-item>
+              <el-button type="primary" @click="handleSearch">
+                <Search /> 搜索
+              </el-button>
+              <el-button @click="handleReset">
+                <Refresh /> 重置
+              </el-button>
+            </el-form-item>
+          </el-col>
+        </el-row>
+      </el-form>
+    </el-card>
+    
+    <!-- 关键字搜索区域 -->
+    <el-card v-else class="search-card" shadow="never">
+      <el-form :model="keywordSearchForm" label-width="100px" class="search-form">
+        <el-row :gutter="20">
+          <el-col :span="8">
+            <el-form-item label="账号关键字">
+              <el-input v-model="keywordSearchForm.account" placeholder="请输入账号关键字" clearable />
+            </el-form-item>
+          </el-col>
+          <el-col :span="8">
+            <el-form-item label="用户名关键字">
+              <el-input v-model="keywordSearchForm.username" placeholder="请输入用户名关键字" clearable />
+            </el-form-item>
+          </el-col>
+          <el-col :span="8">
+            <el-form-item label="排序方向">
+              <el-radio-group v-model="keywordSearchForm.isAsc">
+                <el-radio-button :label="true">升序</el-radio-button>
+                <el-radio-button :label="false">降序</el-radio-button>
+              </el-radio-group>
+            </el-form-item>
+          </el-col>
+        </el-row>
+        <el-row>
+          <el-col :span="24" style="text-align: center;">
+            <el-button type="primary" @click="handleSearch">
+              <Search /> 搜索
+            </el-button>
+            <el-button @click="handleReset">
+              <Refresh /> 重置
+            </el-button>
+          </el-col>
+        </el-row>
+      </el-form>
+    </el-card>
+    
+    <!-- 用户列表 -->
     <el-card shadow="hover" class="user-table-card">
-      <el-table :data="users" style="width: 100%">
+      <el-table :data="users" style="width: 100%" v-loading="loading">
         <el-table-column prop="id" label="ID" width="80" />
         <el-table-column label="头像" width="100">
           <template #default="{ row }">
@@ -151,8 +426,16 @@ const handleViewDetail = (user) => {
         </el-table-column>
         <el-table-column prop="username" label="用户名" />
         <el-table-column prop="account" label="账号" />
-        <el-table-column prop="bio" label="简介" />
-        <el-table-column label="操作" width="300">
+        <el-table-column prop="roleType" label="用户类型">
+          <template #default="{ row }">
+            <el-tag :type="getRoleTypeTagType(row.roleType)">
+              {{ getRoleTypeLabel(row.roleType) }}
+            </el-tag>
+          </template>
+        </el-table-column>
+        <el-table-column prop="bio" label="简介" show-overflow-tooltip />
+        <el-table-column prop="createTime" label="创建时间" width="180" />
+        <el-table-column label="操作" width="300" fixed="right">
           <template #default="{ row }">
             <el-button type="primary" size="small" @click="handleViewDetail(row)">
               查看详情
@@ -169,6 +452,19 @@ const handleViewDetail = (user) => {
           </template>
         </el-table-column>
       </el-table>
+      
+      <!-- 分页 -->
+      <div class="pagination-container">
+        <el-pagination
+          v-model:current-page="currentPage"
+          v-model:page-size="pageSize"
+          :page-sizes="pageSizeOptions"
+          :total="total"
+          layout="total, sizes, prev, pager, next, jumper"
+          @size-change="handleSizeChange"
+          @current-change="handlePageChange"
+        />
+      </div>
     </el-card>
     
     <!-- 编辑用户对话框 -->
@@ -221,6 +517,41 @@ const handleViewDetail = (user) => {
         </span>
       </template>
     </el-dialog>
+    
+    <!-- 用户详情对话框 -->
+    <el-dialog
+      v-model="detailDialogVisible"
+      title="用户详情"
+      width="600px"
+    >
+      <el-descriptions :column="2" border>
+        <el-descriptions-item label="ID" :span="1">{{ userDetail.id }}</el-descriptions-item>
+        <el-descriptions-item label="用户类型" :span="1">
+          <el-tag :type="getRoleTypeTagType(userDetail.roleType)">
+            {{ getRoleTypeLabel(userDetail.roleType) }}
+          </el-tag>
+        </el-descriptions-item>
+        <el-descriptions-item label="头像" :span="2">
+          <el-avatar :size="80" :src="userDetail.avatar">
+            <User v-if="!userDetail.avatar" />
+          </el-avatar>
+        </el-descriptions-item>
+        <el-descriptions-item label="用户名" :span="1">{{ userDetail.username }}</el-descriptions-item>
+        <el-descriptions-item label="账号" :span="1">{{ userDetail.account }}</el-descriptions-item>
+        <el-descriptions-item label="简介" :span="2">{{ userDetail.bio || '暂无简介' }}</el-descriptions-item>
+        <el-descriptions-item label="创建时间" :span="1">{{ userDetail.createTime }}</el-descriptions-item>
+        <el-descriptions-item label="状态" :span="1">
+          <el-tag :type="userDetail.deleted ? 'danger' : 'success'">
+            {{ userDetail.deleted ? '已注销' : '正常' }}
+          </el-tag>
+        </el-descriptions-item>
+      </el-descriptions>
+      <template #footer>
+        <span class="dialog-footer">
+          <el-button @click="detailDialogVisible = false">关闭</el-button>
+        </span>
+      </template>
+    </el-dialog>
   </div>
 </template>
 
@@ -240,11 +571,33 @@ const handleViewDetail = (user) => {
   color: #333;
 }
 
+.search-mode-card {
+  margin-bottom: 15px;
+  background: white;
+  border-radius: 8px;
+}
+
+.search-card {
+  margin-bottom: 20px;
+  background: white;
+  border-radius: 8px;
+}
+
+.search-form {
+  padding: 10px;
+}
+
 .user-table-card {
   background: white;
   border-radius: 8px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   padding: 20px;
+}
+
+.pagination-container {
+  margin-top: 20px;
+  display: flex;
+  justify-content: flex-end;
 }
 
 .avatar-uploader {
