@@ -65,6 +65,12 @@ const dialogVisible = ref(false)
 const dialogTitle = ref('')
 const isEdit = ref(false)
 
+// 审核课程对话框
+const reviewDialogVisible = ref(false)
+const reviewDialogTitle = ref('审核课程申请')
+const pendingCourses = ref([])
+const loadingReview = ref(false)
+
 // 课程表单
 const courseForm = reactive({
   id: '',
@@ -247,6 +253,44 @@ const viewCourseDetail = (course) => {
   router.push(`/course/detail/${course.id}`)
 }
 
+// 获取待审核课程列表
+const getPendingCourses = async () => {
+  loadingReview.value = true
+  try {
+    const response = await courseApi.getPendingCourses()
+    if (response.data.code === 200) {
+      pendingCourses.value = response.data.data
+    } else {
+      ElMessage.error(response.data.message || '获取待审核课程失败')
+    }
+  } catch (error) {
+    ElMessage.error('获取待审核课程失败')
+  } finally {
+    loadingReview.value = false
+  }
+}
+
+// 打开审核课程对话框
+const openReviewDialog = () => {
+  getPendingCourses()
+  reviewDialogVisible.value = true
+}
+
+// 审核课程
+const reviewCourse = async (course, status) => {
+  try {
+    const response = await courseApi.reviewCourse({ id: course.id, status })
+    if (response.data.code === 200) {
+      ElMessage.success('审核成功')
+      getPendingCourses()
+    } else {
+      ElMessage.error(response.data.message || '审核失败')
+    }
+  } catch (error) {
+    ElMessage.error('审核失败')
+  }
+}
+
 // 生命周期
 onMounted(() => {
   // 检查登录状态
@@ -263,7 +307,10 @@ onMounted(() => {
   <div class="course-management">
     <div class="header">
       <h2>课程管理</h2>
-      <el-button type="primary" @click="openCreateDialog">创建课程</el-button>
+      <div class="header-buttons">
+        <el-button type="primary" @click="openReviewDialog">审核课程</el-button>
+        <el-button type="primary" @click="openCreateDialog">创建课程</el-button>
+      </div>
     </div>
     
     <div class="search-form">
@@ -400,6 +447,36 @@ onMounted(() => {
         </span>
       </template>
     </el-dialog>
+    
+    <!-- 审核课程对话框 -->
+    <el-dialog v-model="reviewDialogVisible" :title="reviewDialogTitle" width="800px">
+      <el-table :data="pendingCourses" :loading="loadingReview" style="width: 100%" empty-text="暂无待审核课程">
+        <el-table-column prop="id" label="课程ID" width="100" />
+        <el-table-column prop="courseName" label="课程名称" />
+        <el-table-column prop="courseSubject" label="课程科目" width="120">
+          <template #default="{ row }">
+            {{ courseSubjects.find(s => s.value == row.courseSubject)?.label || row.courseSubject }}
+          </template>
+        </el-table-column>
+        <el-table-column prop="courseType" label="课程类型" width="150">
+          <template #default="{ row }">
+            {{ courseTypes.find(t => t.value == row.courseType)?.label || row.courseType }}
+          </template>
+        </el-table-column>
+        <el-table-column prop="createTime" label="提交时间" width="180" />
+        <el-table-column label="操作" width="200" fixed="right">
+          <template #default="{ row }">
+            <el-button size="small" type="success" @click="reviewCourse(row, 1)">通过</el-button>
+            <el-button size="small" type="danger" @click="reviewCourse(row, 0)">拒绝</el-button>
+          </template>
+        </el-table-column>
+      </el-table>
+      <template #footer>
+        <span class="dialog-footer">
+          <el-button @click="reviewDialogVisible = false">关闭</el-button>
+        </span>
+      </template>
+    </el-dialog>
   </div>
 </template>
 
@@ -420,6 +497,11 @@ onMounted(() => {
 .header h2 {
   margin: 0;
   color: #333;
+}
+
+.header-buttons {
+  display: flex;
+  gap: 10px;
 }
 
 .search-form {
