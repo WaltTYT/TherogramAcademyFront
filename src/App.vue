@@ -23,7 +23,7 @@
 /* 全局 body 样式 */
 body {
   font-family: Arial, sans-serif;
-  font-size: 14px;
+  font-size: 20px ;
   line-height: 1.5;
   color: #333;
   background: #f5f7fa;
