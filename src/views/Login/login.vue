@@ -1,5 +1,5 @@
 <script setup>
-import { ref, reactive } from 'vue'
+import { ref, reactive, computed } from 'vue'
 import { ElMessage } from 'element-plus'
 import { useRouter } from 'vue-router'
 import { useUserStore } from '../../stores/user'
@@ -73,6 +73,11 @@ const loginFormRef = ref(null)
 const registerFormRef = ref(null)
 const loginLoading = ref(false)
 const registerLoading = ref(false)
+
+// 计算登录框宽度
+const loginBoxWidth = computed(() => {
+  return activeTab.value === 'register' ? '500px' : '400px'
+})
 
 const handleLogin = async () => {
   try {
@@ -187,13 +192,13 @@ const handleRegister = async () => {
 
 <template>
   <div class="login-container">
-    <div class="login-box">
+    <div class="login-box" :style="{ width: loginBoxWidth }">
       <div class="logo">
         <img src="../../assets/logo.png" alt="理程学院" />
       </div>
       <el-tabs v-model="activeTab" class="login-tabs">
         <el-tab-pane label="登录" name="login">
-          <el-form ref="loginFormRef" :model="loginForm" :rules="loginRules" class="login-form" label-position="top">
+          <el-form ref="loginFormRef" :model="loginForm" :rules="loginRules" class="login-form login-form-only" label-position="top">
             <el-form-item label="账号" prop="account">
               <el-input v-model="loginForm.account" placeholder="请输入账号"></el-input>
             </el-form-item>
@@ -213,7 +218,7 @@ const handleRegister = async () => {
           </el-form>
         </el-tab-pane>
         <el-tab-pane label="注册" name="register">
-          <el-form ref="registerFormRef" :model="registerForm" :rules="registerRules" class="login-form" label-position="top">
+          <el-form ref="registerFormRef" :model="registerForm" :rules="registerRules" class="login-form register-form-wide" label-position="top">
             <el-form-item label="账号" prop="account">
               <el-input v-model="registerForm.account" placeholder="请输入账号"></el-input>
             </el-form-item>
