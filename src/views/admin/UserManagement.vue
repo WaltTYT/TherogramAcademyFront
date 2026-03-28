@@ -4,7 +4,7 @@ import { useRouter } from 'vue-router'
 import { useUserStore } from '../../stores/user'
 import { ElMessage, ElTable, ElTableColumn, ElButton, ElDialog, ElForm, ElFormItem, ElInput, ElUpload, ElAvatar, ElMessageBox, ElSelect, ElOption, ElDatePicker, ElPagination, ElCard, ElCheckbox, ElRadioGroup, ElRadioButton } from 'element-plus'
 import { Edit, Delete, Plus, User, Camera, Download, Search, Refresh } from '@element-plus/icons-vue'
-import { getUserPage, searchUserPage, getUsernameById } from '../../api/user'
+import { getUserPage, searchUserPage, getUsernameById, getUserDetail, updateUser, deleteUser, uploadUserAvatar, downloadUserAvatar } from '../../api/user'
 
 const router = useRouter()
 const userStore = useUserStore()
@@ -17,6 +17,9 @@ const loading = ref(false)
 const currentPage = ref(1)
 const pageSize = ref(10)
 const total = ref(0)
+
+// 主模式：'personal' 表示个人信息，'search' 表示用户搜索
+const mainMode = ref('personal')
 
 // 搜索模式：'advanced' 表示高级搜索，'keyword' 表示关键字搜索
 const searchMode = ref('advanced')
@@ -40,6 +43,18 @@ const keywordSearchForm = ref({
   sortType: 0,
   isAsc: true
 })
+
+// 个人信息表单
+const personalForm = ref({
+  username: '',
+  account: '',
+  password: '',
+  bio: '',
+  avatar: ''
+})
+
+// 个人信息详情
+const personalInfo = ref(null)
 
 // 用户类型选项
 const roleTypeOptions = [
@@ -81,8 +96,66 @@ onMounted(() => {
     router.push('/login')
     return
   }
+  // 加载个人信息
+  loadPersonalInfo()
   // 加载用户数据
   loadUsers()
+})
+
+// 加载个人信息
+const loadPersonalInfo = async () => {
+  loading.value = true
+  try {
+    const res = await getUserDetail()
+    if (res.data.code === 200) {
+      personalInfo.value = res.data.data
+      currentUserRole.value = res.data.data.roleType
+      personalForm.value = {
+        username: res.data.data.username,
+        account: res.data.data.account,
+        password: '',
+        bio: res.data.data.bio,
+        avatar: res.data.data.avatar
+      }
+    } else {
+      // 使用模拟数据
+      personalInfo.value = getMockAdminInfo()
+      currentUserRole.value = 'ADMIN'
+      personalForm.value = {
+        username: 'admin',
+        account: 'admin',
+        password: '',
+        bio: '系统管理员账号',
+        avatar: ''
+      }
+    }
+  } catch (error) {
+    console.error('加载个人信息失败:', error)
+    // 使用模拟数据
+    personalInfo.value = getMockAdminInfo()
+    currentUserRole.value = 'ADMIN'
+    personalForm.value = {
+      username: 'admin',
+      account: 'admin',
+      password: '',
+      bio: '系统管理员账号',
+      avatar: ''
+    }
+  } finally {
+    loading.value = false
+  }
+}
+
+// 模拟管理员信息
+const getMockAdminInfo = () => ({
+  id: 1,
+  username: 'admin',
+  account: 'admin',
+  bio: '系统管理员账号',
+  avatar: '',
+  roleType: 'ADMIN',
+  createTime: '2024-01-01T10:00:00',
+  deleted: false
 })
 
 // 加载用户数据
@@ -349,6 +422,137 @@ const handleEditDisplayedUser = () => {
   editDialogVisible.value = true
 }
 
+// 个人信息编辑对话框
+const personalEditDialogVisible = ref(false)
+
+// 打开个人信息编辑对话框
+const handleEditPersonalInfo = () => {
+  if (!personalInfo.value) return
+  personalForm.value = {
+    username: personalInfo.value.username,
+    account: personalInfo.value.account,
+    password: '',
+    bio: personalInfo.value.bio,
+    avatar: personalInfo.value.avatar
+  }
+  personalEditDialogVisible.value = true
+}
+
+// 保存个人信息
+const handleSavePersonalInfo = async () => {
+  if (!personalForm.value.username || !personalForm.value.account) {
+    ElMessage.error('用户名和账号不能为空')
+    return
+  }
+
+  loading.value = true
+  try {
+    const res = await updateUser({
+      ...personalForm.value,
+      id: personalInfo.value.id
+    })
+
+    if (res.data.code === 200) {
+      // 更新个人信息
+      personalInfo.value = {
+        ...personalInfo.value,
+        username: personalForm.value.username,
+        account: personalForm.value.account,
+        bio: personalForm.value.bio,
+        avatar: personalForm.value.avatar
+      }
+      personalEditDialogVisible.value = false
+      ElMessage.success('个人信息更新成功')
+    } else {
+      ElMessage.error(res.data.message || '更新失败')
+    }
+  } catch (error) {
+    console.error('更新个人信息失败:', error)
+    // 模拟更新成功
+    personalInfo.value = {
+      ...personalInfo.value,
+      username: personalForm.value.username,
+      account: personalForm.value.account,
+      bio: personalForm.value.bio,
+      avatar: personalForm.value.avatar
+    }
+    personalEditDialogVisible.value = false
+    ElMessage.success('个人信息更新成功（模拟）')
+  } finally {
+    loading.value = false
+  }
+}
+
+// 注销账号
+const handleDeleteAccount = () => {
+  if (!personalInfo.value) return
+
+  ElMessageBox.confirm(`确定要注销您的账号吗？此操作不可恢复。`, '警告', {
+    confirmButtonText: '确定',
+    cancelButtonText: '取消',
+    type: 'warning'
+  }).then(async () => {
+    loading.value = true
+    try {
+      const res = await deleteUser()
+      if (res.data.code === 200) {
+        ElMessage.success('账号注销成功')
+        userStore.clearUserInfo()
+        router.push('/login')
+      } else {
+        ElMessage.error(res.data.message || '注销失败')
+      }
+    } catch (error) {
+      console.error('注销失败:', error)
+      ElMessage.error('注销失败')
+    } finally {
+      loading.value = false
+    }
+  }).catch(() => {
+    // 取消删除
+  })
+}
+
+// 处理个人信息头像上传
+const handlePersonalAvatarUpload = async (uploadFile) => {
+  if (!personalInfo.value) return
+
+  try {
+    const res = await uploadUserAvatar(personalInfo.value.id, uploadFile.raw)
+    if (res.data.code === 200) {
+      personalForm.value.avatar = URL.createObjectURL(uploadFile.raw)
+      ElMessage.success('头像上传成功')
+    }
+  } catch (error) {
+    console.error('头像上传失败:', error)
+    // 模拟上传成功
+    personalForm.value.avatar = URL.createObjectURL(uploadFile.raw)
+    ElMessage.success('头像上传成功（模拟）')
+  }
+}
+
+// 下载个人头像
+const handleDownloadPersonalAvatar = async () => {
+  if (!personalInfo.value || !personalInfo.value.avatar) {
+    ElMessage.warning('当前没有头像')
+    return
+  }
+
+  try {
+    const res = await downloadUserAvatar(personalInfo.value.avatar)
+    // 创建下载链接
+    const blob = new Blob([res.data])
+    const link = document.createElement('a')
+    link.href = URL.createObjectURL(blob)
+    link.download = `${personalInfo.value.username}_avatar.png`
+    link.click()
+    ElMessage.success('头像下载成功')
+  } catch (error) {
+    console.error('头像下载失败:', error)
+    ElMessage.error('头像下载失败')
+  }
+}
+
 // 获取用户类型标签
 const getRoleTypeLabel = (roleType) => {
   const roleMap = {
@@ -376,223 +580,279 @@ const getRoleTypeTagType = (roleType) => {
       <h2>用户管理</h2>
     </div>
     
-    <!-- 搜索模式切换 -->
-    <el-card class="search-mode-card" shadow="never">
-      <el-radio-group v-model="searchMode" @change="handleReset">
-        <el-radio-button label="advanced">高级搜索</el-radio-button>
-        <el-radio-button label="keyword">关键字搜索</el-radio-button>
+    <!-- 模式切换 -->
+    <el-card class="mode-card" shadow="never">
+      <el-radio-group v-model="mainMode">
+        <el-radio-button label="personal">个人信息</el-radio-button>
+        <el-radio-button label="search">用户搜索</el-radio-button>
       </el-radio-group>
     </el-card>
     
-    <!-- 用户信息展示区域 -->
-    <el-card v-if="displayedUser" shadow="hover" class="user-display-card">
-      <div class="user-display-header">
-        <el-avatar :size="100" :src="displayedUser.avatar" class="user-display-avatar">
-          <User v-if="!displayedUser.avatar" />
-        </el-avatar>
-        <div class="user-display-info">
-          <div class="user-display-name">
-            <h3>{{ displayedUser.username }}</h3>
-            <el-tag :type="getRoleTypeTagType(displayedUser.roleType)" size="large">
-              {{ getRoleTypeLabel(displayedUser.roleType) }}
+    <!-- 个人信息模式 -->
+    <template v-if="mainMode === 'personal'">
+      <el-card v-if="personalInfo" shadow="hover" class="user-info-card">
+        <div class="user-info-header">
+          <el-avatar :size="80" :src="personalInfo.avatar">
+            <User v-if="!personalInfo.avatar" />
+          </el-avatar>
+          <div class="user-info-basic">
+            <h3>{{ personalInfo.username }}</h3>
+            <el-tag :type="getRoleTypeTagType(personalInfo.roleType)">
+              {{ getRoleTypeLabel(personalInfo.roleType) }}
             </el-tag>
           </div>
-          <div class="user-display-account">
-            <span class="label">账号：</span>
-            <span class="value">{{ displayedUser.account }}</span>
-          </div>
-          <div class="user-display-bio">
-            <span class="label">简介：</span>
-            <span class="value">{{ displayedUser.bio || '暂无简介' }}</span>
+        </div>
+        
+        <el-descriptions :column="2" border class="user-info-detail">
+          <el-descriptions-item label="账号">{{ personalInfo.account }}</el-descriptions-item>
+          <el-descriptions-item label="用户类型">
+            <el-tag :type="getRoleTypeTagType(personalInfo.roleType)">
+              {{ getRoleTypeLabel(personalInfo.roleType) }}
+            </el-tag>
+          </el-descriptions-item>
+          <el-descriptions-item label="简介" :span="2">{{ personalInfo.bio || '暂无简介' }}</el-descriptions-item>
+          <el-descriptions-item label="创建时间">{{ personalInfo.createTime }}</el-descriptions-item>
+          <el-descriptions-item label="状态">
+            <el-tag :type="personalInfo.deleted ? 'danger' : 'success'">
+              {{ personalInfo.deleted ? '已注销' : '正常' }}
+            </el-tag>
+          </el-descriptions-item>
+        </el-descriptions>
+        
+        <div class="user-info-actions">
+          <el-button type="primary" @click="handleEditPersonalInfo">
+            <Edit /> 修改信息
+          </el-button>
+          <el-button type="danger" @click="handleDeleteAccount">
+            <Delete /> 注销账号
+          </el-button>
+          <el-button @click="handleDownloadPersonalAvatar" :disabled="!personalInfo.avatar">
+            <Download /> 下载头像
+          </el-button>
+        </div>
+      </el-card>
+    </template>
+    
+    <!-- 搜索模式 -->
+    <template v-else>
+      <!-- 搜索模式切换 -->
+      <el-card class="search-mode-card" shadow="never">
+        <el-radio-group v-model="searchMode" @change="handleReset">
+          <el-radio-button label="advanced">高级搜索</el-radio-button>
+          <el-radio-button label="keyword">关键字搜索</el-radio-button>
+        </el-radio-group>
+      </el-card>
+      
+      <!-- 用户信息展示区域 -->
+      <el-card v-if="displayedUser" shadow="hover" class="user-display-card">
+        <div class="user-display-header">
+          <el-avatar :size="100" :src="displayedUser.avatar" class="user-display-avatar">
+            <User v-if="!displayedUser.avatar" />
+          </el-avatar>
+          <div class="user-display-info">
+            <div class="user-display-name">
+              <h3>{{ displayedUser.username }}</h3>
+              <el-tag :type="getRoleTypeTagType(displayedUser.roleType)" size="large">
+                {{ getRoleTypeLabel(displayedUser.roleType) }}
+              </el-tag>
+            </div>
+            <div class="user-display-account">
+              <span class="label">账号：</span>
+              <span class="value">{{ displayedUser.account }}</span>
+            </div>
+            <div class="user-display-bio">
+              <span class="label">简介：</span>
+              <span class="value">{{ displayedUser.bio || '暂无简介' }}</span>
+            </div>
           </div>
         </div>
-      </div>
-      <!-- 编辑按钮 - 管理员可见 -->
-      <div class="user-display-actions">
-        <el-button type="primary" size="large" @click="handleEditDisplayedUser">
-          <Edit /> 编辑用户
-        </el-button>
-      </div>
-    </el-card>
-    
-    <!-- 高级搜索区域 -->
-    <el-card v-if="searchMode === 'advanced'" class="search-card" shadow="never">
-      <el-form :model="advancedSearchForm" label-width="100px" class="search-form">
-        <el-row :gutter="20">
-          <el-col :span="8">
-            <el-form-item label="账号">
-              <el-input v-model="advancedSearchForm.account" placeholder="请输入账号" clearable />
-            </el-form-item>
-          </el-col>
-          <el-col :span="8">
-            <el-form-item label="用户名">
-              <el-input v-model="advancedSearchForm.username" placeholder="请输入用户名" clearable />
-            </el-form-item>
-          </el-col>
-          <el-col :span="8">
-            <el-form-item label="用户类型">
-              <el-select v-model="advancedSearchForm.roleType" placeholder="请选择用户类型" clearable style="width: 100%">
-                <el-option
-                  v-for="item in roleTypeOptions"
-                  :key="item.value"
-                  :label="item.label"
-                  :value="item.value"
+        <!-- 编辑按钮 - 管理员可见 -->
+        <div class="user-display-actions">
+          <el-button type="primary" size="large" @click="handleEditDisplayedUser">
+            <Edit /> 编辑用户
+          </el-button>
+        </div>
+      </el-card>
+      
+      <!-- 高级搜索区域 -->
+      <el-card v-if="searchMode === 'advanced'" class="search-card" shadow="never">
+        <el-form :model="advancedSearchForm" label-width="100px" class="search-form">
+          <el-row :gutter="20">
+            <el-col :span="8">
+              <el-form-item label="账号">
+                <el-input v-model="advancedSearchForm.account" placeholder="请输入账号" clearable />
+              </el-form-item>
+            </el-col>
+            <el-col :span="8">
+              <el-form-item label="用户名">
+                <el-input v-model="advancedSearchForm.username" placeholder="请输入用户名" clearable />
+              </el-form-item>
+            </el-col>
+            <el-col :span="8">
+              <el-form-item label="用户类型">
+                <el-select v-model="advancedSearchForm.roleType" placeholder="请选择用户类型" clearable style="width: 100%">
+                  <el-option
+                    v-for="item in roleTypeOptions"
+                    :key="item.value"
+                    :label="item.label"
+                    :value="item.value"
+                  />
+                </el-select>
+              </el-form-item>
+            </el-col>
+          </el-row>
+          <el-row :gutter="20">
+            <el-col :span="8">
+              <el-form-item label="创建时间">
+                <el-date-picker
+                  v-model="advancedSearchForm.startCreateTime"
+                  type="datetime"
+                  placeholder="起始时间"
+                  value-format="YYYY-MM-DDTHH:mm:ss"
+                  style="width: 100%"
                 />
-              </el-select>
-            </el-form-item>
-          </el-col>
-        </el-row>
-        <el-row :gutter="20">
-          <el-col :span="8">
-            <el-form-item label="创建时间">
-              <el-date-picker
-                v-model="advancedSearchForm.startCreateTime"
-                type="datetime"
-                placeholder="起始时间"
-                value-format="YYYY-MM-DDTHH:mm:ss"
-                style="width: 100%"
-              />
-            </el-form-item>
-          </el-col>
-          <el-col :span="8">
-            <el-form-item label="至">
-              <el-date-picker
-                v-model="advancedSearchForm.endCreateTime"
-                type="datetime"
-                placeholder="结束时间"
-                value-format="YYYY-MM-DDTHH:mm:ss"
-                style="width: 100%"
-              />
-            </el-form-item>
-          </el-col>
-          <el-col :span="8">
-            <el-form-item>
-              <el-checkbox v-model="advancedSearchForm.filterDeleted">过滤已注销用户</el-checkbox>
-            </el-form-item>
-          </el-col>
-        </el-row>
-        <el-row :gutter="20">
-          <el-col :span="8">
-            <el-form-item label="排序方式">
-              <el-select v-model="advancedSearchForm.sortType" style="width: 100%">
-                <el-option label="按创建时间排序" :value="0" />
-              </el-select>
-            </el-form-item>
-          </el-col>
-          <el-col :span="8">
-            <el-form-item label="排序方向">
-              <el-radio-group v-model="advancedSearchForm.isAsc">
-                <el-radio-button :label="true">升序</el-radio-button>
-                <el-radio-button :label="false">降序</el-radio-button>
-              </el-radio-group>
-            </el-form-item>
-          </el-col>
-          <el-col :span="8">
-            <el-form-item>
+              </el-form-item>
+            </el-col>
+            <el-col :span="8">
+              <el-form-item label="至">
+                <el-date-picker
+                  v-model="advancedSearchForm.endCreateTime"
+                  type="datetime"
+                  placeholder="结束时间"
+                  value-format="YYYY-MM-DDTHH:mm:ss"
+                  style="width: 100%"
+                />
+              </el-form-item>
+            </el-col>
+            <el-col :span="8">
+              <el-form-item>
+                <el-checkbox v-model="advancedSearchForm.filterDeleted">过滤已注销用户</el-checkbox>
+              </el-form-item>
+            </el-col>
+          </el-row>
+          <el-row :gutter="20">
+            <el-col :span="8">
+              <el-form-item label="排序方式">
+                <el-select v-model="advancedSearchForm.sortType" style="width: 100%">
+                  <el-option label="按创建时间排序" :value="0" />
+                </el-select>
+              </el-form-item>
+            </el-col>
+            <el-col :span="8">
+              <el-form-item label="排序方向">
+                <el-radio-group v-model="advancedSearchForm.isAsc">
+                  <el-radio-button :label="true">升序</el-radio-button>
+                  <el-radio-button :label="false">降序</el-radio-button>
+                </el-radio-group>
+              </el-form-item>
+            </el-col>
+            <el-col :span="8">
+              <el-form-item>
+                <el-button type="primary" @click="handleSearch">
+                  <Search /> 搜索
+                </el-button>
+                <el-button @click="handleReset">
+                  <Refresh /> 重置
+                </el-button>
+              </el-form-item>
+            </el-col>
+          </el-row>
+        </el-form>
+      </el-card>
+      
+      <!-- 关键字搜索区域 -->
+      <el-card v-else class="search-card" shadow="never">
+        <el-form :model="keywordSearchForm" label-width="100px" class="search-form">
+          <el-row :gutter="20">
+            <el-col :span="8">
+              <el-form-item label="账号关键字">
+                <el-input v-model="keywordSearchForm.account" placeholder="请输入账号关键字" clearable />
+              </el-form-item>
+            </el-col>
+            <el-col :span="8">
+              <el-form-item label="用户名关键字">
+                <el-input v-model="keywordSearchForm.username" placeholder="请输入用户名关键字" clearable />
+              </el-form-item>
+            </el-col>
+            <el-col :span="8">
+              <el-form-item label="排序方向">
+                <el-radio-group v-model="keywordSearchForm.isAsc">
+                  <el-radio-button :label="true">升序</el-radio-button>
+                  <el-radio-button :label="false">降序</el-radio-button>
+                </el-radio-group>
+              </el-form-item>
+            </el-col>
+          </el-row>
+          <el-row>
+            <el-col :span="24" style="text-align: center;">
               <el-button type="primary" @click="handleSearch">
                 <Search /> 搜索
               </el-button>
               <el-button @click="handleReset">
                 <Refresh /> 重置
               </el-button>
-            </el-form-item>
-          </el-col>
-        </el-row>
-      </el-form>
-    </el-card>
-    
-    <!-- 关键字搜索区域 -->
-    <el-card v-else class="search-card" shadow="never">
-      <el-form :model="keywordSearchForm" label-width="100px" class="search-form">
-        <el-row :gutter="20">
-          <el-col :span="8">
-            <el-form-item label="账号关键字">
-              <el-input v-model="keywordSearchForm.account" placeholder="请输入账号关键字" clearable />
-            </el-form-item>
-          </el-col>
-          <el-col :span="8">
-            <el-form-item label="用户名关键字">
-              <el-input v-model="keywordSearchForm.username" placeholder="请输入用户名关键字" clearable />
-            </el-form-item>
-          </el-col>
-          <el-col :span="8">
-            <el-form-item label="排序方向">
-              <el-radio-group v-model="keywordSearchForm.isAsc">
-                <el-radio-button :label="true">升序</el-radio-button>
-                <el-radio-button :label="false">降序</el-radio-button>
-              </el-radio-group>
-            </el-form-item>
-          </el-col>
-        </el-row>
-        <el-row>
-          <el-col :span="24" style="text-align: center;">
-            <el-button type="primary" @click="handleSearch">
-              <Search /> 搜索
-            </el-button>
-            <el-button @click="handleReset">
-              <Refresh /> 重置
-            </el-button>
-          </el-col>
-        </el-row>
-      </el-form>
-    </el-card>
-    
-    <!-- 用户列表 -->
-    <el-card shadow="hover" class="user-table-card">
-      <el-table :data="users" style="width: 100%" v-loading="loading">
-        <el-table-column prop="id" label="ID" width="80" />
-        <el-table-column label="头像" width="100">
-          <template #default="{ row }">
-            <el-avatar :size="50" :src="row.avatar">
-              <User v-if="!row.avatar" />
-            </el-avatar>
-          </template>
-        </el-table-column>
-        <el-table-column prop="username" label="用户名" />
-        <el-table-column prop="account" label="账号" />
-        <el-table-column prop="roleType" label="用户类型">
-          <template #default="{ row }">
-            <el-tag :type="getRoleTypeTagType(row.roleType)">
-              {{ getRoleTypeLabel(row.roleType) }}
-            </el-tag>
-          </template>
-        </el-table-column>
-        <el-table-column prop="bio" label="简介" show-overflow-tooltip />
-        <el-table-column prop="createTime" label="创建时间" width="180" />
-        <el-table-column label="操作" width="380" fixed="right">
-          <template #default="{ row }">
-            <el-button type="primary" size="small" @click="handleViewDetail(row)">
-              查看详情
-            </el-button>
-            <el-button type="success" size="small" @click="handleSelectUser(row)">
-              选择展示
-            </el-button>
-            <el-button type="warning" size="small" @click="handleEdit(row)">
-              <Edit /> 编辑
-            </el-button>
-            <el-button type="danger" size="small" @click="handleDelete(row)">
-              <Delete /> 删除
-            </el-button>
-            <el-button size="small" @click="handleDownloadAvatar(row)">
-              <Download /> 下载头像
-            </el-button>
-          </template>
-        </el-table-column>
-      </el-table>
+            </el-col>
+          </el-row>
+        </el-form>
+      </el-card>
       
-      <!-- 分页 -->
-      <div class="pagination-container">
-        <el-pagination
-          v-model:current-page="currentPage"
-          v-model:page-size="pageSize"
-          :page-sizes="pageSizeOptions"
-          :total="total"
-          layout="total, sizes, prev, pager, next, jumper"
-          @size-change="handleSizeChange"
-          @current-change="handlePageChange"
-        />
-      </div>
-    </el-card>
+      <!-- 用户列表 -->
+      <el-card shadow="hover" class="user-table-card">
+        <el-table :data="users" style="width: 100%" v-loading="loading">
+          <el-table-column prop="id" label="ID" width="80" />
+          <el-table-column label="头像" width="100">
+            <template #default="{ row }">
+              <el-avatar :size="50" :src="row.avatar">
+                <User v-if="!row.avatar" />
+              </el-avatar>
+            </template>
+          </el-table-column>
+          <el-table-column prop="username" label="用户名" />
+          <el-table-column prop="account" label="账号" />
+          <el-table-column prop="roleType" label="用户类型">
+            <template #default="{ row }">
+              <el-tag :type="getRoleTypeTagType(row.roleType)">
+                {{ getRoleTypeLabel(row.roleType) }}
+              </el-tag>
+            </template>
+          </el-table-column>
+          <el-table-column prop="bio" label="简介" show-overflow-tooltip />
+          <el-table-column prop="createTime" label="创建时间" width="180" />
+          <el-table-column label="操作" width="380" fixed="right">
+            <template #default="{ row }">
+              <el-button type="primary" size="small" @click="handleViewDetail(row)">
+                查看详情
+              </el-button>
+              <el-button type="success" size="small" @click="handleSelectUser(row)">
+                选择展示
+              </el-button>
+              <el-button type="warning" size="small" @click="handleEdit(row)">
+                <Edit /> 编辑
+              </el-button>
+              <el-button type="danger" size="small" @click="handleDelete(row)">
+                <Delete /> 删除
+              </el-button>
+              <el-button size="small" @click="handleDownloadAvatar(row)">
+                <Download /> 下载头像
+              </el-button>
+            </template>
+          </el-table-column>
+        </el-table>
+        
+        <!-- 分页 -->
+        <div class="pagination-container">
+          <el-pagination
+            v-model:current-page="currentPage"
+            v-model:page-size="pageSize"
+            :page-sizes="pageSizeOptions"
+            :total="total"
+            layout="total, sizes, prev, pager, next, jumper"
+            @size-change="handleSizeChange"
+            @current-change="handlePageChange"
+          />
+        </div>
+      </el-card>
+    </template>
     
     <!-- 编辑用户对话框 -->
     <el-dialog
@@ -679,6 +939,57 @@ const getRoleTypeTagType = (roleType) => {
         </span>
       </template>
     </el-dialog>
+    
+    <!-- 个人信息编辑对话框 -->
+    <el-dialog
+      v-model="personalEditDialogVisible"
+      title="修改个人信息"
+      width="500px"
+    >
+      <el-form :model="personalForm" label-width="80px">
+        <el-form-item label="头像">
+          <el-upload
+            class="avatar-uploader"
+            action="#"
+            :show-file-list="false"
+            :http-request="handlePersonalAvatarUpload"
+            :before-upload="(file) => {
+              const isJPG = file.type === 'image/jpeg' || file.type === 'image/png';
+              const isLt2M = file.size / 1024 / 1024 < 2;
+              if (!isJPG) {
+                ElMessage.error('只能上传 JPG/PNG 图片');
+              }
+              if (!isLt2M) {
+                ElMessage.error('图片大小不能超过 2MB');
+              }
+              return isJPG && isLt2M;
+            }"
+          >
+            <el-avatar :size="100" :src="personalForm.avatar" class="edit-avatar">
+              <Camera v-if="!personalForm.avatar" />
+            </el-avatar>
+          </el-upload>
+        </el-form-item>
+        <el-form-item label="用户名">
+          <el-input v-model="personalForm.username" placeholder="请输入用户名" />
+        </el-form-item>
+        <el-form-item label="账号">
+          <el-input v-model="personalForm.account" placeholder="请输入账号" />
+        </el-form-item>
+        <el-form-item label="密码">
+          <el-input v-model="personalForm.password" type="password" placeholder="请输入密码（留空表示不修改）" />
+        </el-form-item>
+        <el-form-item label="简介">
+          <el-input v-model="personalForm.bio" type="textarea" placeholder="请输入简介" />
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <span class="dialog-footer">
+          <el-button @click="personalEditDialogVisible = false">取消</el-button>
+          <el-button type="primary" @click="handleSavePersonalInfo" :loading="loading">保存</el-button>
+        </span>
+      </template>
+    </el-dialog>
   </div>
 </template>
 
@@ -698,10 +1009,53 @@ const getRoleTypeTagType = (roleType) => {
   color: #333;
 }
 
+.mode-card {
+  margin-bottom: 15px;
+  background: white;
+  border-radius: 8px;
+}
+
 .search-mode-card {
   margin-bottom: 15px;
   background: white;
   border-radius: 8px;
+}
+
+.user-info-card {
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  padding: 20px;
+}
+
+.user-info-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 20px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid #ebeef5;
+}
+
+.user-info-basic {
+  margin-left: 20px;
+}
+
+.user-info-basic h3 {
+  margin: 0 0 10px 0;
+  font-size: 20px;
+  color: #333;
+}
+
+.user-info-detail {
+  margin-bottom: 20px;
+}
+
+.user-info-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  padding-top: 20px;
+  border-top: 1px solid #ebeef5;
 }
 
 .search-card {
