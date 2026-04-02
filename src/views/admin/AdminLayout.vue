@@ -235,6 +235,11 @@ const handleMenuSelect = (key) => {
 </template>
 
 <style scoped>
+/* 使用全局CSS变量 */
+:deep(:root) {
+  --base-font-size: 18px;
+}
+
 .home-container {
   width: 100%;
   height: 100vh;
@@ -263,6 +268,7 @@ const handleMenuSelect = (key) => {
   margin: 0 10px;
   border-radius: 8px;
   margin-bottom: 10px;
+  font-size: var(--base-font-size);
 }
 
 .aside .el-menu-item:hover {
@@ -306,7 +312,7 @@ const handleMenuSelect = (key) => {
 }
 
 .header-title {
-  font-size: 20px;
+  font-size: calc(var(--base-font-size) * 1.11); /* 20px */
   font-weight: bold;
   color: #333;
 }
@@ -315,7 +321,7 @@ const handleMenuSelect = (key) => {
   display: flex;
   align-items: center;
   gap: 15px;
-  font-size: 14px;
+  font-size: calc(var(--base-font-size) * 0.78); /* 14px */
   color: #666;
 }
 
@@ -339,13 +345,13 @@ const handleMenuSelect = (key) => {
 }
 
 .welcome-section h2 {
-  font-size: 32px;
+  font-size: calc(var(--base-font-size) * 1.78); /* 32px */
   font-weight: bold;
   margin-bottom: 15px;
 }
 
 .welcome-section p {
-  font-size: 18px;
+  font-size: var(--base-font-size);
   margin: 0;
   color: #666;
 }
@@ -384,7 +390,7 @@ const handleMenuSelect = (key) => {
   align-items: center;
   justify-content: center;
   margin-right: 20px;
-  font-size: 24px;
+  font-size: calc(var(--base-font-size) * 1.33); /* 24px */
 }
 
 .stat-icon.course-icon {
@@ -412,14 +418,14 @@ const handleMenuSelect = (key) => {
 }
 
 .stat-number {
-  font-size: 28px;
+  font-size: calc(var(--base-font-size) * 1.56); /* 28px */
   font-weight: bold;
   color: #333;
   margin-bottom: 5px;
 }
 
 .stat-label {
-  font-size: 14px;
+  font-size: calc(var(--base-font-size) * 0.78); /* 14px */
   color: #666;
 }
 
@@ -428,7 +434,7 @@ const handleMenuSelect = (key) => {
 }
 
 .section-title {
-  font-size: 24px;
+  font-size: calc(var(--base-font-size) * 1.33); /* 24px */
   font-weight: bold;
   color: #333;
   margin-bottom: 20px;
@@ -466,19 +472,19 @@ const handleMenuSelect = (key) => {
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 24px;
+  font-size: calc(var(--base-font-size) * 1.33); /* 24px */
   margin-bottom: 20px;
 }
 
 .feature-content h4 {
-  font-size: 18px;
+  font-size: var(--base-font-size);
   font-weight: bold;
   color: #333;
   margin-bottom: 15px;
 }
 
 .feature-content p {
-  font-size: 14px;
+  font-size: calc(var(--base-font-size) * 0.78); /* 14px */
   color: #666;
   line-height: 1.6;
   margin-bottom: 25px;
@@ -486,7 +492,7 @@ const handleMenuSelect = (key) => {
 
 .feature-button {
   width: 100%;
-  font-size: 16px;
+  font-size: calc(var(--base-font-size) * 0.89); /* 16px */
   padding: 12px;
   border-radius: 8px;
   transition: all 0.3s ease;
@@ -523,11 +529,11 @@ const handleMenuSelect = (key) => {
   }
   
   .header-title {
-    font-size: 16px;
+    font-size: calc(var(--base-font-size) * 0.89); /* 16px */
   }
   
   .welcome-section h2 {
-    font-size: 24px;
+    font-size: calc(var(--base-font-size) * 1.33); /* 24px */
   }
   
   .main {

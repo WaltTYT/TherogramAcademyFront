@@ -20,13 +20,130 @@
   box-sizing: border-box;
 }
 
+/* 全局字体大小调整 */
+:root {
+  --base-font-size: 18px;
+}
+
 /* 全局 body 样式 */
 body {
   font-family: Arial, sans-serif;
-  font-size: 14px ;
+  font-size: var(--base-font-size);
   line-height: 1.5;
   color: #333;
   background: #f5f7fa;
+}
+
+/* 直接覆盖 Element Plus 组件的字体大小，使用 !important 提高优先级 */
+
+/* 输入框 */
+.el-input__inner {
+  font-size: var(--base-font-size) !important;
+}
+
+/* 选择器 */
+.el-select {
+  font-size: var(--base-font-size) !important;
+}
+
+.el-select-dropdown__item {
+  font-size: var(--base-font-size) !important;
+}
+
+/* 按钮 */
+.el-button {
+  font-size: var(--base-font-size) !important;
+}
+
+/* 表格 */
+.el-table {
+  font-size: var(--base-font-size) !important;
+}
+
+/* 表单 */
+.el-form {
+  font-size: var(--base-font-size) !important;
+}
+
+.el-form-item__label {
+  font-size: var(--base-font-size) !important;
+}
+
+/* 卡片 */
+.el-card {
+  font-size: var(--base-font-size) !important;
+}
+
+/* 对话框 */
+.el-dialog {
+  font-size: var(--base-font-size) !important;
+}
+
+/* 分页 */
+.el-pagination {
+  font-size: var(--base-font-size) !important;
+}
+
+/* 标签 */
+.el-tag {
+  font-size: var(--base-font-size) !important;
+}
+
+/* 描述列表 */
+.el-descriptions {
+  font-size: var(--base-font-size) !important;
+}
+
+.el-descriptions-item {
+  font-size: var(--base-font-size) !important;
+}
+
+/* 警告 */
+.el-alert {
+  font-size: var(--base-font-size) !important;
+}
+
+/* 调整标题字体大小 */
+h1, h2, h3, h4, h5, h6 {
+  font-size: larger;
+}
+
+/* 调整表单提示文字大小 */
+.form-tip {
+  font-size: calc(var(--base-font-size) * 0.8) !important;
+}
+
+/* 调整组件内边距，避免空白过度膨胀 */
+.el-input__inner {
+  padding: 8px 15px !important;
+}
+
+.el-button {
+  padding: 8px 16px !important;
+}
+
+.el-select .el-input__inner {
+  padding: 8px 30px 8px 15px !important;
+}
+
+.el-select-dropdown__item {
+  padding: 10px 20px !important;
+}
+
+.el-form-item {
+  margin-bottom: 16px !important;
+}
+
+.el-card {
+  padding: 20px !important;
+}
+
+.el-dialog__body {
+  padding: 20px !important;
+}
+
+.el-pagination {
+  padding: 20px 0 !important;
 }
 
 /* 确保下拉选择器能够正确显示 */

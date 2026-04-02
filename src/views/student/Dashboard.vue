@@ -147,6 +147,11 @@ onMounted(async () => {
 </template>
 
 <style scoped>
+/* 使用全局CSS变量 */
+:deep(:root) {
+  --base-font-size: 18px;
+}
+
 .dashboard-container {
   padding: 30px;
   max-width: 1200px;
@@ -160,13 +165,13 @@ onMounted(async () => {
 }
 
 .welcome-section h2 {
-  font-size: 32px;
+  font-size: calc(var(--base-font-size) * 1.78); /* 32px */
   font-weight: bold;
   margin-bottom: 15px;
 }
 
 .welcome-section p {
-  font-size: 18px;
+  font-size: var(--base-font-size);
   margin: 0;
   color: #666;
 }
@@ -205,7 +210,7 @@ onMounted(async () => {
   align-items: center;
   justify-content: center;
   margin-right: 20px;
-  font-size: 24px;
+  font-size: calc(var(--base-font-size) * 1.33); /* 24px */
 }
 
 .stat-icon.course-icon {
@@ -233,14 +238,14 @@ onMounted(async () => {
 }
 
 .stat-number {
-  font-size: 28px;
+  font-size: calc(var(--base-font-size) * 1.56); /* 28px */
   font-weight: bold;
   color: #333;
   margin-bottom: 5px;
 }
 
 .stat-label {
-  font-size: 14px;
+  font-size: calc(var(--base-font-size) * 0.78); /* 14px */
   color: #666;
 }
 
@@ -249,7 +254,7 @@ onMounted(async () => {
 }
 
 .section-title {
-  font-size: 24px;
+  font-size: calc(var(--base-font-size) * 1.33); /* 24px */
   font-weight: bold;
   color: #333;
   margin-bottom: 20px;
@@ -287,19 +292,19 @@ onMounted(async () => {
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 24px;
+  font-size: calc(var(--base-font-size) * 1.33); /* 24px */
   margin-bottom: 20px;
 }
 
 .feature-content h4 {
-  font-size: 18px;
+  font-size: var(--base-font-size);
   font-weight: bold;
   color: #333;
   margin-bottom: 15px;
 }
 
 .feature-content p {
-  font-size: 14px;
+  font-size: calc(var(--base-font-size) * 0.78); /* 14px */
   color: #666;
   line-height: 1.6;
   margin-bottom: 25px;
@@ -307,7 +312,7 @@ onMounted(async () => {
 
 .feature-button {
   width: 100%;
-  font-size: 16px;
+  font-size: calc(var(--base-font-size) * 0.89); /* 16px */
   padding: 12px;
   border-radius: 8px;
   transition: all 0.3s ease;
@@ -332,7 +337,7 @@ onMounted(async () => {
   }
   
   .welcome-section h2 {
-    font-size: 24px;
+    font-size: calc(var(--base-font-size) * 1.33); /* 24px */
   }
   
   .stats-section {

@@ -116,6 +116,11 @@ const handleLogout = () => {
 </template>
 
 <style scoped>
+/* 使用全局CSS变量 */
+:deep(:root) {
+  --base-font-size: 18px;
+}
+
 .home-container {
   width: 100%;
   height: 100vh;
@@ -155,7 +160,7 @@ const handleLogout = () => {
 }
 
 .header-title {
-  font-size: 20px;
+  font-size: calc(var(--base-font-size) * 1.11); /* 20px */
   font-weight: bold;
   color: #333;
 }
@@ -164,7 +169,7 @@ const handleLogout = () => {
   display: flex;
   align-items: center;
   gap: 15px;
-  font-size: 14px;
+  font-size: calc(var(--base-font-size) * 0.78); /* 14px */
   color: #666;
 }
 
@@ -172,6 +177,7 @@ const handleLogout = () => {
   border-radius: 8px;
   transition: all 0.3s ease;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  font-size: var(--base-font-size);
 }
 
 .user-info .el-button:hover {
@@ -212,7 +218,7 @@ const handleLogout = () => {
   border-radius: 10px;
   transition: all 0.3s ease;
   color: #ffffff;
-  font-size: 14px;
+  font-size: var(--base-font-size);
   font-weight: 500;
 }
 
@@ -233,7 +239,7 @@ const handleLogout = () => {
 }
 
 .el-menu-item i {
-  font-size: 18px;
+  font-size: calc(var(--base-font-size) * 1.11); /* 18px */
   margin-right: 12px;
   transition: all 0.3s ease;
 }
@@ -293,7 +299,7 @@ const handleLogout = () => {
   
   .el-menu-item i {
     margin-right: 0;
-    font-size: 20px;
+    font-size: calc(var(--base-font-size) * 1.11); /* 20px */
   }
   
   .main {
