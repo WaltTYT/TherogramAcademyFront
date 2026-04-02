@@ -29,42 +29,16 @@ body {
   background: #f5f7fa;
 }
 
-/* 自定义必填提示样式 - 针对 label-position="left" 的表单 */
-.el-form:not([label-position="top"]) .el-form-item.is-required .el-form-item__label::before {
-  content: '●' !important; /* 使用圆点作为必填标识 */
-  color: #F56C6C !important; /* 圆点颜色 - Element Plus 的错误红色 */
-  font-size: 20px !important; /* 圆点大小 */
-  margin-right: 4px !important; /* 圆点与文字的间距 */
-  font-weight: bold !important; /* 圆点加粗 */
-  line-height: 1.4 !important; /* 圆点行高 */
-  vertical-align: -4px !important; /* 圆点垂直对齐 - 确保与文字中位线对齐 */
-  display: inline-block !important; /* 确保圆点能够正确定位 */
-  width: 20px !important; /* 圆点宽度 */
-  text-align: center !important; /* 圆点水平居中 */
+/* 自定义必填提示样式 - 星号显示在左侧 */
+.el-form .el-form-item.is-required .el-form-item__label::before {
+  content: '*' !important; /* 使用星号作为必填标识 */
+  color: #F56C6C !important; /* 星号颜色 - Element Plus 的错误红色 */
+  margin-right: 4px !important; /* 星号与文字的间距 */
+  display: inline-block !important; /* 确保星号能够正确定位 */
 }
 
-/* 隐藏默认的必填星号 - 针对 label-position="left" 的表单 */
-.el-form:not([label-position="top"]) .el-form-item.is-required .el-form-item__label::after {
-  content: '' !important; /* 清空默认内容 */
-  display: none !important; /* 隐藏默认的星号 */
-}
-
-/* 自定义必填提示样式 - 针对 label-position="top" 的表单（登录注册界面） */
-.el-form.el-form--label-top .el-form-item.is-required .el-form-item__label::before {
-  content: '●' !important; /* 使用圆点作为必填标识 */
-  color: #F56C6C !important; /* 圆点颜色 - Element Plus 的错误红色 */
-  font-size: 20px !important; /* 圆点大小 */
-  margin-right: 4px !important; /* 圆点与文字的间距 */
-  font-weight: bold !important; /* 圆点加粗 */
-  line-height: 1.4 !important; /* 圆点行高 */
-  vertical-align: 0 !important; /* 圆点垂直对齐 - 确保与文字中位线对齐 */
-  display: inline-block !important; /* 确保圆点能够正确定位 */
-  width: 20px !important; /* 圆点宽度 */
-  text-align: center !important; /* 圆点水平居中 */
-}
-
-/* 隐藏默认的必填星号 - 针对 label-position="top" 的表单（登录注册界面） */
-.el-form.el-form--label-top .el-form-item.is-required .el-form-item__label::after {
+/* 隐藏默认的必填星号 */
+.el-form .el-form-item.is-required .el-form-item__label::after {
   content: '' !important; /* 清空默认内容 */
   display: none !important; /* 隐藏默认的星号 */
 }

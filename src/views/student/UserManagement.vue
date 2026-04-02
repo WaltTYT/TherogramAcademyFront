@@ -67,9 +67,19 @@ const loadCurrentUser = async () => {
       displayedUser.value = res.data.data
     } else {
       ElMessage.error(res.data.message || '获取用户信息失败')
+      // 使用模拟数据
+      const mockUser = getMockCurrentUser()
+      currentUser.value = mockUser
+      currentUserRole.value = mockUser.roleType
+      displayedUser.value = mockUser
     }
   } catch (error) {
     ElMessage.error('获取用户信息失败')
+    // 使用模拟数据
+    const mockUser = getMockCurrentUser()
+    currentUser.value = mockUser
+    currentUserRole.value = mockUser.roleType
+    displayedUser.value = mockUser
   } finally {
     loading.value = false
   }
@@ -368,30 +378,37 @@ const getMockUsers = () => [
     <template v-if="searchMode === 'personal'">
       <el-card v-if="currentUser" shadow="hover" class="user-info-card">
         <div class="user-info-header">
-          <el-avatar :size="80" :src="currentUser.avatar">
+          <el-avatar :size="100" :src="currentUser.avatar">
             <User v-if="!currentUser.avatar" />
           </el-avatar>
           <div class="user-info-basic">
             <h3>{{ currentUser.username }}</h3>
-            <el-tag :type="getRoleTypeTagType(currentUser.roleType)">
-              {{ getRoleTypeLabel(currentUser.roleType) }}
-            </el-tag>
           </div>
         </div>
 
-        <el-descriptions :column="2" border class="user-info-detail">
+        <el-descriptions :column="1" border class="user-info-detail">
           <el-descriptions-item label="账号">{{ currentUser.account }}</el-descriptions-item>
           <el-descriptions-item label="用户类型">
             <el-tag :type="getRoleTypeTagType(currentUser.roleType)">
               {{ getRoleTypeLabel(currentUser.roleType) }}
             </el-tag>
           </el-descriptions-item>
-          <el-descriptions-item label="简介" :span="2">{{ currentUser.bio || '暂无简介' }}</el-descriptions-item>
           <el-descriptions-item label="创建时间">{{ currentUser.createTime }}</el-descriptions-item>
-          <el-descriptions-item label="状态">
-            <el-tag :type="currentUser.deleted ? 'danger' : 'success'">
-              {{ currentUser.deleted ? '已注销' : '正常' }}
-            </el-tag>
+          <el-descriptions-item label="简介" :span="1" style="min-height: 120px; vertical-align: top;">
+            <div class="bio-textarea">
+              {{ currentUser.bio || '暂无简介' }}
+              <el-alert
+                v-if="!currentUser.bio"
+                type="info"
+                :closable="false"
+                show-icon
+                style="margin-top: 10px;"
+              >
+                <template #default>
+                  <div>示例：大一学生，热爱学习，积极参加社团活动</div>
+                </template>
+              </el-alert>
+            </div>
           </el-descriptions-item>
         </el-descriptions>
 
@@ -548,21 +565,25 @@ const getMockUsers = () => [
             }"
           >
             <el-avatar :size="100" :src="editForm.avatar" class="edit-avatar">
-              <Camera v-if="!editForm.avatar" />
+              <User v-if="!editForm.avatar" />
             </el-avatar>
           </el-upload>
         </el-form-item>
         <el-form-item label="用户名">
           <el-input v-model="editForm.username" placeholder="请输入用户名" />
+          <div class="form-tip">示例：student1</div>
         </el-form-item>
         <el-form-item label="账号">
           <el-input v-model="editForm.account" placeholder="请输入账号" />
+          <div class="form-tip">示例：student1</div>
         </el-form-item>
         <el-form-item label="密码">
           <el-input v-model="editForm.password" type="password" placeholder="请输入密码（留空表示不修改）" />
+          <div class="form-tip">示例：student123</div>
         </el-form-item>
         <el-form-item label="简介">
           <el-input v-model="editForm.bio" type="textarea" placeholder="请输入简介" />
+          <div class="form-tip">示例：大一学生，热爱学习，积极参加社团活动</div>
         </el-form-item>
       </el-form>
       <template #footer>
@@ -775,5 +796,32 @@ const getMockUsers = () => [
   display: flex;
   justify-content: flex-end;
   gap: 10px;
+}
+
+.bio-textarea {
+  border: 1px solid #dcdfe6;
+  border-radius: 4px;
+  padding: 10px;
+  min-height: 100px;
+  line-height: 1.5;
+  white-space: pre-wrap;
+  word-break: break-word;
+  background-color: #f9f9f9;
+  font-size: 14px;
+  font-family: inherit;
+  color: #303133;
+}
+
+.user-info-basic h3 {
+  margin: 0 0 5px 0;
+  font-size: 24px;
+  color: #333;
+}
+
+.form-tip {
+  font-size: 12px;
+  color: #909399;
+  margin-top: 5px;
+  font-style: italic;
 }
 </style>

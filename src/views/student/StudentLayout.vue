@@ -71,15 +71,14 @@ const handleLogout = () => {
         <div class="logo">
           <img src="../../assets/logo.png" alt="理程学院" />
         </div>
-        <div class="header-title"></div>
       </div>
-      <div class="header-right">
+      <div class="user-info">
         <el-button type="primary" @click="handleUser">用户管理</el-button>
         <el-button type="primary" @click="handleLogout">退出登录</el-button>
       </div>
     </el-header>
-    <div class="main-container">
-      <el-aside class="aside">
+    <el-container class="main-container">
+      <el-aside width="240px" class="aside">
         <el-menu
           :default-active="activeMenu"
           class="el-menu-vertical-demo"
@@ -112,7 +111,7 @@ const handleLogout = () => {
       <el-main class="main">
         <component :is="currentComponent" />
       </el-main>
-    </div>
+    </el-container>
   </div>
 </template>
 
@@ -120,69 +119,62 @@ const handleLogout = () => {
 .home-container {
   width: 100%;
   height: 100vh;
+  background: #f5f7fa;
   display: flex;
   flex-direction: column;
-  background: #f8f9fa;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
-/* 顶部栏设计 */
 .header {
-  height: 100px;
   background: white;
-  color: #333;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
   display: flex;
   justify-content: space-between;
   align-items: center;
   padding: 0 30px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-  position: relative;
-  z-index: 100;
+  height: 100px;
+  width: 100%;
 }
 
 .header-left {
   display: flex;
   align-items: center;
-  gap: 20px;
-}
-
-.logo {
-  height: 50px;
-  transition: transform 0.3s ease;
-  cursor: pointer;
-}
-
-.logo:hover {
-  transform: scale(1.05);
-}
-
-.logo img {
-  max-width: 160px;
-  max-height: 160px;
-  width: auto;
-  height: auto;
-  object-fit: contain;
-}
-
-.header-title {
-  font-size: 18px;
-  font-weight: 600;
-  letter-spacing: 0.5px;
-}
-
-.header-right {
-  display: flex;
-  align-items: center;
   gap: 15px;
 }
 
-.header-right .el-button {
+.logo {
+  display: flex;
+  align-items: center;
+}
+
+.logo img {
+  /* 调整logo大小的地方 */
+  max-width: 400px;
+  max-height: 400px;
+  width: auto;
+  height: auto;
+}
+
+.header-title {
+  font-size: 20px;
+  font-weight: bold;
+  color: #333;
+}
+
+.user-info {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  font-size: 14px;
+  color: #666;
+}
+
+.user-info .el-button {
   border-radius: 8px;
   transition: all 0.3s ease;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
-.header-right .el-button:hover {
+.user-info .el-button:hover {
   transform: translateY(-2px);
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
 }
@@ -190,13 +182,11 @@ const handleLogout = () => {
 /* 主容器 */
 .main-container {
   flex: 1;
-  display: flex;
   overflow: hidden;
 }
 
 /* 侧边栏设计 */
 .aside {
-  width: 240px;
   background: #001529;
   box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
   overflow-y: hidden;

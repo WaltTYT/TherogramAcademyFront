@@ -282,7 +282,7 @@ const handleMenuSelect = (key) => {
   justify-content: space-between;
   align-items: center;
   padding: 0 30px;
-  height: 80px;
+  height: 100px;
   width: 100%;
 }
 
@@ -299,8 +299,8 @@ const handleMenuSelect = (key) => {
 
 .logo img {
   /* 调整logo大小的地方 */
-  max-width: 160px;
-  max-height: 160px;
+  max-width: 400px;
+  max-height: 400px;
   width: auto;
   height: auto;
 }

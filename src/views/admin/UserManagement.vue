@@ -119,10 +119,30 @@ const loadPersonalInfo = async () => {
       }
     } else {
       ElMessage.error(res.data.message || '获取个人信息失败')
+      // 使用模拟数据
+      personalInfo.value = getMockAdminInfo()
+      currentUserRole.value = 'ADMIN'
+      personalForm.value = {
+        username: 'admin',
+        account: 'admin',
+        password: '',
+        bio: '',
+        avatar: ''
+      }
     }
   } catch (error) {
     console.error('加载个人信息失败:', error)
     ElMessage.error('获取个人信息失败')
+    // 使用模拟数据
+    personalInfo.value = getMockAdminInfo()
+    currentUserRole.value = 'ADMIN'
+    personalForm.value = {
+      username: 'admin',
+      account: 'admin',
+      password: '',
+      bio: '',
+      avatar: ''
+    }
   } finally {
     loading.value = false
   }
@@ -599,30 +619,37 @@ const getRoleTypeTagType = (roleType) => {
     <template v-if="mainMode === 'personal'">
       <el-card v-if="personalInfo" shadow="hover" class="user-info-card">
         <div class="user-info-header">
-          <el-avatar :size="80" :src="personalInfo.avatar">
+          <el-avatar :size="100" :src="personalInfo.avatar">
             <User v-if="!personalInfo.avatar" />
           </el-avatar>
           <div class="user-info-basic">
             <h3>{{ personalInfo.username }}</h3>
-            <el-tag :type="getRoleTypeTagType(personalInfo.roleType)">
-              {{ getRoleTypeLabel(personalInfo.roleType) }}
-            </el-tag>
           </div>
         </div>
         
-        <el-descriptions :column="2" border class="user-info-detail">
+        <el-descriptions :column="1" border class="user-info-detail">
           <el-descriptions-item label="账号">{{ personalInfo.account }}</el-descriptions-item>
           <el-descriptions-item label="用户类型">
             <el-tag :type="getRoleTypeTagType(personalInfo.roleType)">
               {{ getRoleTypeLabel(personalInfo.roleType) }}
             </el-tag>
           </el-descriptions-item>
-          <el-descriptions-item label="简介" :span="2">{{ personalInfo.bio || '暂无简介' }}</el-descriptions-item>
           <el-descriptions-item label="创建时间">{{ personalInfo.createTime }}</el-descriptions-item>
-          <el-descriptions-item label="状态">
-            <el-tag :type="personalInfo.deleted ? 'danger' : 'success'">
-              {{ personalInfo.deleted ? '已注销' : '正常' }}
-            </el-tag>
+          <el-descriptions-item label="简介" :span="1" style="min-height: 120px; vertical-align: top;">
+            <div class="bio-textarea">
+              {{ personalInfo.bio || '暂无简介' }}
+              <el-alert
+                v-if="!personalInfo.bio"
+                type="info"
+                :closable="false"
+                show-icon
+                style="margin-top: 10px;"
+              >
+                <template #default>
+                  <div>示例：系统管理员，负责平台的整体运营和管理</div>
+                </template>
+              </el-alert>
+            </div>
           </el-descriptions-item>
         </el-descriptions>
         
@@ -973,21 +1000,25 @@ const getRoleTypeTagType = (roleType) => {
             }"
           >
             <el-avatar :size="100" :src="personalForm.avatar" class="edit-avatar">
-              <Camera v-if="!personalForm.avatar" />
+              <User v-if="!personalForm.avatar" />
             </el-avatar>
           </el-upload>
         </el-form-item>
         <el-form-item label="用户名">
           <el-input v-model="personalForm.username" placeholder="请输入用户名" />
+          <div class="form-tip">示例：admin</div>
         </el-form-item>
         <el-form-item label="账号">
           <el-input v-model="personalForm.account" placeholder="请输入账号" />
+          <div class="form-tip">示例：admin</div>
         </el-form-item>
         <el-form-item label="密码">
           <el-input v-model="personalForm.password" type="password" placeholder="请输入密码（留空表示不修改）" />
+          <div class="form-tip">示例：admin123</div>
         </el-form-item>
         <el-form-item label="简介">
           <el-input v-model="personalForm.bio" type="textarea" placeholder="请输入简介" />
+          <div class="form-tip">示例：系统管理员，负责平台的整体运营和管理</div>
         </el-form-item>
       </el-form>
       <template #footer>
@@ -1048,8 +1079,8 @@ const getRoleTypeTagType = (roleType) => {
 }
 
 .user-info-basic h3 {
-  margin: 0 0 10px 0;
-  font-size: 20px;
+  margin: 0 0 5px 0;
+  font-size: 24px;
   color: #333;
 }
 
@@ -1175,5 +1206,26 @@ const getRoleTypeTagType = (roleType) => {
   display: flex;
   justify-content: flex-end;
   gap: 10px;
+}
+
+.form-tip {
+  font-size: 12px;
+  color: #909399;
+  margin-top: 5px;
+  font-style: italic;
+}
+
+.bio-textarea {
+  border: 1px solid #dcdfe6;
+  border-radius: 4px;
+  padding: 10px;
+  min-height: 100px;
+  line-height: 1.5;
+  white-space: pre-wrap;
+  word-break: break-word;
+  background-color: #f9f9f9;
+  font-size: 14px;
+  font-family: inherit;
+  color: #303133;
 }
 </style>
