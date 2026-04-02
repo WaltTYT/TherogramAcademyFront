@@ -677,36 +677,7 @@ const getRoleTypeTagType = (roleType) => {
         </el-radio-group>
       </el-card>
       
-      <!-- 用户信息展示区域 -->
-      <el-card v-if="displayedUser" shadow="hover" class="user-display-card">
-        <div class="user-display-header">
-          <el-avatar :size="100" :src="displayedUser.avatar" class="user-display-avatar">
-            <User v-if="!displayedUser.avatar" />
-          </el-avatar>
-          <div class="user-display-info">
-            <div class="user-display-name">
-              <h3>{{ displayedUser.username }}</h3>
-              <el-tag :type="getRoleTypeTagType(displayedUser.roleType)" size="large">
-                {{ getRoleTypeLabel(displayedUser.roleType) }}
-              </el-tag>
-            </div>
-            <div class="user-display-account">
-              <span class="label">账号：</span>
-              <span class="value">{{ displayedUser.account }}</span>
-            </div>
-            <div class="user-display-bio">
-              <span class="label">简介：</span>
-              <span class="value">{{ displayedUser.bio || '暂无简介' }}</span>
-            </div>
-          </div>
-        </div>
-        <!-- 编辑按钮 - 管理员可见 -->
-        <div class="user-display-actions">
-          <el-button type="primary" size="large" @click="handleEditDisplayedUser">
-            <Edit /> 编辑用户
-          </el-button>
-        </div>
-      </el-card>
+
       
       <!-- 高级搜索区域 -->
       <el-card v-if="searchMode === 'advanced'" class="search-card" shadow="never">

@@ -13,15 +13,34 @@ const userStore = useUserStore()
 const currentUser = ref(null)
 const loading = ref(false)
 
-// 搜索相关
-const searchMode = ref('personal') // 'personal' 或 'search'
+// 主模式：'personal' 表示个人信息，'search' 表示用户搜索
+const mainMode = ref('personal')
+
+// 搜索模式：'advanced' 表示高级搜索，'keyword' 表示关键字搜索
+const searchMode = ref('advanced')
+
+// 用户列表数据
 const users = ref([])
+
+// 分页相关
 const currentPage = ref(1)
 const pageSize = ref(10)
 const total = ref(0)
 
-// 搜索表单
-const searchForm = ref({
+// 高级搜索表单
+const advancedSearchForm = ref({
+  account: '',
+  username: '',
+  roleType: '',
+  filterDeleted: false,
+  startCreateTime: null,
+  endCreateTime: null,
+  sortType: 0,
+  isAsc: true
+})
+
+// 关键字搜索表单
+const keywordSearchForm = ref({
   account: '',
   username: '',
   sortType: 0,
@@ -37,6 +56,17 @@ const editForm = ref({
   bio: '',
   avatar: ''
 })
+
+// 用户类型选项
+const roleTypeOptions = [
+  { label: '全部', value: '' },
+  { label: '管理员', value: 'ADMIN' },
+  { label: '教师', value: 'TEACHER' },
+  { label: '学生', value: 'STUDENT' }
+]
+
+// 页面大小选项
+const pageSizeOptions = [10, 20, 50, 100]
 
 // 用户详情对话框
 const detailDialogVisible = ref(false)
@@ -85,30 +115,51 @@ const loadCurrentUser = async () => {
   }
 }
 
-// 搜索用户
-const handleSearch = async () => {
+// 加载用户数据
+const loadUsers = async () => {
   loading.value = true
   try {
-    const params = {
-      account: searchForm.value.account || null,
-      username: searchForm.value.username || null,
-      sortType: searchForm.value.sortType,
-      isAsc: searchForm.value.isAsc,
-      page: currentPage.value,
-      size: pageSize.value
+    let res
+    if (searchMode.value === 'advanced') {
+      // 高级搜索
+      const params = {
+        account: advancedSearchForm.value.account || null,
+        username: advancedSearchForm.value.username || null,
+        roleType: advancedSearchForm.value.roleType || null,
+        filterDeleted: advancedSearchForm.value.filterDeleted,
+        startCreateTime: advancedSearchForm.value.startCreateTime,
+        endCreateTime: advancedSearchForm.value.endCreateTime,
+        sortType: advancedSearchForm.value.sortType,
+        isAsc: advancedSearchForm.value.isAsc,
+        page: currentPage.value,
+        size: pageSize.value
+      }
+      res = await getUserPage(params)
+    } else {
+      // 关键字搜索
+      const params = {
+        account: keywordSearchForm.value.account || null,
+        username: keywordSearchForm.value.username || null,
+        sortType: keywordSearchForm.value.sortType,
+        isAsc: keywordSearchForm.value.isAsc,
+        page: currentPage.value,
+        size: pageSize.value
+      }
+      res = await searchUserPage(params)
     }
-    const res = await searchUserPage(params)
+    
     if (res.data.code === 200) {
       // 过滤掉管理员用户
       users.value = (res.data.data.records || []).filter(user => user.roleType !== 'ADMIN')
       total.value = users.value.length
     } else {
-      ElMessage.error(res.data.message || '搜索用户失败')
+      ElMessage.error(res.data.message || '获取用户列表失败')
       users.value = []
       total.value = 0
     }
   } catch (error) {
-    ElMessage.error('搜索用户失败')
+    console.error('加载用户数据失败:', error)
+    ElMessage.error('获取用户列表失败')
     users.value = []
     total.value = 0
   } finally {
@@ -116,16 +167,35 @@ const handleSearch = async () => {
   }
 }
 
-// 重置搜索
+// 搜索按钮点击
+const handleSearch = () => {
+  currentPage.value = 1
+  loadUsers()
+}
+
+// 重置搜索条件
 const handleReset = () => {
-  searchForm.value = {
-    account: '',
-    username: '',
-    sortType: 0,
-    isAsc: true
+  if (searchMode.value === 'advanced') {
+    advancedSearchForm.value = {
+      account: '',
+      username: '',
+      roleType: '',
+      filterDeleted: false,
+      startCreateTime: null,
+      endCreateTime: null,
+      sortType: 0,
+      isAsc: true
+    }
+  } else {
+    keywordSearchForm.value = {
+      account: '',
+      username: '',
+      sortType: 0,
+      isAsc: true
+    }
   }
   currentPage.value = 1
-  handleSearch()
+  loadUsers()
 }
 
 // 页码改变
@@ -368,14 +438,14 @@ const getMockUsers = () => [
 
     <!-- 模式切换 -->
     <el-card class="mode-card" shadow="never">
-      <el-radio-group v-model="searchMode">
+      <el-radio-group v-model="mainMode">
         <el-radio-button label="personal">个人信息</el-radio-button>
         <el-radio-button label="search">用户搜索</el-radio-button>
       </el-radio-group>
     </el-card>
 
     <!-- 个人信息模式 -->
-    <template v-if="searchMode === 'personal'">
+    <template v-if="mainMode === 'personal'">
       <el-card v-if="currentUser" shadow="hover" class="user-info-card">
         <div class="user-info-header">
           <el-avatar :size="100" :src="currentUser.avatar">
@@ -428,54 +498,119 @@ const getMockUsers = () => [
 
     <!-- 搜索模式 -->
     <template v-else>
-      <!-- 用户信息展示区域 -->
-      <el-card v-if="displayedUser" shadow="hover" class="user-display-card">
-        <div class="user-display-header">
-          <el-avatar :size="100" :src="displayedUser.avatar" class="user-display-avatar">
-            <User v-if="!displayedUser.avatar" />
-          </el-avatar>
-          <div class="user-display-info">
-            <div class="user-display-name">
-              <h3>{{ displayedUser.username }}</h3>
-              <el-tag :type="getRoleTypeTagType(displayedUser.roleType)" size="large">
-                {{ getRoleTypeLabel(displayedUser.roleType) }}
-              </el-tag>
-            </div>
-            <div class="user-display-account">
-              <span class="label">账号：</span>
-              <span class="value">{{ displayedUser.account }}</span>
-            </div>
-            <div class="user-display-bio">
-              <span class="label">简介：</span>
-              <span class="value">{{ displayedUser.bio || '暂无简介' }}</span>
-            </div>
-          </div>
-        </div>
-        <!-- 编辑按钮 - 仅管理员可见 -->
-        <div v-if="currentUserRole === 'ADMIN'" class="user-display-actions">
-          <el-button type="primary" size="large" @click="handleEditDisplayedUser">
-            <Edit /> 编辑用户
-          </el-button>
-        </div>
+      <!-- 搜索模式切换 -->
+      <el-card class="search-mode-card" shadow="never">
+        <el-radio-group v-model="searchMode" @change="handleReset">
+          <el-radio-button label="advanced">高级搜索</el-radio-button>
+          <el-radio-button label="keyword">关键字搜索</el-radio-button>
+        </el-radio-group>
       </el-card>
+      
 
-      <!-- 搜索区域 -->
-      <el-card class="search-card" shadow="never">
-        <el-form :model="searchForm" label-width="100px" class="search-form">
+      
+      <!-- 高级搜索区域 -->
+      <el-card v-if="searchMode === 'advanced'" class="search-card" shadow="never">
+        <el-form :model="advancedSearchForm" label-width="100px" class="search-form">
           <el-row :gutter="20">
             <el-col :span="8">
               <el-form-item label="账号">
-                <el-input v-model="searchForm.account" placeholder="请输入账号" clearable />
+                <el-input v-model="advancedSearchForm.account" placeholder="请输入账号" clearable />
               </el-form-item>
             </el-col>
             <el-col :span="8">
               <el-form-item label="用户名">
-                <el-input v-model="searchForm.username" placeholder="请输入用户名" clearable />
+                <el-input v-model="advancedSearchForm.username" placeholder="请输入用户名" clearable />
+              </el-form-item>
+            </el-col>
+            <el-col :span="8">
+              <el-form-item label="用户类型">
+                <el-select v-model="advancedSearchForm.roleType" placeholder="请选择用户类型" clearable style="width: 100%">
+                  <el-option
+                    v-for="item in roleTypeOptions"
+                    :key="item.value"
+                    :label="item.label"
+                    :value="item.value"
+                  />
+                </el-select>
+              </el-form-item>
+            </el-col>
+          </el-row>
+          <el-row :gutter="20">
+            <el-col :span="8">
+              <el-form-item label="创建时间">
+                <el-date-picker
+                  v-model="advancedSearchForm.startCreateTime"
+                  type="datetime"
+                  placeholder="起始时间"
+                  value-format="YYYY-MM-DDTHH:mm:ss"
+                  style="width: 100%"
+                />
+              </el-form-item>
+            </el-col>
+            <el-col :span="8">
+              <el-form-item label="至">
+                <el-date-picker
+                  v-model="advancedSearchForm.endCreateTime"
+                  type="datetime"
+                  placeholder="结束时间"
+                  value-format="YYYY-MM-DDTHH:mm:ss"
+                  style="width: 100%"
+                />
+              </el-form-item>
+            </el-col>
+            <el-col :span="8">
+              <el-form-item>
+                <el-checkbox v-model="advancedSearchForm.filterDeleted">过滤已注销用户</el-checkbox>
+              </el-form-item>
+            </el-col>
+          </el-row>
+          <el-row :gutter="20">
+            <el-col :span="8">
+              <el-form-item label="排序方式">
+                <el-select v-model="advancedSearchForm.sortType" style="width: 100%">
+                  <el-option label="按创建时间排序" :value="0" />
+                </el-select>
               </el-form-item>
             </el-col>
             <el-col :span="8">
               <el-form-item label="排序方向">
-                <el-radio-group v-model="searchForm.isAsc">
+                <el-radio-group v-model="advancedSearchForm.isAsc">
+                  <el-radio-button :label="true">升序</el-radio-button>
+                  <el-radio-button :label="false">降序</el-radio-button>
+                </el-radio-group>
+              </el-form-item>
+            </el-col>
+            <el-col :span="8">
+              <el-form-item>
+                <el-button type="primary" @click="handleSearch">
+                  <Search /> 搜索
+                </el-button>
+                <el-button @click="handleReset">
+                  <Refresh /> 重置
+                </el-button>
+              </el-form-item>
+            </el-col>
+          </el-row>
+        </el-form>
+      </el-card>
+      
+      <!-- 关键字搜索区域 -->
+      <el-card v-else class="search-card" shadow="never">
+        <el-form :model="keywordSearchForm" label-width="100px" class="search-form">
+          <el-row :gutter="20">
+            <el-col :span="8">
+              <el-form-item label="账号关键字">
+                <el-input v-model="keywordSearchForm.account" placeholder="请输入账号关键字" clearable />
+              </el-form-item>
+            </el-col>
+            <el-col :span="8">
+              <el-form-item label="用户名关键字">
+                <el-input v-model="keywordSearchForm.username" placeholder="请输入用户名关键字" clearable />
+              </el-form-item>
+            </el-col>
+            <el-col :span="8">
+              <el-form-item label="排序方向">
+                <el-radio-group v-model="keywordSearchForm.isAsc">
                   <el-radio-button :label="true">升序</el-radio-button>
                   <el-radio-button :label="false">降序</el-radio-button>
                 </el-radio-group>
@@ -644,6 +779,12 @@ const getMockUsers = () => [
 }
 
 .mode-card {
+  margin-bottom: 15px;
+  background: white;
+  border-radius: 8px;
+}
+
+.search-mode-card {
   margin-bottom: 15px;
   background: white;
   border-radius: 8px;

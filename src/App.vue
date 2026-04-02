@@ -23,10 +23,31 @@
 /* 全局 body 样式 */
 body {
   font-family: Arial, sans-serif;
-  font-size: 20px ;
+  font-size: 14px ;
   line-height: 1.5;
   color: #333;
   background: #f5f7fa;
+}
+
+/* 确保下拉选择器能够正确显示 */
+.el-select {
+  min-width: 200px;
+}
+
+.el-select .el-input {
+  width: 100%;
+}
+
+.el-select-dropdown {
+  z-index: 9999 !important;
+  min-width: 200px;
+}
+
+/* 确保下拉选择器的选项能够正确显示 */
+.el-select-dropdown__item {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 /* 自定义必填提示样式 - 星号显示在左侧 */
