@@ -316,50 +316,64 @@ onMounted(() => {
     <div class="search-form">
       <el-form :model="searchForm" inline>
         <el-form-item label="课程名称">
-          <el-input v-model="searchForm.courseName" placeholder="请输入课程名称" />
+          <el-input v-model="searchForm.courseName" placeholder="请输入课程名称" style="width: 200px;" />
         </el-form-item>
         <el-form-item label="课程科目">
-          <el-select v-model="searchForm.courseSubject" placeholder="请选择课程科目">
+          <el-select v-model="searchForm.courseSubject" placeholder="请选择课程科目" style="width: 150px;">
             <el-option v-for="subject in courseSubjects" :key="subject.value" :label="subject.label" :value="subject.value" />
           </el-select>
         </el-form-item>
         <el-form-item label="课程类型">
-          <el-select v-model="searchForm.courseType" placeholder="请选择课程类型">
+          <el-select v-model="searchForm.courseType" placeholder="请选择课程类型" style="width: 180px;">
             <el-option v-for="type in courseTypes" :key="type.value" :label="type.label" :value="type.value" />
           </el-select>
         </el-form-item>
         <el-form-item>
-          <el-button type="primary" @click="handleSearch">搜索</el-button>
+          <el-button type="primary" @click="handleSearch" style="margin-right: 8px;">搜索</el-button>
           <el-button @click="handleReset">重置</el-button>
         </el-form-item>
       </el-form>
     </div>
     
     <div class="course-list">
-      <el-table :data="courses" :loading="loading" style="width: 100%" empty-text="暂无数据">
+      <el-table 
+        :data="courses" 
+        :loading="loading" 
+        style="width: 100%" 
+        empty-text=""
+        :cell-style="{ textAlign: 'center' }"
+        :header-cell-style="{ textAlign: 'center', fontWeight: 'bold', backgroundColor: '#f5f7fa' }"
+      >
         <el-table-column prop="id" label="课程ID" width="100" />
-        <el-table-column prop="courseName" label="课程名称" />
+        <el-table-column prop="courseName" label="课程名称" min-width="300" />
         <el-table-column prop="courseSubject" label="课程科目" width="120">
           <template #default="{ row }">
             {{ courseSubjects.find(s => s.value == row.courseSubject)?.label || row.courseSubject }}
           </template>
         </el-table-column>
-        <el-table-column prop="courseType" label="课程类型" width="150">
+        <el-table-column prop="courseType" label="课程类型" width="180">
           <template #default="{ row }">
             {{ courseTypes.find(t => t.value == row.courseType)?.label || row.courseType }}
           </template>
         </el-table-column>
         <el-table-column prop="createTime" label="创建时间" width="180" />
-        <el-table-column label="操作" width="200" fixed="right">
+        <el-table-column label="操作" width="240">
           <template #default="{ row }">
-            <el-button size="small" @click="viewCourseDetail(row)">查看</el-button>
-            <el-button size="small" type="primary" @click="openEditDialog(row)">编辑</el-button>
+            <el-button size="small" @click="viewCourseDetail(row)" style="margin-right: 5px">查看</el-button>
+            <el-button size="small" type="primary" @click="openEditDialog(row)" style="margin-right: 5px">编辑</el-button>
             <el-button size="small" type="danger" @click="deleteCourse(row)">删除</el-button>
           </template>
         </el-table-column>
+        <template #empty>
+          <div class="empty-state">
+            <el-icon class="empty-icon"><i class="el-icon-info"></i></el-icon>
+            <p>暂无课程数据</p>
+            <p style="font-size: 14px; color: #909399; margin-top: 8px;">点击「创建课程」按钮开始添加课程</p>
+          </div>
+        </template>
       </el-table>
       
-      <div class="pagination">
+      <div class="pagination" v-if="total > 0">
         <el-pagination
           v-model:current-page="currentPage"
           v-model:page-size="pageSize"
@@ -449,31 +463,48 @@ onMounted(() => {
     </el-dialog>
     
     <!-- 审核课程对话框 -->
-    <el-dialog v-model="reviewDialogVisible" :title="reviewDialogTitle" width="800px">
-      <el-table :data="pendingCourses" :loading="loadingReview" style="width: 100%" empty-text="暂无待审核课程">
-        <el-table-column prop="id" label="课程ID" width="100" />
-        <el-table-column prop="courseName" label="课程名称" />
-        <el-table-column prop="courseSubject" label="课程科目" width="120">
-          <template #default="{ row }">
-            {{ courseSubjects.find(s => s.value == row.courseSubject)?.label || row.courseSubject }}
+    <el-dialog v-model="reviewDialogVisible" :title="reviewDialogTitle" width="1200px" :before-close="() => true">
+      <div class="review-dialog-content">
+        <el-table 
+          :data="pendingCourses" 
+          :loading="loadingReview" 
+          style="width: 100%" 
+          empty-text=""
+          :cell-style="{ textAlign: 'center' }"
+          :header-cell-style="{ textAlign: 'center', fontWeight: 'bold', backgroundColor: '#f5f7fa' }"
+        >
+          <el-table-column prop="id" label="课程ID" width="100" />
+          <el-table-column prop="courseName" label="课程名称" min-width="300" />
+          <el-table-column prop="courseSubject" label="课程科目" width="120">
+            <template #default="{ row }">
+              {{ courseSubjects.find(s => s.value == row.courseSubject)?.label || row.courseSubject }}
+            </template>
+          </el-table-column>
+          <el-table-column prop="courseType" label="课程类型" width="200">
+            <template #default="{ row }">
+              {{ courseTypes.find(t => t.value == row.courseType)?.label || row.courseType }}
+            </template>
+          </el-table-column>
+          <el-table-column prop="createTime" label="提交时间" width="200" />
+          <el-table-column label="操作" width="160">
+            <template #default="{ row }">
+              <el-button size="small" type="success" @click="reviewCourse(row, 1)" style="margin-right: 5px">通过</el-button>
+              <el-button size="small" type="danger" @click="reviewCourse(row, 0)">拒绝</el-button>
+            </template>
+          </el-table-column>
+          <template #empty>
+            <div class="empty-state">
+              <el-icon class="empty-icon"><i class="el-icon-info"></i></el-icon>
+              <p>暂无待审核课程</p>
+            </div>
           </template>
-        </el-table-column>
-        <el-table-column prop="courseType" label="课程类型" width="150">
-          <template #default="{ row }">
-            {{ courseTypes.find(t => t.value == row.courseType)?.label || row.courseType }}
-          </template>
-        </el-table-column>
-        <el-table-column prop="createTime" label="提交时间" width="180" />
-        <el-table-column label="操作" width="200" fixed="right">
-          <template #default="{ row }">
-            <el-button size="small" type="success" @click="reviewCourse(row, 1)">通过</el-button>
-            <el-button size="small" type="danger" @click="reviewCourse(row, 0)">拒绝</el-button>
-          </template>
-        </el-table-column>
-      </el-table>
+        </el-table>
+      </div>
       <template #footer>
         <span class="dialog-footer">
-          <el-button @click="reviewDialogVisible = false">关闭</el-button>
+          <el-button @click="reviewDialogVisible = false" style="border-color: #dcdfe6; color: #606266; padding: 8px 20px;">
+            关闭
+          </el-button>
         </span>
       </template>
     </el-dialog>
@@ -508,7 +539,7 @@ onMounted(() => {
   background: white;
   padding: 20px;
   border-radius: 8px;
-  margin-bottom: 20px;
+  margin-bottom: 15px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
@@ -561,6 +592,85 @@ onMounted(() => {
 .pagination-sizes .el-select,
 .pagination-jumper .el-input-number {
   width: 80px;
+}
+
+/* 审核课程对话框样式 */
+.review-dialog-content {
+  padding: 10px 0;
+}
+
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 0;
+  color: #909399;
+}
+
+.empty-icon {
+  font-size: 48px;
+  margin-bottom: 16px;
+  color: #c0c4cc;
+}
+
+.empty-state p {
+  font-size: 16px;
+  margin: 0;
+}
+
+/* 表格样式优化 */
+:deep(.el-table) {
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+:deep(.el-table th) {
+  border-bottom: 2px solid #e4e7ed !important;
+}
+
+:deep(.el-table td) {
+  border-bottom: 1px solid #ebeef5 !important;
+}
+
+:deep(.el-table__row:hover) {
+  background-color: #f5f7fa !important;
+}
+
+:deep(.el-button--success) {
+  background-color: #67c23a;
+  border-color: #67c23a;
+}
+
+:deep(.el-button--danger) {
+  background-color: #f56c6c;
+  border-color: #f56c6c;
+}
+
+:deep(.el-button:hover) {
+  opacity: 0.8;
+}
+
+:deep(.el-dialog__header) {
+  background-color: #f5f7fa;
+  padding: 20px;
+  border-bottom: 1px solid #ebeef5;
+}
+
+:deep(.el-dialog__title) {
+  font-size: 18px;
+  font-weight: bold;
+  color: #303133;
+}
+
+:deep(.el-dialog__body) {
+  padding: 20px;
+}
+
+:deep(.el-dialog__footer) {
+  padding: 15px 20px;
+  border-top: 1px solid #ebeef5;
+  background-color: #fafafa;
 }
 
 </style>

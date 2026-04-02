@@ -112,34 +112,41 @@ onMounted(() => {
   <div class="my-course-container">
     <h2>我的课程</h2>
     
-    <el-card class="search-card">
-      <el-form :model="searchForm" label-width="100px" label-position="left" inline>
+    <div class="search-form">
+      <el-form :model="searchForm" inline>
         <el-form-item label="课程名称">
-          <el-input v-model="searchForm.courseName" placeholder="请输入课程名称" />
+          <el-input v-model="searchForm.courseName" placeholder="请输入课程名称" style="width: 200px;" />
         </el-form-item>
         <el-form-item label="课程科目">
-          <el-select v-model="searchForm.courseSubject" placeholder="请选择课程科目">
+          <el-select v-model="searchForm.courseSubject" placeholder="请选择课程科目" style="width: 150px;">
             <el-option v-for="option in courseSubjectOptions" :key="option.value" :label="option.label" :value="option.value" />
           </el-select>
         </el-form-item>
         <el-form-item label="课程类型">
-          <el-select v-model="searchForm.courseType" placeholder="请选择课程类型">
+          <el-select v-model="searchForm.courseType" placeholder="请选择课程类型" style="width: 180px;">
             <el-option v-for="option in courseTypeOptions" :key="option.value" :label="option.label" :value="option.value" />
           </el-select>
         </el-form-item>
         <el-form-item>
-          <el-button type="primary" @click="handleSearch">搜索</el-button>
+          <el-button type="primary" @click="handleSearch" style="margin-right: 8px;">搜索</el-button>
         </el-form-item>
       </el-form>
-    </el-card>
+    </div>
     
-    <el-table :data="courses" style="width: 100%" :loading="loading">
-      <el-table-column prop="courseName" label="课程名称" width="200">
+    <el-table 
+      :data="courses" 
+      style="width: 100%" 
+      :loading="loading"
+      empty-text=""
+      :cell-style="{ textAlign: 'center' }"
+      :header-cell-style="{ textAlign: 'center', fontWeight: 'bold', backgroundColor: '#f5f7fa' }"
+    >
+      <el-table-column prop="courseName" label="课程名称" min-width="300">
         <template #default="scope">
           <span class="course-name" @click="handleCourseDetail(scope.row.id)">{{ scope.row.courseName }}</span>
         </template>
       </el-table-column>
-      <el-table-column prop="courseIntroduction" label="课程简介" />
+      <el-table-column prop="courseIntroduction" label="课程简介" min-width="200" />
       <el-table-column prop="courseSubject" label="课程科目" width="120">
         <template #default="scope">
           {{ courseSubjectOptions.find(option => option.value === scope.row.courseSubject)?.label || scope.row.courseSubject }}
@@ -150,19 +157,26 @@ onMounted(() => {
           {{ courseTypeOptions.find(option => option.value === scope.row.courseType)?.label || scope.row.courseType }}
         </template>
       </el-table-column>
-      <el-table-column prop="progress" label="学习进度" width="100">
+      <el-table-column prop="progress" label="学习进度" width="150">
         <template #default="scope">
           <el-progress :percentage="scope.row.progress" :stroke-width="10" />
         </template>
       </el-table-column>
       <el-table-column prop="studyTime" label="学习时长(分钟)" width="120" />
       <el-table-column prop="score" label="成绩" width="80" />
-      <el-table-column label="操作" width="150">
+      <el-table-column label="操作" width="200">
         <template #default="scope">
-          <el-button type="primary" size="small" @click="handleCourseDetail(scope.row.id)">查看详情</el-button>
+          <el-button type="primary" size="small" @click="handleCourseDetail(scope.row.id)" style="margin-right: 5px">查看详情</el-button>
           <el-button type="danger" size="small" @click="handleDeselect(scope.row.id)">退选</el-button>
         </template>
       </el-table-column>
+      <template #empty>
+        <div class="empty-state">
+          <el-icon class="empty-icon"><i class="el-icon-info"></i></el-icon>
+          <p>暂无课程数据</p>
+          <p style="font-size: 14px; color: #909399; margin-top: 8px;">您还没有选择任何课程</p>
+        </div>
+      </template>
     </el-table>
     
     <el-pagination
@@ -192,8 +206,12 @@ onMounted(() => {
   margin-bottom: 30px;
 }
 
-.search-card {
-  margin-bottom: 30px;
+.search-form {
+  background: white;
+  padding: 20px;
+  border-radius: 8px;
+  margin-bottom: 15px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .course-name {
@@ -214,4 +232,58 @@ onMounted(() => {
   display: flex;
   justify-content: flex-end;
 }
+
+/* 空态样式 */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 0;
+  color: #909399;
+}
+
+.empty-icon {
+  font-size: 48px;
+  margin-bottom: 16px;
+  color: #c0c4cc;
+}
+
+.empty-state p {
+  font-size: 16px;
+  margin: 0;
+}
+
+/* 表格样式优化 */
+:deep(.el-table) {
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+:deep(.el-table th) {
+  border-bottom: 2px solid #e4e7ed !important;
+}
+
+:deep(.el-table td) {
+  border-bottom: 1px solid #ebeef5 !important;
+}
+
+:deep(.el-table__row:hover) {
+  background-color: #f5f7fa !important;
+}
+
+:deep(.el-button--primary) {
+  background-color: #409eff;
+  border-color: #409eff;
+}
+
+:deep(.el-button--danger) {
+  background-color: #f56c6c;
+  border-color: #f56c6c;
+}
+
+:deep(.el-button:hover) {
+  opacity: 0.8;
+}
+
 </style>

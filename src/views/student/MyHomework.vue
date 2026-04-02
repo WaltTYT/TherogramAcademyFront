@@ -100,31 +100,38 @@ onMounted(() => {
       </el-alert>
     </el-card>
     
-    <el-card class="search-card">
-      <el-form :model="searchForm" label-width="100px" label-position="left" inline>
+    <div class="search-form">
+      <el-form :model="searchForm" inline>
         <el-form-item label="作业名称">
-          <el-input v-model="searchForm.homeworkName" placeholder="请输入作业名称" />
+          <el-input v-model="searchForm.homeworkName" placeholder="请输入作业名称" style="width: 200px;" />
         </el-form-item>
         <el-form-item label="作业类型">
-          <el-select v-model="searchForm.homeworkType" placeholder="请选择作业类型">
+          <el-select v-model="searchForm.homeworkType" placeholder="请选择作业类型" style="width: 120px;">
             <el-option v-for="option in homeworkTypeOptions" :key="option.value" :label="option.label" :value="option.value" />
           </el-select>
         </el-form-item>
         <el-form-item label="提交状态">
-          <el-select v-model="searchForm.status" placeholder="请选择提交状态">
+          <el-select v-model="searchForm.status" placeholder="请选择提交状态" style="width: 120px;">
             <el-option v-for="option in statusOptions" :key="option.value" :label="option.label" :value="option.value" />
           </el-select>
         </el-form-item>
         <el-form-item>
-          <el-button type="primary" @click="handleSearch">搜索</el-button>
+          <el-button type="primary" @click="handleSearch" style="margin-right: 8px;">搜索</el-button>
         </el-form-item>
       </el-form>
-    </el-card>
+    </div>
     
-    <el-table :data="homeworks" style="width: 100%" :loading="loading">
-      <el-table-column prop="homeworkName" label="作业名称" width="200" />
-      <el-table-column prop="courseName" label="课程名称" width="150" />
-      <el-table-column prop="homeworkType" label="作业类型" width="100">
+    <el-table 
+      :data="homeworks" 
+      style="width: 100%" 
+      :loading="loading"
+      empty-text=""
+      :cell-style="{ textAlign: 'center' }"
+      :header-cell-style="{ textAlign: 'center', fontWeight: 'bold', backgroundColor: '#f5f7fa' }"
+    >
+      <el-table-column prop="homeworkName" label="作业名称" min-width="300" />
+      <el-table-column prop="courseName" label="课程名称" width="180" />
+      <el-table-column prop="homeworkType" label="作业类型" width="120">
         <template #default="scope">
           {{ scope.row.homeworkType === 'HOMEWORK' ? '作业' : '考试' }}
         </template>
@@ -145,6 +152,13 @@ onMounted(() => {
           <el-button type="primary" size="small" @click="handleHomeworkDetail(scope.row.id)">查看详情</el-button>
         </template>
       </el-table-column>
+      <template #empty>
+        <div class="empty-state">
+          <el-icon class="empty-icon"><i class="el-icon-info"></i></el-icon>
+          <p>暂无作业数据</p>
+          <p style="font-size: 14px; color: #909399; margin-top: 8px;">您还没有任何作业</p>
+        </div>
+      </template>
     </el-table>
     
     <el-pagination
@@ -192,8 +206,12 @@ onMounted(() => {
   margin-top: 10px;
 }
 
-.search-card {
-  margin-bottom: 30px;
+.search-form {
+  background: white;
+  padding: 20px;
+  border-radius: 8px;
+  margin-bottom: 15px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .el-table {
@@ -204,4 +222,53 @@ onMounted(() => {
   display: flex;
   justify-content: flex-end;
 }
+
+/* 空态样式 */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 0;
+  color: #909399;
+}
+
+.empty-icon {
+  font-size: 48px;
+  margin-bottom: 16px;
+  color: #c0c4cc;
+}
+
+.empty-state p {
+  font-size: 16px;
+  margin: 0;
+}
+
+/* 表格样式优化 */
+:deep(.el-table) {
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+:deep(.el-table th) {
+  border-bottom: 2px solid #e4e7ed !important;
+}
+
+:deep(.el-table td) {
+  border-bottom: 1px solid #ebeef5 !important;
+}
+
+:deep(.el-table__row:hover) {
+  background-color: #f5f7fa !important;
+}
+
+:deep(.el-button--primary) {
+  background-color: #409eff;
+  border-color: #409eff;
+}
+
+:deep(.el-button:hover) {
+  opacity: 0.8;
+}
+
 </style>

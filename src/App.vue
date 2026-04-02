@@ -126,8 +126,29 @@ h1, h2, h3, h4, h5, h6 {
   padding: 8px 30px 8px 15px !important;
 }
 
+/* 调整下拉选择框的字体大小 */
+.el-select-dropdown {
+  font-size: var(--base-font-size) !important;
+}
+
 .el-select-dropdown__item {
   padding: 10px 20px !important;
+  font-size: var(--base-font-size) !important;
+}
+
+/* 调整下拉选择框的placeholder文本大小 */
+.el-select .el-input__placeholder {
+  font-size: var(--base-font-size) !important;
+}
+
+/* 调整登录页面的下拉选择框 */
+.el-cascader-menu {
+  font-size: var(--base-font-size) !important;
+}
+
+/* 调整输入框的placeholder文本大小 */
+.el-input__placeholder {
+  font-size: var(--base-font-size) !important;
 }
 
 .el-form-item {

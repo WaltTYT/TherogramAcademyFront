@@ -142,19 +142,33 @@ onMounted(() => {
       <el-button type="primary" @click="handleCreateCourse">创建课程</el-button>
     </div>
     
-    <el-table :data="courses" style="width: 100%" :loading="loading">
-      <el-table-column prop="courseId" label="课程ID" width="80" />
-      <el-table-column prop="courseName" label="课程名称" />
-      <el-table-column prop="courseSubject" label="课程科目" />
-      <el-table-column prop="courseType" label="课程类型" />
-      <el-table-column prop="createTime" label="创建时间" />
-      <el-table-column label="操作" width="200">
+    <el-table 
+      :data="courses" 
+      style="width: 100%" 
+      :loading="loading"
+      empty-text=""
+      :cell-style="{ textAlign: 'center' }"
+      :header-cell-style="{ textAlign: 'center', fontWeight: 'bold', backgroundColor: '#f5f7fa' }"
+    >
+      <el-table-column prop="courseId" label="课程ID" width="100" />
+      <el-table-column prop="courseName" label="课程名称" min-width="300" />
+      <el-table-column prop="courseSubject" label="课程科目" width="120" />
+      <el-table-column prop="courseType" label="课程类型" width="120" />
+      <el-table-column prop="createTime" label="创建时间" width="180" />
+      <el-table-column label="操作" width="240">
         <template #default="scope">
-          <el-button size="small" @click="handleCourseDetail(scope.row.courseId)">查看</el-button>
-          <el-button size="small" type="primary" @click="handleEditCourse(scope.row)">编辑</el-button>
+          <el-button size="small" @click="handleCourseDetail(scope.row.courseId)" style="margin-right: 5px">查看</el-button>
+          <el-button size="small" type="primary" @click="handleEditCourse(scope.row)" style="margin-right: 5px">编辑</el-button>
           <el-button size="small" type="danger" @click="handleDeleteCourse(scope.row.courseId)">删除</el-button>
         </template>
       </el-table-column>
+      <template #empty>
+        <div class="empty-state">
+          <el-icon class="empty-icon"><i class="el-icon-info"></i></el-icon>
+          <p>暂无课程数据</p>
+          <p style="font-size: 14px; color: #909399; margin-top: 8px;">点击「创建课程」按钮开始添加课程</p>
+        </div>
+      </template>
     </el-table>
     
     <div class="pagination-container">
@@ -266,4 +280,64 @@ onMounted(() => {
   display: flex;
   justify-content: flex-end;
 }
+
+/* 空态样式 */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 0;
+  color: #909399;
+}
+
+.empty-icon {
+  font-size: 48px;
+  margin-bottom: 16px;
+  color: #c0c4cc;
+}
+
+.empty-state p {
+  font-size: 16px;
+  margin: 0;
+}
+
+/* 表格样式优化 */
+:deep(.el-table) {
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+:deep(.el-table th) {
+  border-bottom: 2px solid #e4e7ed !important;
+}
+
+:deep(.el-table td) {
+  border-bottom: 1px solid #ebeef5 !important;
+}
+
+:deep(.el-table__row:hover) {
+  background-color: #f5f7fa !important;
+}
+
+:deep(.el-button--primary) {
+  background-color: #409eff;
+  border-color: #409eff;
+}
+
+:deep(.el-button--danger) {
+  background-color: #f56c6c;
+  border-color: #f56c6c;
+}
+
+:deep(.el-button:hover) {
+  opacity: 0.8;
+}
+
+/* 按钮样式优化 */
+.header .el-button {
+  padding: 8px 16px;
+  font-size: 14px;
+}
+
 </style>

@@ -295,23 +295,18 @@ onMounted(() => {
       <el-button type="primary" @click="openCreateDialog">创建作业</el-button>
     </div>
     
-    <div class="course-select">
-      <el-form :model="{ courseId: selectedCourseId }" inline>
+    <div class="search-form">
+      <el-form :model="{ courseId: selectedCourseId, ...searchForm }" inline>
         <el-form-item label="选择课程">
-          <el-select v-model="selectedCourseId" placeholder="请选择课程" @change="getHomeworks">
+          <el-select v-model="selectedCourseId" placeholder="请选择课程" @change="getHomeworks" style="width: 200px;">
             <el-option v-for="course in courses" :key="course.id" :label="course.courseName" :value="course.id" />
           </el-select>
         </el-form-item>
-      </el-form>
-    </div>
-    
-    <div class="search-form">
-      <el-form :model="searchForm" inline>
         <el-form-item label="作业名称">
-          <el-input v-model="searchForm.homeworkName" placeholder="请输入作业名称" />
+          <el-input v-model="searchForm.homeworkName" placeholder="请输入作业名称" style="width: 200px;" />
         </el-form-item>
         <el-form-item label="作业类型">
-          <el-select v-model="searchForm.homeworkType" placeholder="请选择作业类型">
+          <el-select v-model="searchForm.homeworkType" placeholder="请选择作业类型" style="width: 120px;">
             <el-option v-for="type in homeworkTypes" :key="type.value" :label="type.label" :value="type.value" />
           </el-select>
         </el-form-item>
@@ -319,7 +314,7 @@ onMounted(() => {
           <el-checkbox v-model="searchForm.isFilterDeleted">过滤已删除作业</el-checkbox>
         </el-form-item>
         <el-form-item label="排序方式">
-          <el-select v-model="searchForm.sortType" placeholder="请选择排序方式">
+          <el-select v-model="searchForm.sortType" placeholder="请选择排序方式" style="width: 150px;">
             <el-option v-for="type in sortTypes" :key="type.value" :label="type.label" :value="type.value" />
           </el-select>
         </el-form-item>
@@ -327,15 +322,22 @@ onMounted(() => {
           <el-checkbox v-model="searchForm.isAsc">升序</el-checkbox>
         </el-form-item>
         <el-form-item>
-          <el-button type="primary" @click="handleSearch">搜索</el-button>
+          <el-button type="primary" @click="handleSearch" style="margin-right: 8px;">搜索</el-button>
           <el-button @click="handleReset">重置</el-button>
         </el-form-item>
       </el-form>
     </div>
     
     <div class="homework-list">
-      <el-table :data="homeworks" :loading="loading" style="width: 100%" empty-text="暂无数据">
-        <el-table-column prop="homeworkName" label="作业名称" />
+      <el-table 
+        :data="homeworks" 
+        :loading="loading" 
+        style="width: 100%" 
+        empty-text=""
+        :cell-style="{ textAlign: 'center' }"
+        :header-cell-style="{ textAlign: 'center', fontWeight: 'bold', backgroundColor: '#f5f7fa' }"
+      >
+        <el-table-column prop="homeworkName" label="作业名称" min-width="300" />
         <el-table-column prop="homeworkType" label="作业类型" width="120">
           <template #default="{ row }">
             {{ homeworkTypes.find(t => t.value == row.homeworkType)?.label || row.homeworkType }}
@@ -344,16 +346,23 @@ onMounted(() => {
         <el-table-column prop="deadline" label="截至时间" width="180" />
         <el-table-column prop="submitCount" label="提交人数" width="100" />
         <el-table-column prop="createTime" label="创建时间" width="180" />
-        <el-table-column label="操作" width="200" fixed="right">
+        <el-table-column label="操作" width="240">
           <template #default="{ row }">
-            <el-button size="small" @click="viewHomeworkDetail(row)">查看</el-button>
-            <el-button size="small" type="primary" @click="openEditDialog(row)">编辑</el-button>
+            <el-button size="small" @click="viewHomeworkDetail(row)" style="margin-right: 5px">查看</el-button>
+            <el-button size="small" type="primary" @click="openEditDialog(row)" style="margin-right: 5px">编辑</el-button>
             <el-button size="small" type="danger" @click="deleteHomework(row)">删除</el-button>
           </template>
         </el-table-column>
+        <template #empty>
+          <div class="empty-state">
+            <el-icon class="empty-icon"><i class="el-icon-info"></i></el-icon>
+            <p>暂无作业数据</p>
+            <p style="font-size: 14px; color: #909399; margin-top: 8px;">请选择课程后查看作业</p>
+          </div>
+        </template>
       </el-table>
       
-      <div class="pagination">
+      <div class="pagination" v-if="total > 0">
         <el-pagination
           v-model:current-page="currentPage"
           v-model:page-size="pageSize"
@@ -459,19 +468,11 @@ onMounted(() => {
   color: #333;
 }
 
-.course-select {
-  background: white;
-  padding: 20px;
-  border-radius: 8px;
-  margin-bottom: 20px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
-
 .search-form {
   background: white;
   padding: 20px;
   border-radius: 8px;
-  margin-bottom: 20px;
+  margin-bottom: 15px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
@@ -519,4 +520,64 @@ onMounted(() => {
 .dialog-footer {
   text-align: right;
 }
+
+/* 空态样式 */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 0;
+  color: #909399;
+}
+
+.empty-icon {
+  font-size: 48px;
+  margin-bottom: 16px;
+  color: #c0c4cc;
+}
+
+.empty-state p {
+  font-size: 16px;
+  margin: 0;
+}
+
+/* 表格样式优化 */
+:deep(.el-table) {
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+:deep(.el-table th) {
+  border-bottom: 2px solid #e4e7ed !important;
+}
+
+:deep(.el-table td) {
+  border-bottom: 1px solid #ebeef5 !important;
+}
+
+:deep(.el-table__row:hover) {
+  background-color: #f5f7fa !important;
+}
+
+:deep(.el-button--primary) {
+  background-color: #409eff;
+  border-color: #409eff;
+}
+
+:deep(.el-button--danger) {
+  background-color: #f56c6c;
+  border-color: #f56c6c;
+}
+
+:deep(.el-button:hover) {
+  opacity: 0.8;
+}
+
+/* 按钮样式优化 */
+.header .el-button {
+  padding: 8px 16px;
+  font-size: 14px;
+}
+
 </style>
