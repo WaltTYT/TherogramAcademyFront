@@ -118,29 +118,11 @@ const loadPersonalInfo = async () => {
         avatar: res.data.data.avatar
       }
     } else {
-      // 使用模拟数据
-      personalInfo.value = getMockAdminInfo()
-      currentUserRole.value = 'ADMIN'
-      personalForm.value = {
-        username: 'admin',
-        account: 'admin',
-        password: '',
-        bio: '系统管理员账号',
-        avatar: ''
-      }
+      ElMessage.error(res.data.message || '获取个人信息失败')
     }
   } catch (error) {
     console.error('加载个人信息失败:', error)
-    // 使用模拟数据
-    personalInfo.value = getMockAdminInfo()
-    currentUserRole.value = 'ADMIN'
-    personalForm.value = {
-      username: 'admin',
-      account: 'admin',
-      password: '',
-      bio: '系统管理员账号',
-      avatar: ''
-    }
+    ElMessage.error('获取个人信息失败')
   } finally {
     loading.value = false
   }
@@ -194,24 +176,16 @@ const loadUsers = async () => {
     if (res.data.code === 200) {
       users.value = res.data.data.records || []
       total.value = res.data.data.total || 0
-      
-      // 如果没有数据，显示模拟数据
-      if (users.value.length === 0) {
-        users.value = getMockUsers()
-        total.value = users.value.length
-      }
     } else {
       ElMessage.error(res.data.message || '获取用户列表失败')
-      // 使用模拟数据
-      users.value = getMockUsers()
-      total.value = users.value.length
+      users.value = []
+      total.value = 0
     }
   } catch (error) {
     console.error('加载用户数据失败:', error)
-    ElMessage.warning('后端接口未连接，显示模拟数据')
-    // 使用模拟数据
-    users.value = getMockUsers()
-    total.value = users.value.length
+    ElMessage.error('获取用户列表失败')
+    users.value = []
+    total.value = 0
   } finally {
     loading.value = false
   }
@@ -331,26 +305,41 @@ const handleEdit = (user) => {
 }
 
 // 保存用户信息
-const handleSave = () => {
+const handleSave = async () => {
   if (!editForm.value.username || !editForm.value.account) {
     ElMessage.error('用户名和账号不能为空')
     return
   }
   
-  // 更新用户信息
-  const index = users.value.findIndex(u => u.id === currentUser.value.id)
-  if (index !== -1) {
-    users.value[index] = {
-      ...users.value[index],
-      username: editForm.value.username,
-      account: editForm.value.account,
-      bio: editForm.value.bio,
-      avatar: editForm.value.avatar
+  loading.value = true
+  try {
+    const res = await updateUser({
+      ...editForm.value,
+      id: currentUser.value.id
+    })
+
+    if (res.data.code === 200) {
+      // 更新列表中的用户信息
+      const index = users.value.findIndex(u => u.id === currentUser.value.id)
+      if (index !== -1) {
+        users.value[index] = {
+          ...users.value[index],
+          username: editForm.value.username,
+          account: editForm.value.account,
+          bio: editForm.value.bio,
+          avatar: editForm.value.avatar
+        }
+      }
+      editDialogVisible.value = false
+      ElMessage.success('用户信息更新成功')
+    } else {
+      ElMessage.error(res.data.message || '更新失败')
     }
+  } catch (error) {
+    ElMessage.error('更新用户信息失败')
+  } finally {
+    loading.value = false
   }
-  
-  editDialogVisible.value = false
-  ElMessage.success('用户信息更新成功')
 }
 
 // 删除用户
@@ -359,36 +348,63 @@ const handleDelete = (user) => {
     confirmButtonText: '确定',
     cancelButtonText: '取消',
     type: 'warning'
-  }).then(() => {
-    // 从列表中删除用户
-    const index = users.value.findIndex(u => u.id === user.id)
-    if (index !== -1) {
-      users.value.splice(index, 1)
+  }).then(async () => {
+    loading.value = true
+    try {
+      const res = await deleteUser()
+      if (res.data.code === 200) {
+        // 从列表中删除用户
+        const index = users.value.findIndex(u => u.id === user.id)
+        if (index !== -1) {
+          users.value.splice(index, 1)
+        }
+        ElMessage.success('用户删除成功')
+      } else {
+        ElMessage.error(res.data.message || '删除失败')
+      }
+    } catch (error) {
+      ElMessage.error('删除用户失败')
+    } finally {
+      loading.value = false
     }
-    ElMessage.success('用户删除成功')
   }).catch(() => {
     // 取消删除
   })
 }
 
 // 处理头像上传
-const handleAvatarUpload = (response, uploadFile) => {
-  editForm.value.avatar = URL.createObjectURL(uploadFile.raw)
-  ElMessage.success('头像上传成功')
+const handleAvatarUpload = async (uploadFile) => {
+  if (!currentUser.value) return
+
+  try {
+    const res = await uploadUserAvatar(currentUser.value.id, uploadFile.raw)
+    if (res.data.code === 200) {
+      editForm.value.avatar = URL.createObjectURL(uploadFile.raw)
+      ElMessage.success('头像上传成功')
+    }
+  } catch (error) {
+    ElMessage.error('头像上传失败')
+  }
 }
 
 // 下载头像
-const handleDownloadAvatar = (user) => {
+const handleDownloadAvatar = async (user) => {
   if (!user.avatar) {
     ElMessage.warning('当前用户没有头像')
     return
   }
   
-  const link = document.createElement('a')
-  link.href = user.avatar
-  link.download = `${user.username}_avatar.png`
-  link.click()
-  ElMessage.success('头像下载成功')
+  try {
+    const res = await downloadUserAvatar(user.avatar)
+    const blob = new Blob([res.data])
+    const link = document.createElement('a')
+    link.href = URL.createObjectURL(blob)
+    link.download = `${user.username}_avatar.png`
+    link.click()
+    ElMessage.success('头像下载成功')
+  } catch (error) {
+    ElMessage.error('头像下载失败')
+  }
 }
 
 // 查看用户详情
@@ -468,16 +484,7 @@ const handleSavePersonalInfo = async () => {
     }
   } catch (error) {
     console.error('更新个人信息失败:', error)
-    // 模拟更新成功
-    personalInfo.value = {
-      ...personalInfo.value,
-      username: personalForm.value.username,
-      account: personalForm.value.account,
-      bio: personalForm.value.bio,
-      avatar: personalForm.value.avatar
-    }
-    personalEditDialogVisible.value = false
-    ElMessage.success('个人信息更新成功（模拟）')
+    ElMessage.error('更新个人信息失败')
   } finally {
     loading.value = false
   }
@@ -866,7 +873,7 @@ const getRoleTypeTagType = (roleType) => {
             class="avatar-uploader"
             action="#"
             :show-file-list="false"
-            :on-success="handleAvatarUpload"
+            :http-request="handleAvatarUpload"
             :before-upload="(file) => {
               const isJPG = file.type === 'image/jpeg' || file.type === 'image/png';
               const isLt2M = file.size / 1024 / 1024 < 2;

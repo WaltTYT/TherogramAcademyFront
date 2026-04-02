@@ -66,14 +66,10 @@ const loadCurrentUser = async () => {
       currentUserRole.value = res.data.data.roleType
       displayedUser.value = res.data.data
     } else {
-      currentUser.value = getMockCurrentUser()
-      currentUserRole.value = 'STUDENT'
-      displayedUser.value = getMockCurrentUser()
+      ElMessage.error(res.data.message || '获取用户信息失败')
     }
   } catch (error) {
-    currentUser.value = getMockCurrentUser()
-    currentUserRole.value = 'STUDENT'
-    displayedUser.value = getMockCurrentUser()
+    ElMessage.error('获取用户信息失败')
   } finally {
     loading.value = false
   }
@@ -97,12 +93,14 @@ const handleSearch = async () => {
       users.value = (res.data.data.records || []).filter(user => user.roleType !== 'ADMIN')
       total.value = users.value.length
     } else {
-      users.value = getMockUsers().filter(user => user.roleType !== 'ADMIN')
-      total.value = users.value.length
+      ElMessage.error(res.data.message || '搜索用户失败')
+      users.value = []
+      total.value = 0
     }
   } catch (error) {
-    users.value = getMockUsers().filter(user => user.roleType !== 'ADMIN')
-    total.value = users.value.length
+    ElMessage.error('搜索用户失败')
+    users.value = []
+    total.value = 0
   } finally {
     loading.value = false
   }
@@ -284,10 +282,11 @@ const handleAvatarUpload = async (uploadFile) => {
     if (res.data.code === 200) {
       editForm.value.avatar = URL.createObjectURL(uploadFile.raw)
       ElMessage.success('头像上传成功')
+    } else {
+      ElMessage.error(res.data.message || '头像上传失败')
     }
   } catch (error) {
-    editForm.value.avatar = URL.createObjectURL(uploadFile.raw)
-    ElMessage.success('头像上传成功（模拟）')
+    ElMessage.error('头像上传失败')
   }
 }
 
