@@ -137,7 +137,7 @@ const handleMenuSelect = (key) => {
           </el-menu-item>
           <el-menu-item index="3">
             <el-icon><Picture /></el-icon>
-            <span>教学资源管理</span>
+            <span>教学资源</span>
           </el-menu-item>
           <el-menu-item index="4">
             <el-icon><Document /></el-icon>

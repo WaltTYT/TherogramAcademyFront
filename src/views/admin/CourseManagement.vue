@@ -373,38 +373,15 @@ onMounted(() => {
         </template>
       </el-table>
       
-      <div class="pagination" v-if="total > 0">
-        <el-pagination
-          v-model:current-page="currentPage"
-          v-model:page-size="pageSize"
-          :page-sizes="[10, 20, 50, 100]"
-          layout="prev, pager, next"
-          :total="total"
-          prev-text="上一页"
-          next-text="下一页"
-          @size-change="handleSizeChange"
-          @current-change="handleCurrentChange"
-        >
-          <!-- 自定义总条数 -->
-          <template #default>
-            <span class="pagination-info">
-              共 {{ total }} 条
-            </span>
-            <span class="pagination-sizes">
-              每页
-              <el-select v-model="pageSize" size="small" @change="handleSizeChange">
-                <el-option v-for="size in [10, 20, 50, 100]" :key="size" :label="size" :value="size" />
-              </el-select>
-              条
-            </span>
-            <span class="pagination-jumper">
-              前往
-              <el-input-number v-model="currentPage" :min="1" :max="Math.ceil(total / pageSize)" size="small" @change="handleCurrentChange" />
-              页
-            </span>
-          </template>
-        </el-pagination>
-      </div>
+      <el-pagination
+        v-model:current-page="currentPage"
+        v-model:page-size="pageSize"
+        :page-sizes="[10, 20, 50, 100]"
+        layout="total, sizes, prev, pager, next, jumper"
+        :total="total"
+        @size-change="handleSizeChange"
+        @current-change="handleCurrentChange"
+      />
     </div>
     
     <!-- 课程编辑对话框 -->
@@ -463,7 +440,7 @@ onMounted(() => {
     </el-dialog>
     
     <!-- 审核课程对话框 -->
-    <el-dialog v-model="reviewDialogVisible" :title="reviewDialogTitle" width="1200px" :before-close="() => true">
+    <el-dialog v-model="reviewDialogVisible" :title="reviewDialogTitle" width="1200px">
       <div class="review-dialog-content">
         <el-table 
           :data="pendingCourses" 
@@ -560,38 +537,10 @@ onMounted(() => {
   text-align: right;
 }
 
-.pagination {
-  margin-top: 20px;
+.el-pagination {
+  margin-top: 30px;
   display: flex;
   justify-content: flex-end;
-  align-items: center;
-  gap: 20px;
-}
-
-.pagination-info {
-  font-size: 14px;
-  color: #606266;
-}
-
-.pagination-sizes {
-  font-size: 14px;
-  color: #606266;
-  display: flex;
-  align-items: center;
-  gap: 5px;
-}
-
-.pagination-jumper {
-  font-size: 14px;
-  color: #606266;
-  display: flex;
-  align-items: center;
-  gap: 5px;
-}
-
-.pagination-sizes .el-select,
-.pagination-jumper .el-input-number {
-  width: 80px;
 }
 
 /* 审核课程对话框样式 */
