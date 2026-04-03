@@ -120,29 +120,33 @@ const goToLogin = () => {
         <img src="../../assets/logo.png" alt="理程学院" />
       </div>
       <div class="register-title">注册</div>
-      <el-form ref="registerFormRef" :model="registerForm" :rules="registerRules" class="register-form" label-position="top">
-        <el-form-item label="账号" prop="account">
-          <el-input v-model="registerForm.account" placeholder="请输入账号"></el-input>
-        </el-form-item>
-        <el-form-item label="用户名" prop="username">
-          <el-input v-model="registerForm.username" placeholder="请输入用户名"></el-input>
-        </el-form-item>
-        <el-form-item label="密码" prop="password">
-          <el-input v-model="registerForm.password" type="password" show-password placeholder="请输入密码"></el-input>
-        </el-form-item>
-        <el-form-item label="确认密码" prop="confirmPassword">
-          <el-input v-model="registerForm.confirmPassword" type="password" show-password placeholder="请确认密码"></el-input>
-        </el-form-item>
-        <el-form-item label="用户类型" prop="userType">
-          <el-select v-model="registerForm.userType" placeholder="请选择用户类型">
-            <el-option label="管理员" value="ADMIN"></el-option>
-            <el-option label="教师" value="TEACHER"></el-option>
-            <el-option label="学生" value="STUDENT"></el-option>
-          </el-select>
-        </el-form-item>
-        <el-form-item label="简介">
-          <el-input v-model="registerForm.introduction" type="textarea" placeholder="请输入简介"></el-input>
-        </el-form-item>
+      <div class="form-scroll-container">
+        <el-form ref="registerFormRef" :model="registerForm" :rules="registerRules" class="register-form" label-position="top">
+          <el-form-item label="账号" prop="account">
+            <el-input v-model="registerForm.account" placeholder="请输入账号"></el-input>
+          </el-form-item>
+          <el-form-item label="用户名" prop="username">
+            <el-input v-model="registerForm.username" placeholder="请输入用户名"></el-input>
+          </el-form-item>
+          <el-form-item label="密码" prop="password">
+            <el-input v-model="registerForm.password" type="password" show-password placeholder="请输入密码"></el-input>
+          </el-form-item>
+          <el-form-item label="确认密码" prop="confirmPassword">
+            <el-input v-model="registerForm.confirmPassword" type="password" show-password placeholder="请确认密码"></el-input>
+          </el-form-item>
+          <el-form-item label="用户类型" prop="userType">
+            <el-select v-model="registerForm.userType" placeholder="请选择用户类型">
+              <el-option label="管理员" value="ADMIN"></el-option>
+              <el-option label="教师" value="TEACHER"></el-option>
+              <el-option label="学生" value="STUDENT"></el-option>
+            </el-select>
+          </el-form-item>
+          <el-form-item label="简介">
+            <el-input v-model="registerForm.introduction" type="textarea" placeholder="请输入简介"></el-input>
+          </el-form-item>
+        </el-form>
+      </div>
+      <el-form ref="registerFormRef" :model="registerForm" class="register-form-bottom" label-position="top">
         <el-form-item>
           <el-button type="primary" :loading="registerLoading" @click="handleRegister" class="register-button">注册</el-button>
         </el-form-item>
@@ -169,13 +173,11 @@ const goToLogin = () => {
 
 .register-box {
   width: 700px;
+  height: 850px;
   padding: 40px 100px;
   background: white;
   border-radius: 10px;
   box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
-
-  max-height: 90vh;
-  overflow-y: auto;
 }
 
 .logo {
@@ -199,8 +201,37 @@ const goToLogin = () => {
   margin-bottom: 20px;
 }
 
+.form-scroll-container {
+  max-height: 400px;
+  overflow-y: auto;
+  padding-right: 10px;
+  margin-bottom: 20px;
+}
+
+.form-scroll-container::-webkit-scrollbar {
+  width: 6px;
+}
+
+.form-scroll-container::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 3px;
+}
+
+.form-scroll-container::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 3px;
+}
+
+.form-scroll-container::-webkit-scrollbar-thumb:hover {
+  background: #a8a8a8;
+}
+
 .register-form {
   margin-top: 20px;
+}
+
+.register-form-bottom {
+  margin-top: 0;
 }
 
 .register-button {
