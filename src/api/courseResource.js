@@ -3,7 +3,7 @@ import request from '../utils/request'
 // 创建教学资源
 export const createCourseResource = (data) => {
   return request({
-    url: '/api/courseResource/create',
+    url: '/courseResource/create',
     method: 'post',
     data
   })
@@ -12,7 +12,7 @@ export const createCourseResource = (data) => {
 // 修改教学资源
 export const modifyCourseResource = (data) => {
   return request({
-    url: '/api/courseResource/modify',
+    url: '/courseResource/modify',
     method: 'post',
     data
   })
@@ -21,7 +21,7 @@ export const modifyCourseResource = (data) => {
 // 删除教学资源
 export const deleteCourseResource = (id) => {
   return request({
-    url: `/api/courseResource/delete/${id}`,
+    url: `/courseResource/delete/${id}`,
     method: 'post'
   })
 }
@@ -29,7 +29,7 @@ export const deleteCourseResource = (id) => {
 // 获取教学资源分页
 export const getCourseResourcePage = (data) => {
   return request({
-    url: '/api/courseResource/page',
+    url: '/courseResource/page',
     method: 'post',
     data
   })
@@ -38,7 +38,7 @@ export const getCourseResourcePage = (data) => {
 // 获取教学资源详情
 export const getCourseResourceDetail = (id) => {
   return request({
-    url: `/api/courseResource/detail/${id}`,
+    url: `/courseResource/detail/${id}`,
     method: 'get'
   })
 }
@@ -49,7 +49,7 @@ export const uploadCourseResource = (id, file) => {
   formData.append('id', id)
   formData.append('file', file)
   return request({
-    url: '/api/courseResource/uploadCourseResource',
+    url: '/courseResource/uploadCourseResource',
     method: 'post',
     data: formData,
     headers: {
@@ -61,7 +61,7 @@ export const uploadCourseResource = (id, file) => {
 // 下载教学资源
 export const downloadCourseResource = (relativePath) => {
   return request({
-    url: `/api/courseResource/downloadCourseResource/${relativePath}`,
+    url: `/courseResource/downloadCourseResource/${relativePath}`,
     method: 'get',
     responseType: 'blob'
   })
@@ -70,7 +70,7 @@ export const downloadCourseResource = (relativePath) => {
 // 通过课程获取所有未删除的教学资源
 export const getCourseResourcesByCourseId = (courseId) => {
   return request({
-    url: `/api/courseResource/courseResources/${courseId}`,
+    url: `/courseResource/courseResources/${courseId}`,
     method: 'get'
   })
 }

@@ -3,7 +3,7 @@ import request from '../utils/request'
 // 全站课程数量统计
 export const getOverallCourseCount = () => {
   return request({
-    url: '/api/courseStatistic/overallCourseCount',
+    url: '/courseStatistic/overallCourseCount',
     method: 'get'
   })
 }
@@ -11,7 +11,7 @@ export const getOverallCourseCount = () => {
 // 个人课程数量统计
 export const getPersonalCourseCount = () => {
   return request({
-    url: '/api/courseStatistic/personalCourseCount',
+    url: '/courseStatistic/personalCourseCount',
     method: 'get'
   })
 }
@@ -19,7 +19,7 @@ export const getPersonalCourseCount = () => {
 // 全站选课人数统计
 export const getOverallSelectCount = () => {
   return request({
-    url: '/api/courseStatistic/overallSelectCount',
+    url: '/courseStatistic/overallSelectCount',
     method: 'get'
   })
 }
@@ -27,7 +27,7 @@ export const getOverallSelectCount = () => {
 // 个人选课人数统计
 export const getPersonalSelectCount = () => {
   return request({
-    url: '/api/courseStatistic/personalSelectCount',
+    url: '/courseStatistic/personalSelectCount',
     method: 'get'
   })
 }
@@ -35,7 +35,7 @@ export const getPersonalSelectCount = () => {
 // 全站课程完成率平均统计
 export const getOverallCourseCompletionRateAverage = () => {
   return request({
-    url: '/api/courseStatistic/overallCourseCompletionRateAverage',
+    url: '/courseStatistic/overallCourseCompletionRateAverage',
     method: 'get'
   })
 }
@@ -43,7 +43,7 @@ export const getOverallCourseCompletionRateAverage = () => {
 // 个人课程完成率平均统计
 export const getPersonalCourseCompletionRateAverage = () => {
   return request({
-    url: '/api/courseStatistic/personalCourseCompletionRateAverage',
+    url: '/courseStatistic/personalCourseCompletionRateAverage',
     method: 'get'
   })
 }
@@ -51,7 +51,7 @@ export const getPersonalCourseCompletionRateAverage = () => {
 // 全站课程完成率排行统计
 export const getOverallCourseCompletionRateRank = () => {
   return request({
-    url: '/api/courseStatistic/overallCourseCompletionRateRank',
+    url: '/courseStatistic/overallCourseCompletionRateRank',
     method: 'get'
   })
 }
@@ -59,7 +59,7 @@ export const getOverallCourseCompletionRateRank = () => {
 // 个人课程完成率排行统计
 export const getPersonalCourseCompletionRateRank = () => {
   return request({
-    url: '/api/courseStatistic/personalCourseCompletionRateRank',
+    url: '/courseStatistic/personalCourseCompletionRateRank',
     method: 'get'
   })
 }
@@ -67,7 +67,7 @@ export const getPersonalCourseCompletionRateRank = () => {
 // 全站课程完成率分段统计
 export const getOverallCourseCompletionRateSectional = () => {
   return request({
-    url: '/api/courseStatistic/overallCourseCompletionRateSectional',
+    url: '/courseStatistic/overallCourseCompletionRateSectional',
     method: 'get'
   })
 }
@@ -75,7 +75,7 @@ export const getOverallCourseCompletionRateSectional = () => {
 // 个人课程完成率分段统计
 export const getPersonalCourseCompletionRateSectional = () => {
   return request({
-    url: '/api/courseStatistic/personalCourseCompletionRateSectional',
+    url: '/courseStatistic/personalCourseCompletionRateSectional',
     method: 'get'
   })
 }
