@@ -153,13 +153,15 @@ const goToRegister = () => {
 }
 
 .logo {
-  text-align: center;
+  display: flex;
+  justify-content: center;  /* 水平居中 */
+  align-items: center;      /* 垂直居中 */
   margin-bottom: 10px;
 }
 
 .logo img {
-  max-width: 500px;
-  max-height: 500px;
+  max-width: 600px;
+  max-height: 600px;
   width: auto;
   height: auto;
   margin-bottom: 10px;
