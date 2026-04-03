@@ -2,7 +2,8 @@
 import { ref, computed } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useUserStore } from '../../stores/user'
-import { HomeFilled, Document, Picture, View, User, DataAnalysis } from '@element-plus/icons-vue'
+import { ElMessage } from 'element-plus'
+import { HomeFilled, Document, Picture, View, User, DataAnalysis, Search } from '@element-plus/icons-vue'
 import Dashboard from './Dashboard.vue'
 import SelectCourse from './SelectCourse.vue'
 import MyCourse from './MyCourse.vue'
@@ -19,6 +20,14 @@ const userStore = useUserStore()
 
 const activeMenu = ref('dashboard')
 const showUserManagement = ref(false)
+const searchQuery = ref('')
+
+const handleSearch = () => {
+  if (searchQuery.value.trim()) {
+    // 这里可以添加搜索逻辑，例如跳转到搜索结果页面
+    ElMessage.success(`搜索: ${searchQuery.value}`)
+  }
+}
 
 const currentComponent = computed(() => {
   const name = route.name
@@ -71,6 +80,18 @@ const handleLogout = () => {
         <div class="logo">
           <img src="../../assets/logo.png" alt="理程学院" />
         </div>
+      </div>
+      <div class="search-container">
+        <el-input
+          v-model="searchQuery"
+          placeholder="搜索课程、资源或作业"
+          style="width: 400px;"
+          @keyup.enter="handleSearch"
+        >
+          <template #append>
+            <el-button @click="handleSearch"><el-icon><Search /></el-icon></el-button>
+          </template>
+        </el-input>
       </div>
       <div class="user-info">
         <el-button type="primary" @click="handleUser">用户管理</el-button>
@@ -144,6 +165,37 @@ const handleLogout = () => {
   display: flex;
   align-items: center;
   gap: 15px;
+}
+
+.search-container {
+  flex: 1;
+  max-width: 500px;
+  margin: 0 30px;
+}
+
+.search-container .el-input {
+  border-radius: 20px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  background-color: #f0f2f5;
+  border-color: #d9d9d9;
+}
+
+.search-container .el-input__inner {
+  color: #333;
+  font-size: 16px;
+}
+
+.search-container .el-input__append .el-button {
+  border-radius: 0 20px 20px 0;
+  border-left: none;
+  background-color: #1890ff;
+  border-color: #1890ff;
+  color: white;
+}
+
+.search-container .el-input__append .el-button:hover {
+  background-color: #40a9ff;
+  border-color: #40a9ff;
 }
 
 .logo {
