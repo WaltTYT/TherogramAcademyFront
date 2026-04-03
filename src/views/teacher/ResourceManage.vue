@@ -143,7 +143,7 @@ onMounted(() => {
           {{ scope.row.resourceType === 'VIDEO' ? '视频' : scope.row.resourceType === 'MATERIAL' ? '课件' : '参考资料' }}
         </template>
       </el-table-column>
-      <el-table-column prop="viewCount" label="查看次数" width="120" />
+      <el-table-column prop="viewCount" label="查看次数" width="140" />
       <el-table-column prop="createTime" label="创建时间" width="180" />
       <el-table-column label="操作" width="200">
         <template #default="scope">
