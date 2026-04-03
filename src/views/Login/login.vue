@@ -10,5 +10,14 @@ onMounted(() => {
 </script>
 
 <template>
-  <div></div>
+  <div class="login-container"></div>
 </template>
+
+<style scoped>
+.login-container {
+  width: 100%;
+  height: 100vh;
+  background: url('../../assets/LoginBackground.png') no-repeat center center fixed;
+  background-size: cover;
+}
+</style>

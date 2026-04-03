@@ -137,25 +137,29 @@ const goToRegister = () => {
   display: flex;
   justify-content: center;
   align-items: center;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: url('../../assets/LoginBackground.png') no-repeat center center fixed;
+  background-size: cover;
 }
 
 .login-box {
-  width: 400px;
-  padding: 40px;
+  width: 700px;
+  padding: 40px 100px;
   background: white;
   border-radius: 10px;
-  box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
+
+  max-height: 90vh;
+  overflow-y: auto;
 }
 
 .logo {
   text-align: center;
-  margin-bottom: 30px;
+  margin-bottom: 10px;
 }
 
 .logo img {
-  max-width: 240px;
-  max-height: 240px;
+  max-width: 500px;
+  max-height: 500px;
   width: auto;
   height: auto;
   margin-bottom: 10px;
@@ -189,6 +193,7 @@ const goToRegister = () => {
   cursor: pointer;
   text-decoration: underline;
 }
+
 
 .register-link .link:hover {
   color: #764ba2;
