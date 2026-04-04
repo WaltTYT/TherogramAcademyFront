@@ -5,8 +5,8 @@ import { useUserStore } from '../stores/user'
 
 // 创建 axios 实例
 const request = axios.create({
-  baseURL: 'http://127.0.0.1:4523/m1/7876723-7626519-default', // Mock 服务地址
-  // baseURL: 'http://localhost:8085/api', // 真实后端地址
+  // baseURL: 'http://127.0.0.1:4523/m1/7876723-7626519-default', // Mock 服务地址
+  baseURL: 'http://localhost:8085/api', // 真实后端地址
   timeout: 10000
 })
 
