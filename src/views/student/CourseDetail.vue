@@ -36,7 +36,7 @@ const loadCourseDetail = async () => {
 const loadResources = async () => {
   try {
     const response = await getCourseResourcePage({ courseId: courseId, page: 1, size: 100 })
-    resources.value = response.data.records
+    resources.value = response.data.data.records
   } catch (error) {
     ElMessage.error('获取教学资源失败：' + (error.message || '未知错误'))
   }
@@ -45,7 +45,7 @@ const loadResources = async () => {
 const loadHomeworks = async () => {
   try {
     const response = await getHomeworkPage({ courseId: courseId, page: 1, size: 100 })
-    homeworks.value = response.data.records
+    homeworks.value = response.data.data.records
   } catch (error) {
     ElMessage.error('获取作业失败：' + (error.message || '未知错误'))
   }

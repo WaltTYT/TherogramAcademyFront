@@ -31,7 +31,7 @@ const resourceTypeOptions = [
 const loadCourses = async () => {
   try {
     const response = await getCreateCoursePage({ page: 1, size: 100 })
-    courses.value = response.data.records
+    courses.value = response.data.data.records
   } catch (error) {
     ElMessage.error('获取课程列表失败：' + (error.message || '未知错误'))
   }
@@ -47,8 +47,8 @@ const loadResources = async () => {
       resourceName: searchForm.value.resourceName,
       resourceType: searchForm.value.resourceType
     })
-    resources.value = response.data.records
-    total.value = response.data.total
+    resources.value = response.data.data.records
+    total.value = response.data.data.total
   } catch (error) {
     ElMessage.error('获取教学资源失败：' + (error.message || '未知错误'))
   } finally {
