@@ -22,7 +22,7 @@
 
 /* 全局字体大小调整 */
 :root {
-  --base-font-size: 18px;
+  --base-font-size: 25px;
 }
 
 /* 全局 body 样式 */
