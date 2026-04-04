@@ -2,7 +2,7 @@
 import { ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ElMessage, ElLoading } from 'element-plus'
-import { getSelectCourseDetail, updateCourseProgress } from '../../api/course'
+import { getCourseDetail, updateCourseProgress } from '../../api/course'
 import { getCourseResourcePage, downloadCourseResource } from '../../api/courseResource'
 import { getHomeworkPage } from '../../api/homework'
 import { Download } from '@element-plus/icons-vue'
@@ -25,7 +25,7 @@ onMounted(async () => {
 const loadCourseDetail = async () => {
   loading.value = true
   try {
-    const response = await getSelectCourseDetail(courseId)
+    const response = await getCourseDetail(courseId)
     course.value = response.data.data
   } catch (error) {
     ElMessage.error('获取课程详情失败：' + (error.message || '未知错误'))
