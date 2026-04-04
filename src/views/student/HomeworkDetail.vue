@@ -4,9 +4,11 @@ import { useRoute, useRouter } from 'vue-router'
 import { ElMessage, ElLoading } from 'element-plus'
 import { getStudentHomeworkDetail, downloadHomework } from '../../api/homework'
 import { Download } from '@element-plus/icons-vue'
+import { useUserStore } from '../../stores/user'
 
 const route = useRoute()
 const router = useRouter()
+const userStore = useUserStore()
 const homeworkId = route.params.id
 
 const homework = ref(null)
@@ -19,8 +21,9 @@ onMounted(async () => {
 const loadHomeworkDetail = async () => {
   loading.value = true
   try {
-    const response = await getStudentHomeworkDetail(null, homeworkId)
-    homework.value = response.data
+    const studentId = userStore.userInfo?.id || ''
+    const response = await getStudentHomeworkDetail(studentId, homeworkId)
+    homework.value = response.data.data
   } catch (error) {
     ElMessage.error('获取作业详情失败：' + (error.message || '未知错误'))
   } finally {
@@ -29,7 +32,7 @@ const loadHomeworkDetail = async () => {
 }
 
 const handleSubmit = () => {
-  router.push(`/student/submit-homework/${homeworkId}`)
+  router.push(`/student/homework/${homeworkId}/submit`)
 }
 
 const handleBack = () => {
