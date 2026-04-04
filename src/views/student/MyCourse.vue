@@ -332,7 +332,7 @@ onMounted(() => {
       </el-table-column>
       <el-table-column prop="progress" label="学习进度" width="150">
         <template #default="scope">
-          <el-progress :percentage="typeof scope.row.progress === 'string' ? parseFloat(scope.row.progress.replace('%', '')) : scope.row.progress" :stroke-width="10" />
+          <el-progress :percentage="Math.min(100, Math.max(0, (typeof scope.row.progress === 'string' ? parseFloat(scope.row.progress.replace('%', '')) : scope.row.progress) || 0))" :stroke-width="10" />
         </template>
       </el-table-column>
       <el-table-column prop="studyTime" label="学习时长(分钟)" width="120" />
