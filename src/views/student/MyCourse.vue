@@ -65,8 +65,8 @@ const loadCourses = async () => {
       courseSubject: searchForm.value.courseSubject,
       courseType: searchForm.value.courseType
     })
-    courses.value = response.data.records
-    total.value = response.data.total
+    courses.value = response.data.data.records
+    total.value = response.data.data.total
   } catch (error) {
     ElMessage.error('获取课程列表失败：' + (error.message || '未知错误'))
   } finally {

@@ -41,8 +41,8 @@ const loadHomeworks = async () => {
       homeworkType: searchForm.value.homeworkType,
       status: searchForm.value.status
     })
-    homeworks.value = response.data.records
-    total.value = response.data.total
+    homeworks.value = response.data.data.records
+    total.value = response.data.data.total
   } catch (error) {
     ElMessage.error('获取作业列表失败：' + (error.message || '未知错误'))
   } finally {

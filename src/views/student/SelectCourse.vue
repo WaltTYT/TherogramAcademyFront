@@ -32,7 +32,7 @@ const handleCourseDetail = (courseId) => {
 const getCourses = async () => {
   try {
     loading.value = true
-    const response = await courseApi.getCourses({
+    const response = await courseApi.getCoursePage({
       page: page.value,
       pageSize: pageSize.value,
       keyword: searchKeyword.value,

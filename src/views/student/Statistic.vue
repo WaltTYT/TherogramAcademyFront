@@ -22,9 +22,9 @@ const loadStudyStats = async () => {
     const completionRateResponse = await getPersonalCourseCompletionRateAverage()
     
     studyStats.value = {
-      studyTime: studyTimeResponse.data,
-      averageScore: scoreAverageResponse.data,
-      completionRate: completionRateResponse.data
+      studyTime: studyTimeResponse.data.data,
+      averageScore: scoreAverageResponse.data.data,
+      completionRate: completionRateResponse.data.data
     }
   } catch (error) {
     ElMessage.error('获取学习统计数据失败：' + (error.message || '未知错误'))
