@@ -153,9 +153,11 @@ onMounted(async () => {
 }
 
 .dashboard-container {
+  width: 100%;
+  height: 100%;
   padding: 30px;
-  max-width: 1200px;
-  margin: 0 auto;
+  background: #f5f7fa;
+  overflow-y: auto;
 }
 
 .welcome-section {
