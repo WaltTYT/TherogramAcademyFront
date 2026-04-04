@@ -1,7 +1,7 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { ElMessage } from 'element-plus'
-import { Document, User, View, UserFilled } from '@element-plus/icons-vue'
+import { Document, User, View } from '@element-plus/icons-vue'
 import { 
   getPersonalCourseCount, 
   getPersonalSelectCount, 
@@ -167,10 +167,10 @@ onMounted(async () => {
     <!-- 标签页切换 -->
     <el-tabs v-model="activeTab" @tab-click="(tab) => handleTabChange(tab.props.name)" class="stat-tabs">
       <el-tab-pane label="个人统计" name="personal">
-        <el-icon><User /></el-icon>
+        
       </el-tab-pane>
       <el-tab-pane label="全站统计" name="overall">
-        <el-icon><UserFilled /></el-icon>
+        
       </el-tab-pane>
     </el-tabs>
     
