@@ -1,7 +1,7 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { ElMessage, ElLoading } from 'element-plus'
+import { ElMessage, ElLoading, ElInputNumber, ElDatePicker, ElSwitch, ElSelect, ElOption } from 'element-plus'
 import { getStudentHomeworkPage, remindHomework } from '../../api/homework'
 
 const router = useRouter()
@@ -16,8 +16,20 @@ const total = ref(0)
 const searchForm = ref({
   homeworkName: '',
   homeworkType: '',
-  status: ''
+  status: '',
+  startScore: null,
+  endScore: null,
+  startDeadline: '',
+  endDeadline: '',
+  startCreateTime: '',
+  endCreateTime: '',
+  startSubmitTime: '',
+  endSubmitTime: '',
+  sortType: 0,
+  ascending: true
 })
+
+const showAdvancedSearch = ref(false)
 
 const homeworkTypeOptions = [
   { value: 'HOMEWORK', label: '作业' },
@@ -31,6 +43,13 @@ const statusOptions = [
   { value: 'REJECTED', label: '评定未通过' }
 ]
 
+const sortTypeOptions = [
+  { value: 0, label: '按截至时间' },
+  { value: 1, label: '按创建时间' },
+  { value: 2, label: '按分数' },
+  { value: 3, label: '按提交时间' }
+]
+
 const loadHomeworks = async () => {
   loading.value = true
   try {
@@ -39,7 +58,17 @@ const loadHomeworks = async () => {
       size: pageSize.value,
       homeworkName: searchForm.value.homeworkName,
       homeworkType: searchForm.value.homeworkType,
-      status: searchForm.value.status
+      status: searchForm.value.status,
+      startScore: searchForm.value.startScore,
+      endScore: searchForm.value.endScore,
+      startDeadline: searchForm.value.startDeadline,
+      endDeadline: searchForm.value.endDeadline,
+      startCreateTime: searchForm.value.startCreateTime,
+      endCreateTime: searchForm.value.endCreateTime,
+      startSubmitTime: searchForm.value.startSubmitTime,
+      endSubmitTime: searchForm.value.endSubmitTime,
+      sortType: searchForm.value.sortType,
+      ascending: searchForm.value.ascending
     })
     homeworks.value = response.data.data.records
     total.value = response.data.data.total
@@ -68,10 +97,41 @@ const handleReset = () => {
   searchForm.value = {
     homeworkName: '',
     homeworkType: '',
-    status: ''
+    status: '',
+    startScore: null,
+    endScore: null,
+    startDeadline: '',
+    endDeadline: '',
+    startCreateTime: '',
+    endCreateTime: '',
+    startSubmitTime: '',
+    endSubmitTime: '',
+    sortType: 0,
+    ascending: true
   }
   currentPage.value = 1
   loadHomeworks()
+}
+
+const toggleAdvancedSearch = () => {
+  showAdvancedSearch.value = !showAdvancedSearch.value
+  if (!showAdvancedSearch.value) {
+    searchForm.value = {
+      homeworkName: '',
+      homeworkType: '',
+      status: '',
+      startScore: null,
+      endScore: null,
+      startDeadline: '',
+      endDeadline: '',
+      startCreateTime: '',
+      endCreateTime: '',
+      startSubmitTime: '',
+      endSubmitTime: '',
+      sortType: 0,
+      ascending: true
+    }
+  }
 }
 
 const handlePageChange = (page) => {
@@ -112,24 +172,152 @@ onMounted(() => {
     
     <div class="search-form">
       <el-form :model="searchForm" inline>
+        <!-- 基础搜索条件 -->
         <el-row :gutter="20">
           <el-col :span="8">
             <el-form-item label="作业名称" style="width: 100%;">
-              <el-input v-model="searchForm.homeworkName" placeholder="请输入作业名称" clearable />
+              <el-input
+                v-model="searchForm.homeworkName"
+                placeholder="请输入作业名称"
+                clearable
+                @keyup.enter="handleSearch"
+              />
             </el-form-item>
           </el-col>
           <el-col :span="8">
             <el-form-item label="作业类型" style="width: 100%;">
-              <el-select v-model="searchForm.homeworkType" placeholder="请选择作业类型" clearable style="width: 100%;">
-                <el-option v-for="option in homeworkTypeOptions" :key="option.value" :label="option.label" :value="option.value" />
+              <el-select
+                v-model="searchForm.homeworkType"
+                placeholder="请选择作业类型"
+                clearable
+                style="width: 100%;"
+              >
+                <el-option
+                  v-for="option in homeworkTypeOptions"
+                  :key="option.value"
+                  :label="option.label"
+                  :value="option.value"
+                />
               </el-select>
             </el-form-item>
           </el-col>
           <el-col :span="8">
             <el-form-item label="提交状态" style="width: 100%;">
-              <el-select v-model="searchForm.status" placeholder="请选择提交状态" clearable style="width: 100%;">
-                <el-option v-for="option in statusOptions" :key="option.value" :label="option.label" :value="option.value" />
+              <el-select
+                v-model="searchForm.status"
+                placeholder="请选择提交状态"
+                clearable
+                style="width: 100%;"
+              >
+                <el-option
+                  v-for="option in statusOptions"
+                  :key="option.value"
+                  :label="option.label"
+                  :value="option.value"
+                />
               </el-select>
+            </el-form-item>
+          </el-col>
+        </el-row>
+        
+        <!-- 高级搜索条件 -->
+        <el-row :gutter="20" v-if="showAdvancedSearch">
+          <el-col :span="8">
+            <el-form-item label="分数范围" style="width: 100%;">
+              <el-input-number
+                v-model="searchForm.startScore"
+                placeholder="起始"
+                :min="0"
+                style="width: 48%;"
+              />
+              <span style="margin: 0 4%;">-</span>
+              <el-input-number
+                v-model="searchForm.endScore"
+                placeholder="结束"
+                :min="0"
+                style="width: 48%;"
+              />
+            </el-form-item>
+          </el-col>
+          <el-col :span="8">
+            <el-form-item label="截止时间" style="width: 100%;">
+              <el-date-picker
+                v-model="searchForm.startDeadline"
+                type="datetime"
+                placeholder="起始时间"
+                value-format="YYYY-MM-DDTHH:mm:ss"
+                style="width: 48%;"
+              />
+              <span style="margin: 0 4%;">-</span>
+              <el-date-picker
+                v-model="searchForm.endDeadline"
+                type="datetime"
+                placeholder="结束时间"
+                value-format="YYYY-MM-DDTHH:mm:ss"
+                style="width: 48%;"
+              />
+            </el-form-item>
+          </el-col>
+          <el-col :span="8">
+            <el-form-item label="创建时间" style="width: 100%;">
+              <el-date-picker
+                v-model="searchForm.startCreateTime"
+                type="datetime"
+                placeholder="起始时间"
+                value-format="YYYY-MM-DDTHH:mm:ss"
+                style="width: 48%;"
+              />
+              <span style="margin: 0 4%;">-</span>
+              <el-date-picker
+                v-model="searchForm.endCreateTime"
+                type="datetime"
+                placeholder="结束时间"
+                value-format="YYYY-MM-DDTHH:mm:ss"
+                style="width: 48%;"
+              />
+            </el-form-item>
+          </el-col>
+        </el-row>
+        
+        <el-row :gutter="20" v-if="showAdvancedSearch">
+          <el-col :span="8">
+            <el-form-item label="提交时间" style="width: 100%;">
+              <el-date-picker
+                v-model="searchForm.startSubmitTime"
+                type="datetime"
+                placeholder="起始时间"
+                value-format="YYYY-MM-DDTHH:mm:ss"
+                style="width: 48%;"
+              />
+              <span style="margin: 0 4%;">-</span>
+              <el-date-picker
+                v-model="searchForm.endSubmitTime"
+                type="datetime"
+                placeholder="结束时间"
+                value-format="YYYY-MM-DDTHH:mm:ss"
+                style="width: 48%;"
+              />
+            </el-form-item>
+          </el-col>
+          <el-col :span="8">
+            <el-form-item label="排序方式" style="width: 100%;">
+              <el-select
+                v-model="searchForm.sortType"
+                style="width: 60%;"
+              >
+                <el-option
+                  v-for="option in sortTypeOptions"
+                  :key="option.value"
+                  :label="option.label"
+                  :value="option.value"
+                />
+              </el-select>
+              <el-switch
+                v-model="searchForm.ascending"
+                active-text="升序"
+                inactive-text="降序"
+                style="margin-left: 10px;"
+              />
             </el-form-item>
           </el-col>
         </el-row>
@@ -139,6 +327,9 @@ onMounted(() => {
           <el-col :span="24" style="display: flex; justify-content: flex-end;">
             <el-button type="primary" @click="handleSearch">搜索</el-button>
             <el-button @click="handleReset" style="margin-left: 10px;">重置</el-button>
+            <el-button type="info" @click="toggleAdvancedSearch" style="margin-left: 10px;">
+              {{ showAdvancedSearch ? '收起高级搜索' : '高级搜索' }}
+            </el-button>
           </el-col>
         </el-row>
       </el-form>

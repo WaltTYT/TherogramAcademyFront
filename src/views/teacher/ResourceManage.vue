@@ -1,7 +1,7 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { ElMessage, ElLoading, ElDialog } from 'element-plus'
+import { ElMessage, ElLoading, ElDialog, ElInputNumber, ElDatePicker, ElSwitch, ElSelect, ElOption } from 'element-plus'
 import { getCourseResourcePage, deleteCourseResource } from '../../api/courseResource'
 import { getCreateCoursePage } from '../../api/course'
 import ResourceCreate from './ResourceCreate.vue'
@@ -19,13 +19,27 @@ const createDialogVisible = ref(false)
 const searchForm = ref({
   courseId: '',
   resourceName: '',
-  resourceType: ''
+  resourceType: '',
+  startViewCount: null,
+  endViewCount: null,
+  startCreateTime: '',
+  endCreateTime: '',
+  sortType: 0,
+  ascending: true
 })
+
+const showAdvancedSearch = ref(false)
 
 const resourceTypeOptions = [
   { value: 'VIDEO', label: '视频' },
   { value: 'MATERIAL', label: '课件' },
   { value: 'REFERENCE', label: '参考资料' }
+]
+
+const sortTypeOptions = [
+  { value: 0, label: '按排序id' },
+  { value: 1, label: '按查看次数' },
+  { value: 2, label: '按创建时间' }
 ]
 
 const loadCourses = async () => {
@@ -45,7 +59,13 @@ const loadResources = async () => {
       size: pageSize.value,
       courseId: searchForm.value.courseId,
       resourceName: searchForm.value.resourceName,
-      resourceType: searchForm.value.resourceType
+      resourceType: searchForm.value.resourceType,
+      startViewCount: searchForm.value.startViewCount,
+      endViewCount: searchForm.value.endViewCount,
+      startCreateTime: searchForm.value.startCreateTime,
+      endCreateTime: searchForm.value.endCreateTime,
+      sortType: searchForm.value.sortType,
+      ascending: searchForm.value.ascending
     })
     resources.value = response.data.data.records
     total.value = response.data.data.total
@@ -59,6 +79,39 @@ const loadResources = async () => {
 const handleSearch = () => {
   currentPage.value = 1
   loadResources()
+}
+
+const handleReset = () => {
+  searchForm.value = {
+    courseId: '',
+    resourceName: '',
+    resourceType: '',
+    startViewCount: null,
+    endViewCount: null,
+    startCreateTime: '',
+    endCreateTime: '',
+    sortType: 0,
+    ascending: true
+  }
+  currentPage.value = 1
+  loadResources()
+}
+
+const toggleAdvancedSearch = () => {
+  showAdvancedSearch.value = !showAdvancedSearch.value
+  if (!showAdvancedSearch.value) {
+    searchForm.value = {
+      courseId: '',
+      resourceName: '',
+      resourceType: '',
+      startViewCount: null,
+      endViewCount: null,
+      startCreateTime: '',
+      endCreateTime: '',
+      sortType: 0,
+      ascending: true
+    }
+  }
 }
 
 const handlePageChange = (page) => {
@@ -108,23 +161,125 @@ onMounted(() => {
     </div>
     
     <div class="search-form">
-      <el-form :model="searchForm" inline :align="'center'">
-        <el-form-item label="课程">
-          <el-select v-model="searchForm.courseId" placeholder="请选择课程" style="width: 200px;">
-            <el-option v-for="course in courses" :key="course.id" :label="course.courseName" :value="course.id" />
-          </el-select>
-        </el-form-item>
-        <el-form-item label="资源名称">
-          <el-input v-model="searchForm.resourceName" placeholder="请输入资源名称" style="width: 200px;" />
-        </el-form-item>
-        <el-form-item label="资源类型">
-          <el-select v-model="searchForm.resourceType" placeholder="请选择资源类型" style="width: 150px;">
-            <el-option v-for="option in resourceTypeOptions" :key="option.value" :label="option.label" :value="option.value" />
-          </el-select>
-        </el-form-item>
-        <el-form-item>
-          <el-button type="primary" @click="handleSearch" style="margin-right: 8px;">搜索</el-button>
-        </el-form-item>
+      <el-form :model="searchForm" inline>
+        <!-- 基础搜索条件 -->
+        <el-row :gutter="20">
+          <el-col :span="8">
+            <el-form-item label="课程" style="width: 100%;">
+              <el-select
+                v-model="searchForm.courseId"
+                placeholder="请选择课程"
+                style="width: 100%;"
+              >
+                <el-option
+                  v-for="course in courses"
+                  :key="course.id"
+                  :label="course.courseName"
+                  :value="course.id"
+                />
+              </el-select>
+            </el-form-item>
+          </el-col>
+          <el-col :span="8">
+            <el-form-item label="资源名称" style="width: 100%;">
+              <el-input
+                v-model="searchForm.resourceName"
+                placeholder="请输入资源名称"
+                clearable
+                @keyup.enter="handleSearch"
+              />
+            </el-form-item>
+          </el-col>
+          <el-col :span="8">
+            <el-form-item label="资源类型" style="width: 100%;">
+              <el-select
+                v-model="searchForm.resourceType"
+                placeholder="请选择资源类型"
+                clearable
+                style="width: 100%;"
+              >
+                <el-option
+                  v-for="option in resourceTypeOptions"
+                  :key="option.value"
+                  :label="option.label"
+                  :value="option.value"
+                />
+              </el-select>
+            </el-form-item>
+          </el-col>
+        </el-row>
+        
+        <!-- 高级搜索条件 -->
+        <el-row :gutter="20" v-if="showAdvancedSearch">
+          <el-col :span="8">
+            <el-form-item label="查看次数" style="width: 100%;">
+              <el-input-number
+                v-model="searchForm.startViewCount"
+                placeholder="起始"
+                :min="0"
+                style="width: 48%;"
+              />
+              <span style="margin: 0 4%;">-</span>
+              <el-input-number
+                v-model="searchForm.endViewCount"
+                placeholder="结束"
+                :min="0"
+                style="width: 48%;"
+              />
+            </el-form-item>
+          </el-col>
+          <el-col :span="8">
+            <el-form-item label="创建时间" style="width: 100%;">
+              <el-date-picker
+                v-model="searchForm.startCreateTime"
+                type="datetime"
+                placeholder="起始时间"
+                value-format="YYYY-MM-DDTHH:mm:ss"
+                style="width: 48%;"
+              />
+              <span style="margin: 0 4%;">-</span>
+              <el-date-picker
+                v-model="searchForm.endCreateTime"
+                type="datetime"
+                placeholder="结束时间"
+                value-format="YYYY-MM-DDTHH:mm:ss"
+                style="width: 48%;"
+              />
+            </el-form-item>
+          </el-col>
+          <el-col :span="8">
+            <el-form-item label="排序方式" style="width: 100%;">
+              <el-select
+                v-model="searchForm.sortType"
+                style="width: 60%;"
+              >
+                <el-option
+                  v-for="option in sortTypeOptions"
+                  :key="option.value"
+                  :label="option.label"
+                  :value="option.value"
+                />
+              </el-select>
+              <el-switch
+                v-model="searchForm.ascending"
+                active-text="升序"
+                inactive-text="降序"
+                style="margin-left: 10px;"
+              />
+            </el-form-item>
+          </el-col>
+        </el-row>
+        
+        <!-- 按钮行（所有搜索条件的下一行） -->
+        <el-row :gutter="20" style="margin-top: 15px;">
+          <el-col :span="24" style="display: flex; justify-content: flex-end;">
+            <el-button type="primary" @click="handleSearch">搜索</el-button>
+            <el-button @click="handleReset" style="margin-left: 10px;">重置</el-button>
+            <el-button type="info" @click="toggleAdvancedSearch" style="margin-left: 10px;">
+              {{ showAdvancedSearch ? '收起高级搜索' : '高级搜索' }}
+            </el-button>
+          </el-col>
+        </el-row>
       </el-form>
     </div>
     
