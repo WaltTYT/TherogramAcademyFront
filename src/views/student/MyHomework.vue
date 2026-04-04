@@ -64,6 +64,16 @@ const handleSearch = () => {
   loadHomeworks()
 }
 
+const handleReset = () => {
+  searchForm.value = {
+    homeworkName: '',
+    homeworkType: '',
+    status: ''
+  }
+  currentPage.value = 1
+  loadHomeworks()
+}
+
 const handlePageChange = (page) => {
   currentPage.value = page
   loadHomeworks()
@@ -102,22 +112,35 @@ onMounted(() => {
     
     <div class="search-form">
       <el-form :model="searchForm" inline>
-        <el-form-item label="作业名称">
-          <el-input v-model="searchForm.homeworkName" placeholder="请输入作业名称" style="width: 200px;" />
-        </el-form-item>
-        <el-form-item label="作业类型">
-          <el-select v-model="searchForm.homeworkType" placeholder="请选择作业类型" style="width: 120px;">
-            <el-option v-for="option in homeworkTypeOptions" :key="option.value" :label="option.label" :value="option.value" />
-          </el-select>
-        </el-form-item>
-        <el-form-item label="提交状态">
-          <el-select v-model="searchForm.status" placeholder="请选择提交状态" style="width: 120px;">
-            <el-option v-for="option in statusOptions" :key="option.value" :label="option.label" :value="option.value" />
-          </el-select>
-        </el-form-item>
-        <el-form-item>
-          <el-button type="primary" @click="handleSearch" style="margin-right: 8px;">搜索</el-button>
-        </el-form-item>
+        <el-row :gutter="20">
+          <el-col :span="8">
+            <el-form-item label="作业名称" style="width: 100%;">
+              <el-input v-model="searchForm.homeworkName" placeholder="请输入作业名称" clearable />
+            </el-form-item>
+          </el-col>
+          <el-col :span="8">
+            <el-form-item label="作业类型" style="width: 100%;">
+              <el-select v-model="searchForm.homeworkType" placeholder="请选择作业类型" clearable style="width: 100%;">
+                <el-option v-for="option in homeworkTypeOptions" :key="option.value" :label="option.label" :value="option.value" />
+              </el-select>
+            </el-form-item>
+          </el-col>
+          <el-col :span="8">
+            <el-form-item label="提交状态" style="width: 100%;">
+              <el-select v-model="searchForm.status" placeholder="请选择提交状态" clearable style="width: 100%;">
+                <el-option v-for="option in statusOptions" :key="option.value" :label="option.label" :value="option.value" />
+              </el-select>
+            </el-form-item>
+          </el-col>
+        </el-row>
+        
+        <!-- 按钮行（所有搜索条件的下一行） -->
+        <el-row :gutter="20" style="margin-top: 15px;">
+          <el-col :span="24" style="display: flex; justify-content: flex-end;">
+            <el-button type="primary" @click="handleSearch">搜索</el-button>
+            <el-button @click="handleReset" style="margin-left: 10px;">重置</el-button>
+          </el-col>
+        </el-row>
       </el-form>
     </div>
     
