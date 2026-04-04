@@ -1,11 +1,42 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { ElMessage } from 'element-plus'
-import { Timer, DataAnalysis, Check } from '@element-plus/icons-vue'
-import { getPersonalCourseCompletionRateAverage, getPersonalCourseCompletionRateRank, getPersonalCourseCompletionRateSectional } from '../../api/courseStatistic'
-import { personalStudyTime, personalScoreAverage, personalScoreRank, personalScoreSectional } from '../../api/instructionStatistic'
+import { Timer, DataAnalysis, Check, User, UserFilled } from '@element-plus/icons-vue'
+import { 
+  getOverallCourseCount, 
+  getOverallSelectCount, 
+  getOverallCourseCompletionRateAverage, 
+  getOverallCourseCompletionRateRank, 
+  getPersonalCourseCompletionRateAverage, 
+  getPersonalCourseCompletionRateRank 
+} from '../../api/courseStatistic'
+import { 
+  teacherUserCount, 
+  studentUserCount, 
+  overallStudyTime, 
+  overallScoreAverage, 
+  overallScoreRank, 
+  personalStudyTime, 
+  personalScoreAverage, 
+  personalScoreRank 
+} from '../../api/instructionStatistic'
 
+// 统计类型：personal 或 overall
+const activeTab = ref('personal')
+
+// 统计数据
 const studyStats = ref({
+  studyTime: 0,
+  averageScore: 0,
+  completionRate: 0
+})
+
+// 全站统计数据
+const overallStats = ref({
+  teacherCount: 0,
+  studentCount: 0,
+  courseCount: 0,
+  selectCount: 0,
   studyTime: 0,
   averageScore: 0,
   completionRate: 0
@@ -17,21 +48,50 @@ const scoreRank = ref([])
 
 const loading = ref(false)
 
-const loadStudyStats = async () => {
+// 切换统计类型
+const handleTabChange = async (tab) => {
+  activeTab.value = tab
+  await loadStats()
+  await loadRankData()
+}
+
+// 加载统计数据
+const loadStats = async () => {
   loading.value = true
   try {
-    // 加载学习统计数据
-    const studyTimeResponse = await personalStudyTime()
-    const scoreAverageResponse = await personalScoreAverage()
-    const completionRateResponse = await getPersonalCourseCompletionRateAverage()
-    
-    studyStats.value = {
-      studyTime: studyTimeResponse.data.data,
-      averageScore: scoreAverageResponse.data.data,
-      completionRate: completionRateResponse.data.data
+    if (activeTab.value === 'personal') {
+      // 加载个人统计数据
+      const studyTimeResponse = await personalStudyTime()
+      const scoreAverageResponse = await personalScoreAverage()
+      const completionRateResponse = await getPersonalCourseCompletionRateAverage()
+      
+      studyStats.value = {
+        studyTime: studyTimeResponse.data.data,
+        averageScore: scoreAverageResponse.data.data,
+        completionRate: completionRateResponse.data.data
+      }
+    } else {
+      // 加载全站统计数据
+      const teacherCountResponse = await teacherUserCount()
+      const studentCountResponse = await studentUserCount()
+      const courseCountResponse = await getOverallCourseCount()
+      const selectCountResponse = await getOverallSelectCount()
+      const studyTimeResponse = await overallStudyTime()
+      const scoreAverageResponse = await overallScoreAverage()
+      const completionRateResponse = await getOverallCourseCompletionRateAverage()
+      
+      overallStats.value = {
+        teacherCount: teacherCountResponse.data.data,
+        studentCount: studentCountResponse.data.data,
+        courseCount: courseCountResponse.data.data,
+        selectCount: selectCountResponse.data.data,
+        studyTime: studyTimeResponse.data.data,
+        averageScore: scoreAverageResponse.data.data,
+        completionRate: completionRateResponse.data.data
+      }
     }
   } catch (error) {
-    ElMessage.error('获取学习统计数据失败：' + (error.message || '未知错误'))
+    ElMessage.error('获取统计数据失败：' + (error.message || '未知错误'))
   } finally {
     loading.value = false
   }
@@ -40,26 +100,50 @@ const loadStudyStats = async () => {
 // 加载排行榜数据
 const loadRankData = async () => {
   try {
-    // 加载课程完成率排行
-    const completionRateRankResponse = await getPersonalCourseCompletionRateRank()
-    if (completionRateRankResponse.data.code === 200) {
-      const rankData = completionRateRankResponse.data.data
-      // 将 Map 转换为数组
-      completionRateRank.value = Object.entries(rankData).map(([name, value]) => ({
-        name,
-        value: parseFloat(value)
-      })).sort((a, b) => b.value - a.value)
-    }
-    
-    // 加载成绩排行
-    const scoreRankResponse = await personalScoreRank()
-    if (scoreRankResponse.data.code === 200) {
-      const rankData = scoreRankResponse.data.data
-      // 将 Map 转换为数组
-      scoreRank.value = Object.entries(rankData).map(([name, value]) => ({
-        name,
-        value: parseFloat(value)
-      })).sort((a, b) => b.value - a.value)
+    if (activeTab.value === 'personal') {
+      // 加载个人课程完成率排行
+      const completionRateRankResponse = await getPersonalCourseCompletionRateRank()
+      if (completionRateRankResponse.data.code === 200) {
+        const rankData = completionRateRankResponse.data.data
+        // 将 Map 转换为数组
+        completionRateRank.value = Object.entries(rankData).map(([name, value]) => ({
+          name,
+          value: parseFloat(value)
+        })).sort((a, b) => b.value - a.value)
+      }
+      
+      // 加载个人成绩排行
+      const scoreRankResponse = await personalScoreRank()
+      if (scoreRankResponse.data.code === 200) {
+        const rankData = scoreRankResponse.data.data
+        // 将 Map 转换为数组
+        scoreRank.value = Object.entries(rankData).map(([name, value]) => ({
+          name,
+          value: parseFloat(value)
+        })).sort((a, b) => b.value - a.value)
+      }
+    } else {
+      // 加载全站课程完成率排行
+      const completionRateRankResponse = await getOverallCourseCompletionRateRank()
+      if (completionRateRankResponse.data.code === 200) {
+        const rankData = completionRateRankResponse.data.data
+        // 将 Map 转换为数组
+        completionRateRank.value = Object.entries(rankData).map(([name, value]) => ({
+          name,
+          value: parseFloat(value)
+        })).sort((a, b) => b.value - a.value)
+      }
+      
+      // 加载全站成绩排行
+      const scoreRankResponse = await overallScoreRank()
+      if (scoreRankResponse.data.code === 200) {
+        const rankData = scoreRankResponse.data.data
+        // 将 Map 转换为数组
+        scoreRank.value = Object.entries(rankData).map(([name, value]) => ({
+          name,
+          value: parseFloat(value)
+        })).sort((a, b) => b.value - a.value)
+      }
     }
   } catch (error) {
     ElMessage.error('获取排行榜数据失败：' + (error.message || '未知错误'))
@@ -67,7 +151,7 @@ const loadRankData = async () => {
 }
 
 onMounted(async () => {
-  await loadStudyStats()
+  await loadStats()
   await loadRankData()
 })
 </script>
@@ -76,7 +160,18 @@ onMounted(async () => {
   <div class="statistic-container">
     <h2>学习统计</h2>
     
-    <div class="stats-section">
+    <!-- 标签页切换 -->
+    <el-tabs v-model="activeTab" @tab-click="(tab) => handleTabChange(tab.props.name)" class="stat-tabs">
+      <el-tab-pane label="个人统计" name="personal">
+        <el-icon><UserFilled /></el-icon>
+      </el-tab-pane>
+      <el-tab-pane label="全站统计" name="overall">
+        <el-icon><UserFilled /></el-icon>
+      </el-tab-pane>
+    </el-tabs>
+    
+    <!-- 个人统计 -->
+    <div v-if="activeTab === 'personal'" class="stats-section">
       <el-card shadow="hover" class="stat-card">
         <div class="stat-content">
           <div class="stat-icon time-icon">
@@ -112,11 +207,92 @@ onMounted(async () => {
       </el-card>
     </div>
     
+    <!-- 全站统计 -->
+    <div v-if="activeTab === 'overall'" class="stats-section">
+      <el-card shadow="hover" class="stat-card">
+        <div class="stat-content">
+          <div class="stat-icon user-icon">
+            <el-icon><User /></el-icon>
+          </div>
+          <div class="stat-info">
+            <div class="stat-number">{{ overallStats.teacherCount }}</div>
+            <div class="stat-label">教师数量</div>
+          </div>
+        </div>
+      </el-card>
+      <el-card shadow="hover" class="stat-card">
+        <div class="stat-content">
+          <div class="stat-icon users-icon">
+            <el-icon><UserFilled /></el-icon>
+          </div>
+          <div class="stat-info">
+            <div class="stat-number">{{ overallStats.studentCount }}</div>
+            <div class="stat-label">学生数量</div>
+          </div>
+        </div>
+      </el-card>
+      <el-card shadow="hover" class="stat-card">
+        <div class="stat-content">
+          <div class="stat-icon course-icon">
+            <el-icon><Check /></el-icon>
+          </div>
+          <div class="stat-info">
+            <div class="stat-number">{{ overallStats.courseCount }}</div>
+            <div class="stat-label">课程数量</div>
+          </div>
+        </div>
+      </el-card>
+      <el-card shadow="hover" class="stat-card">
+        <div class="stat-content">
+          <div class="stat-icon select-icon">
+            <el-icon><UserFilled /></el-icon>
+          </div>
+          <div class="stat-info">
+            <div class="stat-number">{{ overallStats.selectCount }}</div>
+            <div class="stat-label">选课人数</div>
+          </div>
+        </div>
+      </el-card>
+      <el-card shadow="hover" class="stat-card">
+        <div class="stat-content">
+          <div class="stat-icon time-icon">
+            <el-icon><Timer /></el-icon>
+          </div>
+          <div class="stat-info">
+            <div class="stat-number">{{ overallStats.studyTime }}</div>
+            <div class="stat-label">学习时长(分钟)</div>
+          </div>
+        </div>
+      </el-card>
+      <el-card shadow="hover" class="stat-card">
+        <div class="stat-content">
+          <div class="stat-icon score-icon">
+            <el-icon><DataAnalysis /></el-icon>
+          </div>
+          <div class="stat-info">
+            <div class="stat-number">{{ overallStats.averageScore }}</div>
+            <div class="stat-label">平均成绩</div>
+          </div>
+        </div>
+      </el-card>
+      <el-card shadow="hover" class="stat-card">
+        <div class="stat-content">
+          <div class="stat-icon completion-icon">
+            <el-icon><Check /></el-icon>
+          </div>
+          <div class="stat-info">
+            <div class="stat-number">{{ overallStats.completionRate }}%</div>
+            <div class="stat-label">课程完成率</div>
+          </div>
+        </div>
+      </el-card>
+    </div>
+    
     <div class="charts-section">
       <el-card class="chart-card">
         <template #header>
           <div class="card-header">
-            <span>课程完成率排行</span>
+            <span>{{ activeTab === 'personal' ? '个人' : '全站' }}课程完成率排行</span>
           </div>
         </template>
         <div class="chart-content">
@@ -136,7 +312,7 @@ onMounted(async () => {
       <el-card class="chart-card">
         <template #header>
           <div class="card-header">
-            <span>成绩排行</span>
+            <span>{{ activeTab === 'personal' ? '个人' : '全站' }}成绩排行</span>
           </div>
         </template>
         <div class="chart-content">
@@ -170,6 +346,29 @@ onMounted(async () => {
   font-weight: bold;
   color: #333;
   margin-bottom: 30px;
+}
+
+.stat-tabs {
+  margin-bottom: 30px;
+}
+
+.stat-tabs .el-tabs__header {
+  margin-bottom: 20px;
+}
+
+.stat-tabs .el-tabs__item {
+  font-size: 16px;
+  font-weight: 500;
+  color: #606266;
+}
+
+.stat-tabs .el-tabs__item.is-active {
+  color: #409eff;
+  font-weight: bold;
+}
+
+.stat-tabs .el-tabs__content {
+  margin-top: 0;
 }
 
 .stats-section {
@@ -220,6 +419,26 @@ onMounted(async () => {
 }
 
 .stat-icon.completion-icon {
+  background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+  color: white;
+}
+
+.stat-icon.user-icon {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+}
+
+.stat-icon.users-icon {
+  background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+  color: white;
+}
+
+.stat-icon.course-icon {
+  background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+  color: white;
+}
+
+.stat-icon.select-icon {
   background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
   color: white;
 }
