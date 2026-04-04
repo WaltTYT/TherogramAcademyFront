@@ -2,7 +2,8 @@
 import { ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ElMessage, ElLoading } from 'element-plus'
-import { getStudentHomeworkDetail } from '../../api/homework'
+import { getStudentHomeworkDetail, downloadHomework } from '../../api/homework'
+import { Download } from '@element-plus/icons-vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -34,6 +35,44 @@ const handleSubmit = () => {
 const handleBack = () => {
   router.push('/student/my-homework')
 }
+
+// 下载作业附件
+const handleDownloadAttachment = async () => {
+  if (!homework.value || !homework.value.attachmentUrl) {
+    ElMessage.warning('该作业没有附件')
+    return
+  }
+  
+  try {
+    const loadingInstance = ElLoading.service({
+      lock: true,
+      text: '正在下载附件...',
+      background: 'rgba(0, 0, 0, 0.7)'
+    })
+    
+    const response = await downloadHomework(homework.value.attachmentUrl)
+    
+    // 创建下载链接
+    const blob = new Blob([response.data])
+    const url = window.URL.createObjectURL(blob)
+    const link = document.createElement('a')
+    link.href = url
+    
+    // 从URL中提取文件名
+    const fileName = homework.value.attachmentUrl.split('/').pop()
+    link.download = fileName
+    
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+    window.URL.revokeObjectURL(url)
+    
+    loadingInstance.close()
+    ElMessage.success('下载成功')
+  } catch (error) {
+    ElMessage.error('下载失败：' + (error.message || '未知错误'))
+  }
+}
 </script>
 
 <template>
@@ -41,6 +80,14 @@ const handleBack = () => {
     <div class="header">
       <h2>作业详情</h2>
       <div class="actions">
+        <el-button 
+          v-if="homework && homework.attachmentUrl" 
+          type="info" 
+          @click="handleDownloadAttachment"
+          :icon="Download"
+        >
+          下载附件
+        </el-button>
         <el-button v-if="homework && homework.status === 'UNSUBMITTED'" type="primary" @click="handleSubmit">提交作业</el-button>
         <el-button @click="handleBack">返回</el-button>
       </div>
@@ -60,6 +107,11 @@ const handleBack = () => {
             <el-tag v-else-if="homework.status === 'PENDING'" type="info">未评定</el-tag>
             <el-tag v-else-if="homework.status === 'APPROVED'" type="success">评定通过</el-tag>
             <el-tag v-else type="danger">评定未通过</el-tag>
+          </el-descriptions-item>
+          <el-descriptions-item v-if="homework.attachmentUrl" label="作业附件" :span="2">
+            <el-button type="text" @click="handleDownloadAttachment" :icon="Download">
+              {{ homework.attachmentUrl.split('/').pop() }}
+            </el-button>
           </el-descriptions-item>
         </el-descriptions>
       </div>
