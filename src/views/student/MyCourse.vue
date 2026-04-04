@@ -167,7 +167,7 @@ const handlePageChange = (page) => {
 }
 
 const handleCourseDetail = (courseId) => {
-  router.push(`/student/course-detail/${courseId}`)
+  router.push(`/student/course/${courseId}`)
 }
 
 const handleDeselect = async (courseId) => {
