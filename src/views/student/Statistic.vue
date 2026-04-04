@@ -1,6 +1,6 @@
 <script setup>
-import { ref, onMounted } from 'vue'
-import { ElMessage } from 'element-plus'
+import { ref, onMounted, computed } from 'vue'
+import { ElMessage, ElTable, ElTableColumn, ElProgress } from 'element-plus'
 import { Timer, DataAnalysis, Check } from '@element-plus/icons-vue'
 import { getPersonalCourseCompletionRateAverage, getPersonalCourseCompletionRateRank, getPersonalCourseCompletionRateSectional } from '../../api/courseStatistic'
 import { personalStudyTime, personalScoreAverage, personalScoreRank, personalScoreSectional } from '../../api/instructionStatistic'
@@ -12,6 +12,8 @@ const studyStats = ref({
 })
 
 const loading = ref(false)
+const completionRateRank = ref({})
+const scoreRank = ref({})
 
 const loadStudyStats = async () => {
   loading.value = true
@@ -33,10 +35,41 @@ const loadStudyStats = async () => {
   }
 }
 
+const loadRankings = async () => {
+  loading.value = true
+  try {
+    // 加载课程完成率排行
+    const completionRateResponse = await getPersonalCourseCompletionRateRank()
+    completionRateRank.value = completionRateResponse.data.data || {}
+    
+    // 加载成绩排行
+    const scoreResponse = await personalScoreRank()
+    scoreRank.value = scoreResponse.data.data || {}
+  } catch (error) {
+    ElMessage.error('获取排行榜数据失败：' + (error.message || '未知错误'))
+  } finally {
+    loading.value = false
+  }
+}
+
+// 处理完成率排行数据
+const completionRateRankData = computed(() => {
+  return Object.entries(completionRateRank.value)
+    .map(([courseName, rate]) => ({ courseName, rate }))
+    .sort((a, b) => b.rate - a.rate)
+})
+
+// 处理成绩排行数据
+const scoreRankData = computed(() => {
+  return Object.entries(scoreRank.value)
+    .map(([courseName, score]) => ({ courseName, score }))
+    .sort((a, b) => b.score - a.score)
+})
+
 onMounted(async () => {
   await loadStudyStats()
-})
-</script>
+  await loadRankings()
+})</script>
 
 <template>
   <div class="statistic-container">
@@ -86,7 +119,18 @@ onMounted(async () => {
           </div>
         </template>
         <div class="chart-content">
-          <p>课程完成率排行榜将在这里显示</p>
+          <el-table v-if="completionRateRankData.length > 0" :data="completionRateRankData" style="width: 100%" size="small">
+            <el-table-column prop="courseName" label="课程名称" min-width="150" />
+            <el-table-column prop="rate" label="完成率" width="150">
+              <template #default="{ row }">
+                <div class="completion-rate">
+                  <span>{{ row.rate }}%</span>
+                  <el-progress :percentage="row.rate" :format="() => ''" :stroke-width="8" />
+                </div>
+              </template>
+            </el-table-column>
+          </el-table>
+          <p v-else>暂无课程完成率数据</p>
         </div>
       </el-card>
       <el-card class="chart-card">
@@ -96,7 +140,11 @@ onMounted(async () => {
           </div>
         </template>
         <div class="chart-content">
-          <p>成绩排行榜将在这里显示</p>
+          <el-table v-if="scoreRankData.length > 0" :data="scoreRankData" style="width: 100%" size="small">
+            <el-table-column prop="courseName" label="课程名称" min-width="150" />
+            <el-table-column prop="score" label="成绩" width="100" />
+          </el-table>
+          <p v-else>暂无成绩数据</p>
         </div>
       </el-card>
     </div>
@@ -206,13 +254,48 @@ onMounted(async () => {
 }
 
 .chart-content {
-  height: 300px;
+  min-height: 300px;
   display: flex;
-  align-items: center;
-  justify-content: center;
+  flex-direction: column;
   background: #f5f7fa;
   border-radius: 8px;
   margin: 20px;
+  padding: 20px;
+}
+
+.chart-content p {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 260px;
+  margin: 0;
+  color: #909399;
+}
+
+.completion-rate {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.completion-rate span {
+  width: 60px;
+  font-weight: bold;
+  color: #333;
+}
+
+:deep(.el-table) {
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+:deep(.el-table th) {
+  background-color: #f5f7fa !important;
+  font-weight: bold !important;
+}
+
+:deep(.el-table__row:hover) {
+  background-color: #f5f7fa !important;
 }
 
 @media (max-width: 768px) {

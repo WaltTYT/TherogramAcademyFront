@@ -339,8 +339,8 @@ onMounted(() => {
       <el-table-column prop="score" label="成绩" width="80" />
       <el-table-column label="操作" width="200">
         <template #default="scope">
-          <el-button type="primary" size="small" @click="handleCourseDetail(scope.row.id)" style="margin-right: 5px">查看详情</el-button>
-          <el-button type="danger" size="small" @click="handleDeselect(scope.row.id)">退选</el-button>
+          <el-button type="primary" size="small" @click="handleCourseDetail(scope.row.id)" style="width: 80px; margin-right: 5px">查看详情</el-button>
+          <el-button type="danger" size="small" @click="handleDeselect(scope.row.id)" style="width: 80px">退选</el-button>
         </template>
       </el-table-column>
       <template #empty>
