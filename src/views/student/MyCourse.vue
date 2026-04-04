@@ -406,20 +406,20 @@ onMounted(() => {
       :cell-style="{ textAlign: 'center' }"
       :header-cell-style="{ textAlign: 'center', fontWeight: 'bold', backgroundColor: '#f5f7fa' }"
     >
-      <el-table-column prop="courseName" label="课程名称" min-width="300">
+      <el-table-column prop="name" label="课程名称" min-width="300">
         <template #default="scope">
-          <span class="course-name" @click="handleCourseDetail(scope.row.id)">{{ scope.row.courseName }}</span>
+          <span class="course-name" @click="handleCourseDetail(scope.row.id)">{{ scope.row.name }}</span>
         </template>
       </el-table-column>
-      <el-table-column prop="courseIntroduction" label="课程简介" min-width="200" />
-      <el-table-column prop="courseSubject" label="课程科目" width="120">
+      <el-table-column prop="profile" label="课程简介" min-width="200" />
+      <el-table-column prop="subjectId" label="课程科目" width="120">
         <template #default="scope">
-          {{ courseSubjectOptions.find(option => option.value === scope.row.courseSubject)?.label || scope.row.courseSubject }}
+          {{ courseSubjectOptions.find(option => option.value === scope.row.subjectId)?.label || scope.row.subjectId }}
         </template>
       </el-table-column>
-      <el-table-column prop="courseType" label="课程类型" width="120">
+      <el-table-column prop="typeId" label="课程类型" width="120">
         <template #default="scope">
-          {{ courseTypeOptions.find(option => option.value === scope.row.courseType)?.label || scope.row.courseType }}
+          {{ courseTypeOptions.find(option => option.value === scope.row.typeId)?.label || scope.row.typeId }}
         </template>
       </el-table-column>
       <el-table-column prop="progress" label="学习进度" width="150">

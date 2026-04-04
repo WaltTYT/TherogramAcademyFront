@@ -74,6 +74,13 @@ const sortTypeOptions = [
   { value: '1', label: '按创建时间' }
 ]
 
+// 审核状态映射
+const reviewStatusMap = {
+  'APPROVED': '已通过',
+  'PENDING': '待审核',
+  'REJECTED': '已拒绝'
+}
+
 const handleSelectCourse = async (courseId) => {
   try {
     await courseApi.selectCourse(courseId)
@@ -305,7 +312,11 @@ onMounted(() => {
         </template>
       </el-table-column>
       <el-table-column prop="profile" label="课程简介" min-width="200" />
-      <el-table-column prop="reviewStatus" label="审核状态" width="120" />
+      <el-table-column prop="reviewStatus" label="审核状态" width="120">
+        <template #default="scope">
+          {{ reviewStatusMap[scope.row.reviewStatus] || scope.row.reviewStatus }}
+        </template>
+      </el-table-column>
       <el-table-column label="操作" width="200">
         <template #default="scope">
           <el-button size="small" @click="handleCourseDetail(scope.row.id)" style="margin-right: 5px">查看</el-button>

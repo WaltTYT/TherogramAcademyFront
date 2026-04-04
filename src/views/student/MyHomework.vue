@@ -163,7 +163,7 @@ onMounted(() => {
       <el-alert
         v-for="(reminder, index) in reminders"
         :key="index"
-        :title="reminder.homeworkName"
+        :title="reminder.name || '未知作业'"
         :type="'warning'"
         :closable="false"
       >
@@ -347,22 +347,27 @@ onMounted(() => {
       :cell-style="{ textAlign: 'center' }"
       :header-cell-style="{ textAlign: 'center', fontWeight: 'bold', backgroundColor: '#f5f7fa' }"
     >
-      <el-table-column prop="homeworkName" label="作业名称" min-width="300" />
-      <el-table-column prop="courseName" label="课程名称" width="180" />
-      <el-table-column prop="homeworkType" label="作业类型" width="120">
+      <el-table-column prop="name" label="作业名称" min-width="300" />
+      <el-table-column label="课程名称" width="180">
         <template #default="scope">
-          {{ scope.row.homeworkType === 'HOMEWORK' ? '作业' : '考试' }}
+          {{ scope.row.courseName || '未知课程' }}
+        </template>
+      </el-table-column>
+      <el-table-column prop="type" label="作业类型" width="120">
+        <template #default="scope">
+          {{ scope.row.type === 'HOMEWORK' ? '作业' : scope.row.type === 'EXAM' ? '考试' : '未知' }}
         </template>
       </el-table-column>
       <el-table-column prop="deadline" label="截止时间" width="180" />
-      <el-table-column prop="submitTime" label="提交时间" width="180" />
+      <el-table-column prop="studentHomeworkSubmitTime" label="提交时间" width="180" />
       <el-table-column prop="score" label="成绩" width="80" />
-      <el-table-column prop="status" label="提交状态" width="120">
+      <el-table-column prop="reviewStatus" label="提交状态" width="120">
         <template #default="scope">
-          <el-tag v-if="scope.row.status === 'UNSUBMITTED'" type="warning">未提交</el-tag>
-          <el-tag v-else-if="scope.row.status === 'PENDING'" type="info">未评定</el-tag>
-          <el-tag v-else-if="scope.row.status === 'APPROVED'" type="success">评定通过</el-tag>
-          <el-tag v-else type="danger">评定未通过</el-tag>
+          <el-tag v-if="scope.row.reviewStatus === 'UNSUBMITTED'" type="warning">未提交</el-tag>
+          <el-tag v-else-if="scope.row.reviewStatus === 'PENDING'" type="info">未评定</el-tag>
+          <el-tag v-else-if="scope.row.reviewStatus === 'APPROVED'" type="success">评定通过</el-tag>
+          <el-tag v-else-if="scope.row.reviewStatus === 'REJECTED'" type="danger">评定未通过</el-tag>
+          <el-tag v-else type="info">未提交</el-tag>
         </template>
       </el-table-column>
       <el-table-column label="操作" width="150">
