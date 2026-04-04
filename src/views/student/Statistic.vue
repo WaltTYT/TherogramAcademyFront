@@ -1,7 +1,7 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { ElMessage } from 'element-plus'
-import { Timer, DataAnalysis, Check, User, UserFilled } from '@element-plus/icons-vue'
+import { Timer, DataAnalysis, Check, User } from '@element-plus/icons-vue'
 import { 
   getOverallCourseCount, 
   getOverallSelectCount, 
@@ -163,10 +163,8 @@ onMounted(async () => {
     <!-- 标签页切换 -->
     <el-tabs v-model="activeTab" @tab-click="(tab) => handleTabChange(tab.props.name)" class="stat-tabs">
       <el-tab-pane label="个人统计" name="personal">
-        <el-icon><UserFilled /></el-icon>
       </el-tab-pane>
       <el-tab-pane label="全站统计" name="overall">
-        <el-icon><UserFilled /></el-icon>
       </el-tab-pane>
     </el-tabs>
     
@@ -223,7 +221,7 @@ onMounted(async () => {
       <el-card shadow="hover" class="stat-card">
         <div class="stat-content">
           <div class="stat-icon users-icon">
-            <el-icon><UserFilled /></el-icon>
+            <el-icon><User /></el-icon>
           </div>
           <div class="stat-info">
             <div class="stat-number">{{ overallStats.studentCount }}</div>
@@ -245,7 +243,7 @@ onMounted(async () => {
       <el-card shadow="hover" class="stat-card">
         <div class="stat-content">
           <div class="stat-icon select-icon">
-            <el-icon><UserFilled /></el-icon>
+            <el-icon><User /></el-icon>
           </div>
           <div class="stat-info">
             <div class="stat-number">{{ overallStats.selectCount }}</div>

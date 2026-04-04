@@ -144,7 +144,7 @@ const handlePageChange = (page) => {
 }
 
 const handleHomeworkDetail = (homeworkId) => {
-  router.push(`/student/homework-detail/${homeworkId}`)
+  router.push(`/student/homework/${homeworkId}`)
 }
 
 onMounted(() => {
