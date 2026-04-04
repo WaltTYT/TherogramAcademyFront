@@ -3,7 +3,7 @@ import request from '../utils/request'
 // 创建作业
 export const createHomework = (data) => {
   return request({
-    url: '/api/homework/create',
+    url: '/homework/create',
     method: 'post',
     data
   })
@@ -12,7 +12,7 @@ export const createHomework = (data) => {
 // 修改作业
 export const modifyHomework = (data) => {
   return request({
-    url: '/api/homework/modify',
+    url: '/homework/modify',
     method: 'post',
     data
   })
@@ -21,7 +21,7 @@ export const modifyHomework = (data) => {
 // 删除作业
 export const deleteHomework = (id) => {
   return request({
-    url: `/api/homework/delete/${id}`,
+    url: `/homework/delete/${id}`,
     method: 'post'
   })
 }
@@ -29,7 +29,7 @@ export const deleteHomework = (id) => {
 // 获取作业分页
 export const getHomeworkPage = (data) => {
   return request({
-    url: '/api/homework/page',
+    url: '/homework/page',
     method: 'post',
     data
   })
@@ -38,7 +38,7 @@ export const getHomeworkPage = (data) => {
 // 获取学生作业分页
 export const getStudentHomeworkPage = (data) => {
   return request({
-    url: '/api/homework/studentPage',
+    url: '/homework/studentPage',
     method: 'post',
     data
   })
@@ -47,7 +47,7 @@ export const getStudentHomeworkPage = (data) => {
 // 获取作业详情
 export const getHomeworkDetail = (id) => {
   return request({
-    url: `/api/homework/detail/${id}`,
+    url: `/homework/detail/${id}`,
     method: 'get'
   })
 }
@@ -55,7 +55,7 @@ export const getHomeworkDetail = (id) => {
 // 获取学生作业详情
 export const getStudentHomeworkDetail = (studentId, homeworkId) => {
   return request({
-    url: `/api/homework/studentDetail/${studentId}/${homeworkId}`,
+    url: `/homework/studentDetail/${studentId}/${homeworkId}`,
     method: 'get'
   })
 }
@@ -63,7 +63,7 @@ export const getStudentHomeworkDetail = (studentId, homeworkId) => {
 // 提交作业
 export const submitHomework = (data) => {
   return request({
-    url: '/api/homework/submit',
+    url: '/homework/submit',
     method: 'post',
     data
   })
@@ -72,7 +72,7 @@ export const submitHomework = (data) => {
 // 评定作业
 export const evaluateHomework = (data) => {
   return request({
-    url: '/api/homework/evaluate',
+    url: '/homework/evaluate',
     method: 'post',
     data
   })
@@ -81,7 +81,7 @@ export const evaluateHomework = (data) => {
 // 提醒作业
 export const remindHomework = () => {
   return request({
-    url: '/api/homework/remind',
+    url: '/homework/remind',
     method: 'get'
   })
 }
@@ -92,7 +92,7 @@ export const uploadHomework = (id, file) => {
   formData.append('id', id)
   formData.append('file', file)
   return request({
-    url: '/api/homework/uploadHomework',
+    url: '/homework/uploadHomework',
     method: 'post',
     data: formData,
     headers: {
@@ -108,7 +108,7 @@ export const uploadStudentHomework = (studentId, homeworkId, file) => {
   formData.append('homeworkId', homeworkId)
   formData.append('file', file)
   return request({
-    url: '/api/homework/uploadHomework',
+    url: '/homework/uploadHomework',
     method: 'post',
     data: formData,
     headers: {
@@ -120,7 +120,7 @@ export const uploadStudentHomework = (studentId, homeworkId, file) => {
 // 下载作业附件
 export const downloadHomework = (relativePath) => {
   return request({
-    url: `/api/homework/downloadHomework/${relativePath}`,
+    url: `/homework/downloadHomework/${relativePath}`,
     method: 'get',
     responseType: 'blob'
   })
@@ -129,7 +129,7 @@ export const downloadHomework = (relativePath) => {
 // 下载学生作业附件
 export const downloadStudentHomework = (relativePath) => {
   return request({
-    url: `/api/homework/downloadStudentHomework/${relativePath}`,
+    url: `/homework/downloadStudentHomework/${relativePath}`,
     method: 'get',
     responseType: 'blob'
   })
@@ -138,7 +138,7 @@ export const downloadStudentHomework = (relativePath) => {
 // 通过课程获取所有未删除的作业
 export const getHomeworksByCourse = (courseId) => {
   return request({
-    url: `/api/homework/homeworks/${courseId}`,
+    url: `/homework/homeworks/${courseId}`,
     method: 'get'
   })
 }
@@ -146,7 +146,7 @@ export const getHomeworksByCourse = (courseId) => {
 // 通过课程ID列表获取所有未删除的作业
 export const getHomeworksByCourseIds = (courseIds) => {
   return request({
-    url: '/api/homework/homeworks',
+    url: '/homework/homeworks',
     method: 'post',
     data: courseIds
   })

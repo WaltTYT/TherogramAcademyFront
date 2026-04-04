@@ -332,15 +332,15 @@ onMounted(() => {
       </el-table-column>
       <el-table-column prop="progress" label="学习进度" width="150">
         <template #default="scope">
-          <el-progress :percentage="scope.row.progress" :stroke-width="10" />
+          <el-progress :percentage="Math.min(100, Math.max(0, (typeof scope.row.progress === 'string' ? parseFloat(scope.row.progress.replace('%', '')) : scope.row.progress) || 0))" :stroke-width="10" />
         </template>
       </el-table-column>
       <el-table-column prop="studyTime" label="学习时长(分钟)" width="120" />
       <el-table-column prop="score" label="成绩" width="80" />
       <el-table-column label="操作" width="200">
         <template #default="scope">
-          <el-button type="primary" size="small" @click="handleCourseDetail(scope.row.id)" style="margin-right: 5px">查看详情</el-button>
-          <el-button type="danger" size="small" @click="handleDeselect(scope.row.id)">退选</el-button>
+          <el-button type="primary" size="small" @click="handleCourseDetail(scope.row.id)" style="width: 80px; margin-right: 5px">查看详情</el-button>
+          <el-button type="danger" size="small" @click="handleDeselect(scope.row.id)" style="width: 80px">退选</el-button>
         </template>
       </el-table-column>
       <template #empty>

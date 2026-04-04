@@ -11,6 +11,10 @@ const studyStats = ref({
   completionRate: 0
 })
 
+// 排行榜数据
+const completionRateRank = ref([])
+const scoreRank = ref([])
+
 const loading = ref(false)
 
 const loadStudyStats = async () => {
@@ -33,8 +37,38 @@ const loadStudyStats = async () => {
   }
 }
 
+// 加载排行榜数据
+const loadRankData = async () => {
+  try {
+    // 加载课程完成率排行
+    const completionRateRankResponse = await getPersonalCourseCompletionRateRank()
+    if (completionRateRankResponse.data.code === 200) {
+      const rankData = completionRateRankResponse.data.data
+      // 将 Map 转换为数组
+      completionRateRank.value = Object.entries(rankData).map(([name, value]) => ({
+        name,
+        value: parseFloat(value)
+      })).sort((a, b) => b.value - a.value)
+    }
+    
+    // 加载成绩排行
+    const scoreRankResponse = await personalScoreRank()
+    if (scoreRankResponse.data.code === 200) {
+      const rankData = scoreRankResponse.data.data
+      // 将 Map 转换为数组
+      scoreRank.value = Object.entries(rankData).map(([name, value]) => ({
+        name,
+        value: parseFloat(value)
+      })).sort((a, b) => b.value - a.value)
+    }
+  } catch (error) {
+    ElMessage.error('获取排行榜数据失败：' + (error.message || '未知错误'))
+  }
+}
+
 onMounted(async () => {
   await loadStudyStats()
+  await loadRankData()
 })
 </script>
 
@@ -86,7 +120,17 @@ onMounted(async () => {
           </div>
         </template>
         <div class="chart-content">
-          <p>课程完成率排行榜将在这里显示</p>
+          <div v-if="completionRateRank.length === 0" class="empty-text">
+            <p>暂无课程完成率排行数据</p>
+          </div>
+          <div v-else class="rank-list">
+            <div v-for="(item, index) in completionRateRank" :key="index" class="rank-item">
+              <span class="rank-index" :class="{ 'top-three': index < 3 }">{{ index + 1 }}</span>
+              <span class="rank-name">{{ item.name }}</span>
+              <span class="rank-value">{{ item.value }}%</span>
+              <el-progress :percentage="item.value" :stroke-width="8" :show-text="false" class="rank-progress" />
+            </div>
+          </div>
         </div>
       </el-card>
       <el-card class="chart-card">
@@ -96,7 +140,17 @@ onMounted(async () => {
           </div>
         </template>
         <div class="chart-content">
-          <p>成绩排行榜将在这里显示</p>
+          <div v-if="scoreRank.length === 0" class="empty-text">
+            <p>暂无成绩排行数据</p>
+          </div>
+          <div v-else class="rank-list">
+            <div v-for="(item, index) in scoreRank" :key="index" class="rank-item">
+              <span class="rank-index" :class="{ 'top-three': index < 3 }">{{ index + 1 }}</span>
+              <span class="rank-name">{{ item.name }}</span>
+              <span class="rank-value">{{ item.value }}</span>
+              <el-progress :percentage="Math.min(item.value, 100)" :stroke-width="8" :show-text="false" class="rank-progress" />
+            </div>
+          </div>
         </div>
       </el-card>
     </div>
@@ -213,6 +267,72 @@ onMounted(async () => {
   background: #f5f7fa;
   border-radius: 8px;
   margin: 20px;
+  overflow-y: auto;
+}
+
+.empty-text {
+  color: #909399;
+  font-size: 14px;
+}
+
+.rank-list {
+  width: 100%;
+  padding: 10px;
+}
+
+.rank-item {
+  display: flex;
+  align-items: center;
+  padding: 10px 0;
+  border-bottom: 1px solid #ebeef5;
+}
+
+.rank-item:last-child {
+  border-bottom: none;
+}
+
+.rank-index {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: #909399;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: bold;
+  margin-right: 12px;
+  flex-shrink: 0;
+}
+
+.rank-index.top-three {
+  background: #f56c6c;
+}
+
+.rank-name {
+  flex: 1;
+  font-size: 14px;
+  color: #333;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  margin-right: 12px;
+}
+
+.rank-value {
+  width: 60px;
+  text-align: right;
+  font-size: 14px;
+  font-weight: bold;
+  color: #409eff;
+  margin-right: 12px;
+  flex-shrink: 0;
+}
+
+.rank-progress {
+  width: 100px;
+  flex-shrink: 0;
 }
 
 @media (max-width: 768px) {
