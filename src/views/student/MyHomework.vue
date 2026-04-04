@@ -14,19 +14,20 @@ const pageSize = ref(10)
 const total = ref(0)
 
 const searchForm = ref({
+  courseId: '',
   homeworkName: '',
   homeworkType: '',
   status: '',
-  startScore: null,
-  endScore: null,
-  startDeadline: '',
-  endDeadline: '',
-  startCreateTime: '',
-  endCreateTime: '',
-  startSubmitTime: '',
-  endSubmitTime: '',
-  sortType: 0,
-  ascending: true
+  startScore: '',
+  endScore: '',
+  startDeadline: '2025-01-01T12:00:00',
+  endDeadline: '2027-12-01T12:00:00',
+  startCreateTime: '2025-01-01T12:00:00',
+  endCreateTime: '2027-01-01T12:00:00',
+  startSubmitTime: '2025-01-01T12:00:00',
+  endSubmitTime: '2027-01-01T12:00:00',
+  sortType: '0',
+  ascending: false
 })
 
 const showAdvancedSearch = ref(false)
@@ -44,31 +45,32 @@ const statusOptions = [
 ]
 
 const sortTypeOptions = [
-  { value: 0, label: '按截至时间' },
-  { value: 1, label: '按创建时间' },
-  { value: 2, label: '按分数' },
-  { value: 3, label: '按提交时间' }
+  { value: '0', label: '按截至时间' },
+  { value: '1', label: '按创建时间' },
+  { value: '2', label: '按分数' },
+  { value: '3', label: '按提交时间' }
 ]
 
 const loadHomeworks = async () => {
   loading.value = true
   try {
     const response = await getStudentHomeworkPage({
-      page: currentPage.value,
-      size: pageSize.value,
-      homeworkName: searchForm.value.homeworkName,
-      homeworkType: searchForm.value.homeworkType,
-      status: searchForm.value.status,
+      courseId: searchForm.value.courseId,
+      name: searchForm.value.homeworkName,
+      type: searchForm.value.homeworkType || null,
+      reviewStatus: searchForm.value.status || null,
       startScore: searchForm.value.startScore,
       endScore: searchForm.value.endScore,
-      startDeadline: searchForm.value.startDeadline,
-      endDeadline: searchForm.value.endDeadline,
-      startCreateTime: searchForm.value.startCreateTime,
-      endCreateTime: searchForm.value.endCreateTime,
-      startSubmitTime: searchForm.value.startSubmitTime,
-      endSubmitTime: searchForm.value.endSubmitTime,
-      sortType: searchForm.value.sortType,
-      ascending: searchForm.value.ascending
+      startDeadline: searchForm.value.startDeadline || '2025-01-01T12:00:00',
+      endDeadline: searchForm.value.endDeadline || '2027-12-01T12:00:00',
+      startCreateTime: searchForm.value.startCreateTime || '2025-01-01T12:00:00',
+      endCreateTime: searchForm.value.endCreateTime || '2027-01-01T12:00:00',
+      startSubmitTime: searchForm.value.startSubmitTime || '2025-01-01T12:00:00',
+      endSubmitTime: searchForm.value.endSubmitTime || '2027-01-01T12:00:00',
+      sortType: searchForm.value.sortType || '0',
+      isAsc: searchForm.value.ascending?.toString() || 'false',
+      pageNum: currentPage.value.toString(),
+      pageSize: pageSize.value.toString()
     })
     homeworks.value = response.data.data.records
     total.value = response.data.data.total
@@ -95,19 +97,20 @@ const handleSearch = () => {
 
 const handleReset = () => {
   searchForm.value = {
+    courseId: '',
     homeworkName: '',
     homeworkType: '',
     status: '',
-    startScore: null,
-    endScore: null,
-    startDeadline: '',
-    endDeadline: '',
-    startCreateTime: '',
-    endCreateTime: '',
-    startSubmitTime: '',
-    endSubmitTime: '',
-    sortType: 0,
-    ascending: true
+    startScore: '',
+    endScore: '',
+    startDeadline: '2025-01-01T12:00:00',
+    endDeadline: '2027-12-01T12:00:00',
+    startCreateTime: '2025-01-01T12:00:00',
+    endCreateTime: '2027-01-01T12:00:00',
+    startSubmitTime: '2025-01-01T12:00:00',
+    endSubmitTime: '2027-01-01T12:00:00',
+    sortType: '0',
+    ascending: false
   }
   currentPage.value = 1
   loadHomeworks()
@@ -117,19 +120,20 @@ const toggleAdvancedSearch = () => {
   showAdvancedSearch.value = !showAdvancedSearch.value
   if (!showAdvancedSearch.value) {
     searchForm.value = {
+      courseId: '',
       homeworkName: '',
       homeworkType: '',
       status: '',
-      startScore: null,
-      endScore: null,
-      startDeadline: '',
-      endDeadline: '',
-      startCreateTime: '',
-      endCreateTime: '',
-      startSubmitTime: '',
-      endSubmitTime: '',
-      sortType: 0,
-      ascending: true
+      startScore: '',
+      endScore: '',
+      startDeadline: '2025-01-01T12:00:00',
+      endDeadline: '2027-12-01T12:00:00',
+      startCreateTime: '2025-01-01T12:00:00',
+      endCreateTime: '2027-01-01T12:00:00',
+      startSubmitTime: '2025-01-01T12:00:00',
+      endSubmitTime: '2027-01-01T12:00:00',
+      sortType: '0',
+      ascending: false
     }
   }
 }

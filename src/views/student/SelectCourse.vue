@@ -19,12 +19,11 @@ const searchForm = ref({
   courseName: '',
   courseSubject: '',
   courseType: '',
-  filterSelected: false,
-  startSelectCount: null,
-  endSelectCount: null,
-  startCreateTime: '',
-  endCreateTime: '',
-  sortType: 0,
+  startSelectCount: '',
+  endSelectCount: '',
+  startCreateTime: '2025-01-01T00:00:00',
+  endCreateTime: '2027-01-01T12:00:00',
+  sortType: '0',
   ascending: true
 })
 
@@ -71,8 +70,8 @@ const courseTypeOptions = [
 
 // 排序方式选项
 const sortTypeOptions = [
-  { value: 0, label: '按选课人数' },
-  { value: 1, label: '按创建时间' }
+  { value: '0', label: '按选课人数' },
+  { value: '1', label: '按创建时间' }
 ]
 
 const handleSelectCourse = async (courseId) => {
@@ -93,18 +92,17 @@ const getCourses = async () => {
   try {
     loading.value = true
     const params = {
-      page: page.value,
-      pageSize: pageSize.value,
-      courseName: searchForm.value.courseName || null,
-      courseSubject: searchForm.value.courseSubject || null,
-      courseType: searchForm.value.courseType || null,
-      filterSelected: searchForm.value.filterSelected,
-      startSelectCount: searchForm.value.startSelectCount || null,
-      endSelectCount: searchForm.value.endSelectCount || null,
-      startCreateTime: searchForm.value.startCreateTime || null,
-      endCreateTime: searchForm.value.endCreateTime || null,
-      sortType: searchForm.value.sortType,
-      ascending: searchForm.value.ascending
+      name: searchForm.value.courseName,
+      subjectId: searchForm.value.courseSubject,
+      typeId: searchForm.value.courseType,
+      startSelectCount: searchForm.value.startSelectCount,
+      endSelectCount: searchForm.value.endSelectCount,
+      startCreateTime: searchForm.value.startCreateTime || '2025-01-01T00:00:00',
+      endCreateTime: searchForm.value.endCreateTime || '2027-01-01T12:00:00',
+      sortType: searchForm.value.sortType || '0',
+      isAsc: searchForm.value.ascending?.toString() || 'true',
+      pageNum: page.value.toString(),
+      pageSize: pageSize.value.toString()
     }
     const response = await courseApi.getCoursePage(params)
     courses.value = response.data.data.records
@@ -126,12 +124,11 @@ const handleReset = () => {
     courseName: '',
     courseSubject: '',
     courseType: '',
-    filterSelected: false,
-    startSelectCount: null,
-    endSelectCount: null,
-    startCreateTime: '',
-    endCreateTime: '',
-    sortType: 0,
+    startSelectCount: '',
+    endSelectCount: '',
+    startCreateTime: '2025-01-01T00:00:00',
+    endCreateTime: '2027-01-01T12:00:00',
+    sortType: '0',
     ascending: true
   }
   page.value = 1
@@ -274,18 +271,6 @@ onMounted(() => {
           </el-col>
         </el-row>
         
-        <el-row :gutter="20" v-if="showAdvancedSearch">
-          <el-col :span="8">
-            <el-form-item label="过滤已选修" style="width: 100%;">
-              <el-switch
-                v-model="searchForm.filterSelected"
-                active-text="是"
-                inactive-text="否"
-              />
-            </el-form-item>
-          </el-col>
-        </el-row>
-        
         <!-- 按钮行（所有搜索条件的下一行） -->
         <el-row :gutter="20" style="margin-top: 15px;">
           <el-col :span="24" style="display: flex; justify-content: flex-end;">
@@ -307,24 +292,24 @@ onMounted(() => {
       :cell-style="{ textAlign: 'center' }"
       :header-cell-style="{ textAlign: 'center', fontWeight: 'bold', backgroundColor: '#f5f7fa' }"
     >
-      <el-table-column prop="courseId" label="课程ID" width="100" />
-      <el-table-column prop="courseName" label="课程名称" min-width="300" />
-      <el-table-column prop="courseSubject" label="课程科目" width="120">
+      <el-table-column prop="id" label="课程ID" width="100" />
+      <el-table-column prop="name" label="课程名称" min-width="300" />
+      <el-table-column prop="subjectId" label="课程科目" width="120">
         <template #default="scope">
-          {{ courseSubjectOptions.find(opt => opt.value === scope.row.courseSubject)?.label || scope.row.courseSubject }}
+          {{ courseSubjectOptions.find(opt => opt.value === scope.row.subjectId?.toString())?.label || scope.row.subjectId }}
         </template>
       </el-table-column>
-      <el-table-column prop="courseType" label="课程类型" width="120">
+      <el-table-column prop="typeId" label="课程类型" width="120">
         <template #default="scope">
-          {{ courseTypeOptions.find(opt => opt.value === scope.row.courseType)?.label || scope.row.courseType }}
+          {{ courseTypeOptions.find(opt => opt.value === scope.row.typeId?.toString())?.label || scope.row.typeId }}
         </template>
       </el-table-column>
-      <el-table-column prop="courseDescription" label="课程简介" min-width="200" />
-      <el-table-column prop="selectCount" label="选课人数" width="100" />
+      <el-table-column prop="profile" label="课程简介" min-width="200" />
+      <el-table-column prop="reviewStatus" label="审核状态" width="120" />
       <el-table-column label="操作" width="200">
         <template #default="scope">
-          <el-button size="small" @click="handleCourseDetail(scope.row.courseId)" style="margin-right: 5px">查看</el-button>
-          <el-button size="small" type="primary" @click="handleSelectCourse(scope.row.courseId)">选课</el-button>
+          <el-button size="small" @click="handleCourseDetail(scope.row.id)" style="margin-right: 5px">查看</el-button>
+          <el-button size="small" type="primary" @click="handleSelectCourse(scope.row.id)">选课</el-button>
         </template>
       </el-table-column>
       <template #empty>

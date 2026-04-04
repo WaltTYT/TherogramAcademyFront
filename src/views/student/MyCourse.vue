@@ -16,13 +16,20 @@ const searchForm = ref({
   courseName: '',
   courseSubject: '',
   courseType: '',
-  startSelectCount: null,
-  endSelectCount: null,
-  startCreateTime: '',
-  endCreateTime: '',
-  sortType: 0,
-  ascending: true,
-  filterSelected: false
+  startSelectCount: '',
+  endSelectCount: '',
+  startProgress: '',
+  endProgress: '',
+  startStudyTime: '',
+  endStudyTime: '',
+  startScore: '',
+  endScore: '',
+  startCreateTime: '2025-01-01T00:00:00',
+  endCreateTime: '2027-01-01T12:00:00',
+  startSelectTime: '2025-01-01T12:00:00',
+  endSelectTime: '2027-01-01T12:00:00',
+  sortType: '4',
+  ascending: true
 })
 
 const showAdvancedSearch = ref(false)
@@ -67,26 +74,36 @@ const courseTypeOptions = [
 ]
 
 const sortTypeOptions = [
-  { value: 0, label: '按选课人数' },
-  { value: 1, label: '按创建时间' }
+  { value: '0', label: '按选课人数' },
+  { value: '1', label: '按创建时间' },
+  { value: '2', label: '按学习进度' },
+  { value: '3', label: '按学习时长' },
+  { value: '4', label: '按成绩' }
 ]
 
 const loadCourses = async () => {
   loading.value = true
   try {
     const response = await getSelectCoursePage({
-      page: currentPage.value,
-      size: pageSize.value,
-      courseName: searchForm.value.courseName,
-      courseSubject: searchForm.value.courseSubject,
-      courseType: searchForm.value.courseType,
+      name: searchForm.value.courseName,
+      subjectId: searchForm.value.courseSubject,
+      typeId: searchForm.value.courseType,
       startSelectCount: searchForm.value.startSelectCount,
       endSelectCount: searchForm.value.endSelectCount,
-      startCreateTime: searchForm.value.startCreateTime,
-      endCreateTime: searchForm.value.endCreateTime,
-      sortType: searchForm.value.sortType,
-      ascending: searchForm.value.ascending,
-      filterSelected: searchForm.value.filterSelected
+      startProgress: searchForm.value.startProgress || "0",
+      endProgress: searchForm.value.endProgress || "100",
+      startStudyTime: searchForm.value.startStudyTime || "0",
+      endStudyTime: searchForm.value.endStudyTime || "1000",
+      startScore: searchForm.value.startScore || "",
+      endScore: searchForm.value.endScore || "",
+      startCreateTime: searchForm.value.startCreateTime || "2025-01-01T00:00:00",
+      endCreateTime: searchForm.value.endCreateTime || "2027-01-01T12:00:00",
+      startSelectTime: searchForm.value.startSelectTime || "2025-01-01T12:00:00",
+      endSelectTime: searchForm.value.endSelectTime || "2027-01-01T12:00:00",
+      sortType: searchForm.value.sortType || "4",
+      isAsc: searchForm.value.ascending?.toString() || "true",
+      pageNum: currentPage.value.toString(),
+      pageSize: pageSize.value.toString()
     })
     courses.value = response.data.data.records
     total.value = response.data.data.total
@@ -107,13 +124,20 @@ const handleReset = () => {
     courseName: '',
     courseSubject: '',
     courseType: '',
-    startSelectCount: null,
-    endSelectCount: null,
-    startCreateTime: '',
-    endCreateTime: '',
-    sortType: 0,
-    ascending: true,
-    filterSelected: false
+    startSelectCount: '',
+    endSelectCount: '',
+    startProgress: '',
+    endProgress: '',
+    startStudyTime: '',
+    endStudyTime: '',
+    startScore: '',
+    endScore: '',
+    startCreateTime: '2025-01-01T00:00:00',
+    endCreateTime: '2027-01-01T12:00:00',
+    startSelectTime: '2025-01-01T12:00:00',
+    endSelectTime: '2027-01-01T12:00:00',
+    sortType: '4',
+    ascending: true
   }
   currentPage.value = 1
   loadCourses()
@@ -283,11 +307,79 @@ onMounted(() => {
         
         <el-row :gutter="20" v-if="showAdvancedSearch">
           <el-col :span="8">
-            <el-form-item label="过滤已选修" style="width: 100%;">
-              <el-switch
-                v-model="searchForm.filterSelected"
-                active-text="是"
-                inactive-text="否"
+            <el-form-item label="学习进度" style="width: 100%;">
+              <el-input-number
+                v-model="searchForm.startProgress"
+                placeholder="起始"
+                :min="0"
+                :max="100"
+                style="width: 48%;"
+              />
+              <span style="margin: 0 4%;">-</span>
+              <el-input-number
+                v-model="searchForm.endProgress"
+                placeholder="结束"
+                :min="0"
+                :max="100"
+                style="width: 48%;"
+              />
+            </el-form-item>
+          </el-col>
+          <el-col :span="8">
+            <el-form-item label="学习时长" style="width: 100%;">
+              <el-input-number
+                v-model="searchForm.startStudyTime"
+                placeholder="起始"
+                :min="0"
+                style="width: 48%;"
+              />
+              <span style="margin: 0 4%;">-</span>
+              <el-input-number
+                v-model="searchForm.endStudyTime"
+                placeholder="结束"
+                :min="0"
+                style="width: 48%;"
+              />
+            </el-form-item>
+          </el-col>
+          <el-col :span="8">
+            <el-form-item label="成绩" style="width: 100%;">
+              <el-input-number
+                v-model="searchForm.startScore"
+                placeholder="起始"
+                :min="0"
+                :max="100"
+                style="width: 48%;"
+              />
+              <span style="margin: 0 4%;">-</span>
+              <el-input-number
+                v-model="searchForm.endScore"
+                placeholder="结束"
+                :min="0"
+                :max="100"
+                style="width: 48%;"
+              />
+            </el-form-item>
+          </el-col>
+        </el-row>
+        
+        <el-row :gutter="20" v-if="showAdvancedSearch">
+          <el-col :span="12">
+            <el-form-item label="选修时间" style="width: 100%;">
+              <el-date-picker
+                v-model="searchForm.startSelectTime"
+                type="datetime"
+                placeholder="起始时间"
+                value-format="YYYY-MM-DDTHH:mm:ss"
+                style="width: 48%;"
+              />
+              <span style="margin: 0 4%;">-</span>
+              <el-date-picker
+                v-model="searchForm.endSelectTime"
+                type="datetime"
+                placeholder="结束时间"
+                value-format="YYYY-MM-DDTHH:mm:ss"
+                style="width: 48%;"
               />
             </el-form-item>
           </el-col>
