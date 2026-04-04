@@ -304,8 +304,9 @@ onMounted(() => {
           {{ courseTypeOptions.find(opt => opt.value === scope.row.typeId?.toString())?.label || scope.row.typeId }}
         </template>
       </el-table-column>
-      <el-table-column prop="profile" label="课程简介" min-width="200" />
-      <el-table-column prop="reviewStatus" label="审核状态" width="120" />
+      <el-table-column prop="teacherName" label="老师" width="120" />
+      <el-table-column prop="selectCount" label="人数" width="100" />
+      <el-table-column prop="createTime" label="创建时间" width="180" />
       <el-table-column label="操作" width="200">
         <template #default="scope">
           <el-button size="small" @click="handleCourseDetail(scope.row.id)" style="margin-right: 5px">查看</el-button>
