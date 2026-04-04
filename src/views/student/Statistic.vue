@@ -1,6 +1,6 @@
 <script setup>
-import { ref, onMounted, computed } from 'vue'
-import { ElMessage, ElTable, ElTableColumn, ElProgress } from 'element-plus'
+import { ref, onMounted } from 'vue'
+import { ElMessage } from 'element-plus'
 import { Timer, DataAnalysis, Check } from '@element-plus/icons-vue'
 import { getPersonalCourseCompletionRateAverage, getPersonalCourseCompletionRateRank, getPersonalCourseCompletionRateSectional } from '../../api/courseStatistic'
 import { personalStudyTime, personalScoreAverage, personalScoreRank, personalScoreSectional } from '../../api/instructionStatistic'
@@ -11,9 +11,11 @@ const studyStats = ref({
   completionRate: 0
 })
 
+// 排行榜数据
+const completionRateRank = ref([])
+const scoreRank = ref([])
+
 const loading = ref(false)
-const completionRateRank = ref({})
-const scoreRank = ref({})
 
 const loadStudyStats = async () => {
   loading.value = true
@@ -35,41 +37,40 @@ const loadStudyStats = async () => {
   }
 }
 
-const loadRankings = async () => {
-  loading.value = true
+// 加载排行榜数据
+const loadRankData = async () => {
   try {
     // 加载课程完成率排行
-    const completionRateResponse = await getPersonalCourseCompletionRateRank()
-    completionRateRank.value = completionRateResponse.data.data || {}
+    const completionRateRankResponse = await getPersonalCourseCompletionRateRank()
+    if (completionRateRankResponse.data.code === 200) {
+      const rankData = completionRateRankResponse.data.data
+      // 将 Map 转换为数组
+      completionRateRank.value = Object.entries(rankData).map(([name, value]) => ({
+        name,
+        value: parseFloat(value)
+      })).sort((a, b) => b.value - a.value)
+    }
     
     // 加载成绩排行
-    const scoreResponse = await personalScoreRank()
-    scoreRank.value = scoreResponse.data.data || {}
+    const scoreRankResponse = await personalScoreRank()
+    if (scoreRankResponse.data.code === 200) {
+      const rankData = scoreRankResponse.data.data
+      // 将 Map 转换为数组
+      scoreRank.value = Object.entries(rankData).map(([name, value]) => ({
+        name,
+        value: parseFloat(value)
+      })).sort((a, b) => b.value - a.value)
+    }
   } catch (error) {
     ElMessage.error('获取排行榜数据失败：' + (error.message || '未知错误'))
-  } finally {
-    loading.value = false
   }
 }
 
-// 处理完成率排行数据
-const completionRateRankData = computed(() => {
-  return Object.entries(completionRateRank.value)
-    .map(([courseName, rate]) => ({ courseName, rate }))
-    .sort((a, b) => b.rate - a.rate)
-})
-
-// 处理成绩排行数据
-const scoreRankData = computed(() => {
-  return Object.entries(scoreRank.value)
-    .map(([courseName, score]) => ({ courseName, score }))
-    .sort((a, b) => b.score - a.score)
-})
-
 onMounted(async () => {
   await loadStudyStats()
-  await loadRankings()
-})</script>
+  await loadRankData()
+})
+</script>
 
 <template>
   <div class="statistic-container">
@@ -119,18 +120,17 @@ onMounted(async () => {
           </div>
         </template>
         <div class="chart-content">
-          <el-table v-if="completionRateRankData.length > 0" :data="completionRateRankData" style="width: 100%" size="small">
-            <el-table-column prop="courseName" label="课程名称" min-width="150" />
-            <el-table-column prop="rate" label="完成率" width="150">
-              <template #default="{ row }">
-                <div class="completion-rate">
-                  <span>{{ row.rate }}%</span>
-                  <el-progress :percentage="row.rate" :format="() => ''" :stroke-width="8" />
-                </div>
-              </template>
-            </el-table-column>
-          </el-table>
-          <p v-else>暂无课程完成率数据</p>
+          <div v-if="completionRateRank.length === 0" class="empty-text">
+            <p>暂无课程完成率排行数据</p>
+          </div>
+          <div v-else class="rank-list">
+            <div v-for="(item, index) in completionRateRank" :key="index" class="rank-item">
+              <span class="rank-index" :class="{ 'top-three': index < 3 }">{{ index + 1 }}</span>
+              <span class="rank-name">{{ item.name }}</span>
+              <span class="rank-value">{{ item.value }}%</span>
+              <el-progress :percentage="item.value" :stroke-width="8" :show-text="false" class="rank-progress" />
+            </div>
+          </div>
         </div>
       </el-card>
       <el-card class="chart-card">
@@ -140,11 +140,17 @@ onMounted(async () => {
           </div>
         </template>
         <div class="chart-content">
-          <el-table v-if="scoreRankData.length > 0" :data="scoreRankData" style="width: 100%" size="small">
-            <el-table-column prop="courseName" label="课程名称" min-width="150" />
-            <el-table-column prop="score" label="成绩" width="100" />
-          </el-table>
-          <p v-else>暂无成绩数据</p>
+          <div v-if="scoreRank.length === 0" class="empty-text">
+            <p>暂无成绩排行数据</p>
+          </div>
+          <div v-else class="rank-list">
+            <div v-for="(item, index) in scoreRank" :key="index" class="rank-item">
+              <span class="rank-index" :class="{ 'top-three': index < 3 }">{{ index + 1 }}</span>
+              <span class="rank-name">{{ item.name }}</span>
+              <span class="rank-value">{{ item.value }}</span>
+              <el-progress :percentage="Math.min(item.value, 100)" :stroke-width="8" :show-text="false" class="rank-progress" />
+            </div>
+          </div>
         </div>
       </el-card>
     </div>
@@ -254,48 +260,79 @@ onMounted(async () => {
 }
 
 .chart-content {
-  min-height: 300px;
-  display: flex;
-  flex-direction: column;
-  background: #f5f7fa;
-  border-radius: 8px;
-  margin: 20px;
-  padding: 20px;
-}
-
-.chart-content p {
+  height: 300px;
   display: flex;
   align-items: center;
   justify-content: center;
-  height: 260px;
-  margin: 0;
-  color: #909399;
+  background: #f5f7fa;
+  border-radius: 8px;
+  margin: 20px;
+  overflow-y: auto;
 }
 
-.completion-rate {
+.empty-text {
+  color: #909399;
+  font-size: 14px;
+}
+
+.rank-list {
+  width: 100%;
+  padding: 10px;
+}
+
+.rank-item {
   display: flex;
   align-items: center;
-  gap: 10px;
+  padding: 10px 0;
+  border-bottom: 1px solid #ebeef5;
 }
 
-.completion-rate span {
-  width: 60px;
+.rank-item:last-child {
+  border-bottom: none;
+}
+
+.rank-index {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: #909399;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
   font-weight: bold;
+  margin-right: 12px;
+  flex-shrink: 0;
+}
+
+.rank-index.top-three {
+  background: #f56c6c;
+}
+
+.rank-name {
+  flex: 1;
+  font-size: 14px;
   color: #333;
-}
-
-:deep(.el-table) {
-  border-radius: 4px;
   overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  margin-right: 12px;
 }
 
-:deep(.el-table th) {
-  background-color: #f5f7fa !important;
-  font-weight: bold !important;
+.rank-value {
+  width: 60px;
+  text-align: right;
+  font-size: 14px;
+  font-weight: bold;
+  color: #409eff;
+  margin-right: 12px;
+  flex-shrink: 0;
 }
 
-:deep(.el-table__row:hover) {
-  background-color: #f5f7fa !important;
+.rank-progress {
+  width: 100px;
+  flex-shrink: 0;
 }
 
 @media (max-width: 768px) {
