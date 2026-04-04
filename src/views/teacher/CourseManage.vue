@@ -1,7 +1,7 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { ElMessage, ElTable, ElTableColumn, ElButton, ElPagination, ElDialog, ElForm, ElFormItem, ElInput, ElSelect, ElOption, ElUpload, ElMessage as ElMessage2 } from 'element-plus'
+import { ElMessage, ElTable, ElTableColumn, ElButton, ElPagination, ElDialog, ElForm, ElFormItem, ElInput, ElSelect, ElOption, ElUpload, ElInputNumber, ElDatePicker, ElSwitch, ElMessage as ElMessage2 } from 'element-plus'
 import * as courseApi from '../../api/course'
 
 const router = useRouter()
@@ -10,6 +10,67 @@ const total = ref(0)
 const page = ref(1)
 const pageSize = ref(10)
 const loading = ref(false)
+
+// 搜索条件
+const searchForm = ref({
+  courseName: '',
+  courseSubject: '',
+  courseType: '',
+  startSelectCount: null,
+  endSelectCount: null,
+  startCreateTime: '',
+  endCreateTime: '',
+  sortType: 0,
+  ascending: true,
+  filterSelected: false
+})
+
+const showAdvancedSearch = ref(false)
+
+// 课程类型和科目选项
+const courseSubjects = [
+  { value: '', label: '全部' },
+  { value: 1, label: '语文' },
+  { value: 2, label: '数学' },
+  { value: 3, label: '英语' },
+  { value: 4, label: '物理' },
+  { value: 5, label: '历史' },
+  { value: 6, label: '生物' },
+  { value: 7, label: '化学' },
+  { value: 8, label: '政治' },
+  { value: 9, label: '地理' },
+  { value: 10, label: '美术' },
+  { value: 11, label: '音乐' },
+  { value: 12, label: '体育' },
+  { value: 13, label: '工学' },
+  { value: 14, label: '经济学' },
+  { value: 15, label: '法学' },
+  { value: 16, label: '教育学' },
+  { value: 17, label: '文学' },
+  { value: 18, label: '历史学' },
+  { value: 19, label: '理学' },
+  { value: 20, label: '农学' },
+  { value: 21, label: '医学' },
+  { value: 22, label: '管理学' },
+  { value: 23, label: '艺术学' },
+  { value: 24, label: '哲学' }
+]
+
+const courseTypes = [
+  { value: '', label: '全部' },
+  { value: 1, label: '小学共享课' },
+  { value: 2, label: '中学共享课' },
+  { value: 3, label: '大学共享课' },
+  { value: 4, label: '研究生共享课' },
+  { value: 5, label: '职业教育课' },
+  { value: 6, label: '虚拟实验课' },
+  { value: 7, label: '社会实践课' }
+]
+
+const sortTypeOptions = [
+  { value: 0, label: '按选课人数' },
+  { value: 1, label: '按创建时间' }
+]
 
 const dialogVisible = ref(false)
 const editMode = ref(false)
@@ -110,13 +171,69 @@ const handleSubmit = async () => {
 const getCourses = async () => {
   try {
     loading.value = true
-    const response = await courseApi.getCourses({ page: page.value, pageSize: pageSize.value })
+    const response = await courseApi.getCourses({
+      page: page.value,
+      pageSize: pageSize.value,
+      courseName: searchForm.value.courseName,
+      courseSubject: searchForm.value.courseSubject,
+      courseType: searchForm.value.courseType,
+      startSelectCount: searchForm.value.startSelectCount,
+      endSelectCount: searchForm.value.endSelectCount,
+      startCreateTime: searchForm.value.startCreateTime,
+      endCreateTime: searchForm.value.endCreateTime,
+      sortType: searchForm.value.sortType,
+      ascending: searchForm.value.ascending,
+      filterSelected: searchForm.value.filterSelected
+    })
     courses.value = response.data.data.records
     total.value = response.data.data.total
   } catch (error) {
     ElMessage.error('获取课程列表失败')
   } finally {
     loading.value = false
+  }
+}
+
+// 搜索课程
+const handleSearch = () => {
+  page.value = 1
+  getCourses()
+}
+
+// 重置搜索
+const handleReset = () => {
+  searchForm.value = {
+    courseName: '',
+    courseSubject: '',
+    courseType: '',
+    startSelectCount: null,
+    endSelectCount: null,
+    startCreateTime: '',
+    endCreateTime: '',
+    sortType: 0,
+    ascending: true,
+    filterSelected: false
+  }
+  page.value = 1
+  getCourses()
+}
+
+// 切换高级搜索
+const toggleAdvancedSearch = () => {
+  showAdvancedSearch.value = !showAdvancedSearch.value
+  if (!showAdvancedSearch.value) {
+    searchForm.value = {
+      courseName: '',
+      courseSubject: '',
+      courseType: '',
+      startSelectCount: null,
+      endSelectCount: null,
+      startCreateTime: '',
+      endCreateTime: '',
+      sortType: 0,
+      ascending: true,
+      filterSelected: false
+    }
   }
 }
 
@@ -140,6 +257,142 @@ onMounted(() => {
     <div class="header">
       <h2>我的课程</h2>
       <el-button type="primary" @click="handleCreateCourse">创建课程</el-button>
+    </div>
+    
+    <div class="search-form">
+      <el-form :model="searchForm" inline>
+        <!-- 基础搜索条件 -->
+        <el-row :gutter="20">
+          <el-col :span="8">
+            <el-form-item label="课程名称" style="width: 100%;">
+              <el-input
+                v-model="searchForm.courseName"
+                placeholder="请输入课程名称"
+                clearable
+                @keyup.enter="handleSearch"
+              />
+            </el-form-item>
+          </el-col>
+          <el-col :span="8">
+            <el-form-item label="课程科目" style="width: 100%;">
+              <el-select
+                v-model="searchForm.courseSubject"
+                placeholder="请选择课程科目"
+                clearable
+                style="width: 100%;"
+              >
+                <el-option
+                  v-for="subject in courseSubjects"
+                  :key="subject.value"
+                  :label="subject.label"
+                  :value="subject.value"
+                />
+              </el-select>
+            </el-form-item>
+          </el-col>
+          <el-col :span="8">
+            <el-form-item label="课程类型" style="width: 100%;">
+              <el-select
+                v-model="searchForm.courseType"
+                placeholder="请选择课程类型"
+                clearable
+                style="width: 100%;"
+              >
+                <el-option
+                  v-for="type in courseTypes"
+                  :key="type.value"
+                  :label="type.label"
+                  :value="type.value"
+                />
+              </el-select>
+            </el-form-item>
+          </el-col>
+        </el-row>
+        
+        <!-- 高级搜索条件 -->
+        <el-row :gutter="20" v-if="showAdvancedSearch">
+          <el-col :span="8">
+            <el-form-item label="选课人数" style="width: 100%;">
+              <el-input-number
+                v-model="searchForm.startSelectCount"
+                placeholder="起始"
+                :min="0"
+                style="width: 48%;"
+              />
+              <span style="margin: 0 4%;">-</span>
+              <el-input-number
+                v-model="searchForm.endSelectCount"
+                placeholder="结束"
+                :min="0"
+                style="width: 48%;"
+              />
+            </el-form-item>
+          </el-col>
+          <el-col :span="8">
+            <el-form-item label="创建时间" style="width: 100%;">
+              <el-date-picker
+                v-model="searchForm.startCreateTime"
+                type="datetime"
+                placeholder="起始时间"
+                value-format="YYYY-MM-DDTHH:mm:ss"
+                style="width: 48%;"
+              />
+              <span style="margin: 0 4%;">-</span>
+              <el-date-picker
+                v-model="searchForm.endCreateTime"
+                type="datetime"
+                placeholder="结束时间"
+                value-format="YYYY-MM-DDTHH:mm:ss"
+                style="width: 48%;"
+              />
+            </el-form-item>
+          </el-col>
+          <el-col :span="8">
+            <el-form-item label="排序方式" style="width: 100%;">
+              <el-select
+                v-model="searchForm.sortType"
+                style="width: 60%;"
+              >
+                <el-option
+                  v-for="option in sortTypeOptions"
+                  :key="option.value"
+                  :label="option.label"
+                  :value="option.value"
+                />
+              </el-select>
+              <el-switch
+                v-model="searchForm.ascending"
+                active-text="升序"
+                inactive-text="降序"
+                style="margin-left: 10px;"
+              />
+            </el-form-item>
+          </el-col>
+        </el-row>
+        
+        <el-row :gutter="20" v-if="showAdvancedSearch">
+          <el-col :span="8">
+            <el-form-item label="过滤已选修" style="width: 100%;">
+              <el-switch
+                v-model="searchForm.filterSelected"
+                active-text="是"
+                inactive-text="否"
+              />
+            </el-form-item>
+          </el-col>
+        </el-row>
+        
+        <!-- 按钮行（所有搜索条件的下一行） -->
+        <el-row :gutter="20" style="margin-top: 15px;">
+          <el-col :span="24" style="display: flex; justify-content: flex-end;">
+            <el-button type="primary" @click="handleSearch">搜索</el-button>
+            <el-button @click="handleReset" style="margin-left: 10px;">重置</el-button>
+            <el-button type="info" @click="toggleAdvancedSearch" style="margin-left: 10px;">
+              {{ showAdvancedSearch ? '收起高级搜索' : '高级搜索' }}
+            </el-button>
+          </el-col>
+        </el-row>
+      </el-form>
     </div>
     
     <el-table 
@@ -253,6 +506,14 @@ onMounted(() => {
 <style scoped>
 .course-manage-container {
   padding: 20px;
+}
+
+.search-form {
+  background: white;
+  padding: 20px;
+  border-radius: 8px;
+  margin-bottom: 15px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .header {
