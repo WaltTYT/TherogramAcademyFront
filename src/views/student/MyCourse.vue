@@ -85,9 +85,10 @@ const loadCourses = async () => {
   loading.value = true
   try {
     const response = await getSelectCoursePage({
-      name: searchForm.value.courseName,
-      subjectId: searchForm.value.courseSubject,
-      typeId: searchForm.value.courseType,
+      courseId: '', // 添加 courseId 字段
+      courseName: searchForm.value.courseName,
+      courseSubject: searchForm.value.courseSubject,
+      courseType: searchForm.value.courseType,
       startSelectCount: searchForm.value.startSelectCount,
       endSelectCount: searchForm.value.endSelectCount,
       startProgress: searchForm.value.startProgress || "0",
@@ -102,10 +103,20 @@ const loadCourses = async () => {
       endSelectTime: searchForm.value.endSelectTime || "2027-01-01T12:00:00",
       sortType: searchForm.value.sortType || "4",
       isAsc: searchForm.value.ascending?.toString() || "true",
-      pageNum: currentPage.value.toString(),
-      pageSize: pageSize.value.toString()
+      pageNum: currentPage.value,
+      pageSize: pageSize.value
     })
-    courses.value = response.data.data.records
+    // 处理响应数据，将后端字段映射到前端字段
+    courses.value = response.data.data.records.map(item => ({
+      id: item.id,
+      courseName: item.name,
+      courseIntroduction: item.profile,
+      courseSubject: item.subjectId,
+      courseType: item.typeId,
+      progress: item.progress || 0, // 提供默认值
+      studyTime: item.studyTime || 0, // 提供默认值
+      score: item.score || 0 // 提供默认值
+    }))
     total.value = response.data.data.total
   } catch (error) {
     ElMessage.error('获取课程列表失败：' + (error.message || '未知错误'))

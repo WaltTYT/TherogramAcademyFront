@@ -69,8 +69,8 @@ const loadHomeworks = async () => {
       endSubmitTime: searchForm.value.endSubmitTime || '2027-01-01T12:00:00',
       sortType: searchForm.value.sortType || '0',
       isAsc: searchForm.value.ascending?.toString() || 'false',
-      pageNum: currentPage.value.toString(),
-      pageSize: pageSize.value.toString()
+      pageNum: currentPage.value,
+      pageSize: pageSize.value
     })
     homeworks.value = response.data.data.records
     total.value = response.data.data.total
