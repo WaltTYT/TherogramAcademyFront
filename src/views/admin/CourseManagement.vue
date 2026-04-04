@@ -25,8 +25,7 @@ const searchForm = reactive({
   startCreateTime: '',
   endCreateTime: '',
   sortType: 0,
-  ascending: true,
-  filterSelected: false
+  ascending: true
 })
 
 const showAdvancedSearch = ref(false)
@@ -144,7 +143,6 @@ const getCourses = async () => {
       endCreateTime: searchForm.endCreateTime,
       sortType: searchForm.sortType,
       ascending: searchForm.ascending,
-      filterSelected: searchForm.filterSelected,
       current: currentPage.value,
       size: pageSize.value
     })
@@ -178,7 +176,6 @@ const handleReset = () => {
   searchForm.endCreateTime = ''
   searchForm.sortType = 0
   searchForm.ascending = true
-  searchForm.filterSelected = false
   currentPage.value = 1
   getCourses()
 }
@@ -196,7 +193,6 @@ const toggleAdvancedSearch = () => {
     searchForm.endCreateTime = ''
     searchForm.sortType = 0
     searchForm.ascending = true
-    searchForm.filterSelected = false
   }
 }
 
@@ -471,17 +467,7 @@ onMounted(() => {
           </el-col>
         </el-row>
         
-        <el-row :gutter="20" v-if="showAdvancedSearch">
-          <el-col :span="8">
-            <el-form-item label="过滤已选修" style="width: 100%;">
-              <el-switch
-                v-model="searchForm.filterSelected"
-                active-text="是"
-                inactive-text="否"
-              />
-            </el-form-item>
-          </el-col>
-        </el-row>
+
         
         <!-- 按钮行（所有搜索条件的下一行） -->
         <el-row :gutter="20" style="margin-top: 15px;">

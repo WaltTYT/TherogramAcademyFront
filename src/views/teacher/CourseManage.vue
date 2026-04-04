@@ -21,8 +21,7 @@ const searchForm = ref({
   startCreateTime: '',
   endCreateTime: '',
   sortType: 0,
-  ascending: true,
-  filterSelected: false
+  ascending: true
 })
 
 const showAdvancedSearch = ref(false)
@@ -182,8 +181,7 @@ const getCourses = async () => {
       startCreateTime: searchForm.value.startCreateTime,
       endCreateTime: searchForm.value.endCreateTime,
       sortType: searchForm.value.sortType,
-      ascending: searchForm.value.ascending,
-      filterSelected: searchForm.value.filterSelected
+      ascending: searchForm.value.ascending
     })
     courses.value = response.data.data.records
     total.value = response.data.data.total
@@ -211,8 +209,7 @@ const handleReset = () => {
     startCreateTime: '',
     endCreateTime: '',
     sortType: 0,
-    ascending: true,
-    filterSelected: false
+    ascending: true
   }
   page.value = 1
   getCourses()
@@ -231,8 +228,7 @@ const toggleAdvancedSearch = () => {
       startCreateTime: '',
       endCreateTime: '',
       sortType: 0,
-      ascending: true,
-      filterSelected: false
+      ascending: true
     }
   }
 }
@@ -370,17 +366,7 @@ onMounted(() => {
           </el-col>
         </el-row>
         
-        <el-row :gutter="20" v-if="showAdvancedSearch">
-          <el-col :span="8">
-            <el-form-item label="过滤已选修" style="width: 100%;">
-              <el-switch
-                v-model="searchForm.filterSelected"
-                active-text="是"
-                inactive-text="否"
-              />
-            </el-form-item>
-          </el-col>
-        </el-row>
+
         
         <!-- 按钮行（所有搜索条件的下一行） -->
         <el-row :gutter="20" style="margin-top: 15px;">
