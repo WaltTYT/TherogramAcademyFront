@@ -20,6 +20,30 @@ const route = useRoute()
 const userStore = useUserStore()
 
 const activeMenu = ref('dashboard')
+
+// 根据当前路由设置activeMenu
+const updateActiveMenu = () => {
+  const path = route.path
+  if (path === '/student') {
+    activeMenu.value = 'dashboard'
+  } else if (path === '/student/select-course') {
+    activeMenu.value = 'select-course'
+  } else if (path === '/student/my-course') {
+    activeMenu.value = 'my-course'
+  } else if (path === '/student/my-homework') {
+    activeMenu.value = 'my-homework'
+  } else if (path === '/student/statistic') {
+    activeMenu.value = 'statistic'
+  }
+}
+
+// 初始化时更新
+updateActiveMenu()
+
+// 监听路由变化
+router.afterEach(() => {
+  updateActiveMenu()
+})
 const showUserManagement = ref(false)
 const searchQuery = ref('')
 
