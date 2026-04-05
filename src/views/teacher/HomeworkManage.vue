@@ -387,7 +387,7 @@ onMounted(() => {
     <el-dialog
       v-model="createDialogVisible"
       title="创建作业"
-      width="800px"
+      width="900px"
       destroy-on-close
     >
       <HomeworkCreate @homework-created="handleHomeworkCreated" @cancel="createDialogVisible = false" />

@@ -59,13 +59,13 @@ loadCourses()
 
 <template>
   <div class="homework-create-container">
-    <el-form :model="form" label-width="100px" label-position="left">
+    <el-form :model="form" label-width="120px" label-position="left">
       <el-form-item label="作业名称" required>
-        <el-input v-model="form.homeworkName" />
+        <el-input v-model="form.homeworkName" style="width: 100%"></el-input>
       </el-form-item>
       <el-form-item label="作业类型" required>
-        <el-select v-model="form.homeworkType" >
-          <el-option v-for="option in homeworkTypeOptions" :key="option.value" :label="option.label" :value="option.value" />
+        <el-select v-model="form.homeworkType" style="width: 100%">
+          <el-option v-for="(option, index) in homeworkTypeOptions" :key="index" :label="option.label" :value="option.value" />
         </el-select>
       </el-form-item>
       <el-form-item label="截止时间" required>
@@ -76,12 +76,12 @@ loadCourses()
         />
       </el-form-item>
       <el-form-item label="课程" required>
-        <el-select v-model="form.courseId" >
-          <el-option v-for="course in courses" :key="course.id" :label="course.courseName" :value="course.id" />
+        <el-select v-model="form.courseId" style="width: 100%">
+          <el-option v-for="(course, index) in courses" :key="index" :label="course.courseName" :value="course.id" />
         </el-select>
       </el-form-item>
       <el-form-item label="作业内容" required>
-        <el-input type="textarea" v-model="form.homeworkContent"  rows="5" />
+        <el-input type="textarea" v-model="form.homeworkContent" rows="5" style="width: 100%"></el-input>
       </el-form-item>
       <el-form-item label="作业附件">
         <el-upload
@@ -110,17 +110,7 @@ loadCourses()
 
 <style scoped>
 .homework-create-container {
-  background: white;
-  padding: 30px;
-  border-radius: 12px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-}
-
-.homework-create-container h2 {
-  font-size: 24px;
-  font-weight: bold;
-  color: #333;
-  margin-bottom: 30px;
+  width: 100%;
 }
 
 .el-form-item {
@@ -132,9 +122,78 @@ loadCourses()
 .el-textarea,
 .el-date-picker {
   width: 100%;
+  min-width: 500px;
 }
 
 .el-button {
   margin-right: 10px;
+}
+
+/* 选择框样式优化 */
+:deep(.el-select) {
+  min-width: 500px;
+  width: 100%;
+}
+
+:deep(.el-select .el-select__input) {
+  padding-left: 10px;
+  width: 100%;
+}
+
+:deep(.el-select .el-select__caret) {
+  right: 10px;
+}
+
+:deep(.el-select .el-select__placeholder) {
+  padding-left: 10px;
+}
+
+:deep(.el-select-dropdown) {
+  min-width: 500px;
+}
+
+/* 输入框样式优化 */
+:deep(.el-input) {
+  min-width: 500px;
+  width: 100%;
+}
+
+:deep(.el-input__inner) {
+  padding-left: 10px;
+  width: 100%;
+}
+
+/* 对话框样式优化 */
+:deep(.el-dialog__header) {
+  padding: 20px 20px 10px;
+}
+
+:deep(.el-dialog__title) {
+  font-size: 18px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 90%;
+}
+
+:deep(.el-form-item__label) {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 120px;
+}
+
+:deep(.el-button--primary) {
+  background-color: #409eff;
+  border-color: #409eff;
+}
+
+:deep(.el-button--danger) {
+  background-color: #f56c6c;
+  border-color: #f56c6c;
+}
+
+:deep(.el-button:hover) {
+  opacity: 0.8;
 }
 </style>
