@@ -422,7 +422,7 @@ onMounted(() => {
         </template>
       </el-table-column>
       <el-table-column prop="createTime" label="创建时间" width="180" />
-      <el-table-column label="操作" width="240">
+      <el-table-column label="操作" width="400">
         <template #default="scope">
           <el-button size="small" @click="handleCourseDetail(scope.row.id)" style="margin-right: 5px">查看</el-button>
           <el-button size="small" type="primary" @click="handleEditCourse(scope.row)" style="margin-right: 5px">编辑</el-button>
