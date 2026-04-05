@@ -512,13 +512,13 @@ onMounted(() => {
     </div>
     
     <!-- 作业编辑对话框 -->
-    <el-dialog v-model="dialogVisible" :title="dialogTitle" width="800px">
-      <el-form ref="homeworkFormRef" :model="homeworkForm" :rules="homeworkFormRules" label-width="100px" label-position="left">
+    <el-dialog v-model="dialogVisible" :title="dialogTitle" width="900px">
+      <el-form ref="homeworkFormRef" :model="homeworkForm" :rules="homeworkFormRules" label-width="120px">
         <el-form-item label="作业名称" prop="homeworkName">
-          <el-input v-model="homeworkForm.homeworkName"  />
+          <el-input v-model="homeworkForm.homeworkName" style="width: 100%"></el-input>
         </el-form-item>
         <el-form-item label="作业类型" prop="homeworkType">
-          <el-select v-model="homeworkForm.homeworkType" >
+          <el-select v-model="homeworkForm.homeworkType" style="width: 100%">
             <el-option v-for="type in homeworkTypes" :key="type.value" :label="type.label" :value="type.value" />
           </el-select>
         </el-form-item>
@@ -531,12 +531,12 @@ onMounted(() => {
           />
         </el-form-item>
         <el-form-item label="课程" prop="courseId">
-          <el-select v-model="homeworkForm.courseId" >
+          <el-select v-model="homeworkForm.courseId" style="width: 100%">
             <el-option v-for="course in courses" :key="course.id" :label="course.courseName" :value="course.id" />
           </el-select>
         </el-form-item>
         <el-form-item label="作业内容" prop="homeworkContent">
-          <el-input v-model="homeworkForm.homeworkContent" type="textarea" rows="4" />
+          <el-input v-model="homeworkForm.homeworkContent" type="textarea" rows="4" style="width: 100%"></el-input>
         </el-form-item>
         <el-form-item label="作业附件">
           <el-upload
@@ -596,6 +596,41 @@ onMounted(() => {
   padding: 20px;
   border-radius: 8px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* 表单样式优化 */
+:deep(.el-form-item__label) {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 120px;
+}
+
+:deep(.el-select) {
+  min-width: 300px;
+  width: 100%;
+}
+
+:deep(.el-input) {
+  min-width: 200px;
+  width: 100%;
+}
+
+:deep(.el-select .el-select__input) {
+  padding-left: 10px;
+  width: 100%;
+}
+
+:deep(.el-select .el-select__caret) {
+  right: 10px;
+}
+
+:deep(.el-select .el-select__placeholder) {
+  padding-left: 10px;
+}
+
+:deep(.el-select-dropdown) {
+  min-width: 300px;
 }
 
 .el-pagination {

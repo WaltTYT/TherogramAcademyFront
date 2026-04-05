@@ -488,21 +488,21 @@ onMounted(() => {
     </div>
     
     <!-- 教学资源编辑对话框 -->
-    <el-dialog v-model="dialogVisible" :title="dialogTitle" width="800px">
-      <el-form ref="resourceFormRef" :model="resourceForm" :rules="resourceFormRules" label-width="100px" label-position="left">
+    <el-dialog v-model="dialogVisible" :title="dialogTitle" width="900px">
+      <el-form ref="resourceFormRef" :model="resourceForm" :rules="resourceFormRules" label-width="120px">
         <el-form-item label="排序ID" prop="sortId">
-          <el-input v-model="resourceForm.sortId"  />
+          <el-input v-model="resourceForm.sortId" style="width: 100%"></el-input>
         </el-form-item>
         <el-form-item label="资源名称" prop="resourceName">
-          <el-input v-model="resourceForm.resourceName"  />
+          <el-input v-model="resourceForm.resourceName" style="width: 100%"></el-input>
         </el-form-item>
         <el-form-item label="资源类型" prop="resourceType">
-          <el-select v-model="resourceForm.resourceType" >
+          <el-select v-model="resourceForm.resourceType" style="width: 100%">
             <el-option v-for="type in resourceTypes" :key="type.value" :label="type.label" :value="type.value" />
           </el-select>
         </el-form-item>
         <el-form-item label="课程" prop="courseId">
-          <el-select v-model="resourceForm.courseId" >
+          <el-select v-model="resourceForm.courseId" style="width: 100%">
             <el-option v-for="course in courses" :key="course.id" :label="course.courseName" :value="course.id" />
           </el-select>
         </el-form-item>
@@ -595,6 +595,41 @@ onMounted(() => {
 .empty-state p {
   font-size: 16px;
   margin: 0;
+}
+
+/* 表单样式优化 */
+:deep(.el-form-item__label) {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 120px;
+}
+
+:deep(.el-select) {
+  min-width: 300px;
+  width: 100%;
+}
+
+:deep(.el-input) {
+  min-width: 200px;
+  width: 100%;
+}
+
+:deep(.el-select .el-select__input) {
+  padding-left: 10px;
+  width: 100%;
+}
+
+:deep(.el-select .el-select__caret) {
+  right: 10px;
+}
+
+:deep(.el-select .el-select__placeholder) {
+  padding-left: 10px;
+}
+
+:deep(.el-select-dropdown) {
+  min-width: 300px;
 }
 
 /* 表格样式优化 */
