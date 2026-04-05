@@ -32,13 +32,14 @@ const loadHomeworkDetail = async () => {
   loading.value = true
   try {
     const response = await getHomeworkDetail(homeworkId)
-    homework.value = response.data
+    const homeworkData = response.data.data || response.data
+    homework.value = homeworkData
     form.value = {
-      homeworkName: response.data.homeworkName,
-      homeworkType: response.data.homeworkType,
-      deadline: response.data.deadline,
-      homeworkContent: response.data.homeworkContent,
-      courseId: response.data.courseId
+      homeworkName: homeworkData.name || homeworkData.homeworkName,
+      homeworkType: homeworkData.type || homeworkData.homeworkType,
+      deadline: homeworkData.deadline,
+      homeworkContent: homeworkData.content || homeworkData.homeworkContent,
+      courseId: homeworkData.courseId
     }
   } catch (error) {
     ElMessage.error('获取作业详情失败：' + (error.message || '未知错误'))
