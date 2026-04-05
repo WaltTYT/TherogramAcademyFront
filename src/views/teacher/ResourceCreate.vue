@@ -52,19 +52,31 @@ const handleFileChange = (file, fileList) => {
 const handleSubmit = async () => {
   loading.value = true
   try {
+    console.log('开始创建教学资源，表单数据:', form)
     // 先创建教学资源
     const createResponse = await createCourseResource(form)
+    console.log('创建教学资源响应:', createResponse)
     const resourceId = createResponse.data.data
     
     // 如果有文件，上传附件
     if (fileList.value.length > 0) {
+      console.log('开始上传附件，资源ID:', resourceId)
       await uploadCourseResource(resourceId, fileList.value[0].raw)
+      console.log('附件上传成功')
     }
     
     ElMessage.success('教学资源创建成功')
     emit('resource-created')
   } catch (error) {
-    ElMessage.error('教学资源创建失败：' + (error.message || '未知错误'))
+    console.error('教学资源创建失败:', error)
+    console.error('错误响应:', error.response)
+    let errorMessage = '教学资源创建失败'
+    if (error.response && error.response.data && error.response.data.msg) {
+      errorMessage = '教学资源创建失败: ' + error.response.data.msg
+    } else if (error.message) {
+      errorMessage = '教学资源创建失败: ' + error.message
+    }
+    ElMessage.error(errorMessage)
   } finally {
     loading.value = false
   }

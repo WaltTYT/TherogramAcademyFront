@@ -134,11 +134,21 @@ const handleEditCourse = (course) => {
 
 const handleDeleteCourse = async (courseId) => {
   try {
-    await courseApi.deleteCourse(courseId)
+    console.log('开始删除课程，课程ID:', courseId)
+    const response = await courseApi.deleteCourse(courseId)
+    console.log('删除课程响应:', response)
     ElMessage.success('课程删除成功')
     getCourses()
   } catch (error) {
-    ElMessage.error('课程删除失败')
+    console.error('课程删除失败:', error)
+    console.error('错误响应:', error.response)
+    let errorMessage = '课程删除失败'
+    if (error.response && error.response.data && error.response.data.msg) {
+      errorMessage = '课程删除失败: ' + error.response.data.msg
+    } else if (error.message) {
+      errorMessage = '课程删除失败: ' + error.message
+    }
+    ElMessage.error(errorMessage)
   }
 }
 
