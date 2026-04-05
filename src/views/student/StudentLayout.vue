@@ -10,6 +10,7 @@ import MyCourse from './MyCourse.vue'
 import CourseDetail from './CourseDetail.vue'
 import MyHomework from './MyHomework.vue'
 import HomeworkDetail from './HomeworkDetail.vue'
+import ResourceDetail from './ResourceDetail.vue'
 import SubmitHomework from './SubmitHomework.vue'
 import Statistic from './Statistic.vue'
 import UserManagement from './UserManagement.vue'
@@ -36,6 +37,7 @@ const currentComponent = computed(() => {
   if (name === 'StudentCourseDetail') return CourseDetail
   if (name === 'StudentMyHomework') return MyHomework
   if (name === 'StudentHomeworkDetail') return HomeworkDetail
+  if (name === 'StudentResourceDetail') return ResourceDetail
   if (name === 'StudentSubmitHomework') return SubmitHomework
   if (name === 'StudentStatistic') return Statistic
   if (name === 'StudentUserManagement') return UserManagement

@@ -81,6 +81,13 @@ const sortTypeOptions = [
   { value: '4', label: '按成绩' }
 ]
 
+// 成绩状态映射
+const scoreStatusMap = {
+  'PENDING': '待评定',
+  'APPROVED': '已通过',
+  'REJECTED': '未通过'
+}
+
 const loadCourses = async () => {
   loading.value = true
   try {
@@ -428,7 +435,11 @@ onMounted(() => {
         </template>
       </el-table-column>
       <el-table-column prop="studyTime" label="学习时长(分钟)" width="120" />
-      <el-table-column prop="score" label="成绩" width="80" />
+      <el-table-column prop="score" label="成绩" width="80">
+        <template #default="scope">
+          {{ scoreStatusMap[scope.row.score] || scope.row.score }}
+        </template>
+      </el-table-column>
       <el-table-column label="操作" width="200">
         <template #default="scope">
           <div class="button-group">

@@ -2,13 +2,11 @@
 import { ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ElMessage, ElLoading } from 'element-plus'
-import { getStudentHomeworkDetail, downloadHomework } from '../../api/homework'
+import { getHomeworkDetail, downloadHomework } from '../../api/homework'
 import { Download } from '@element-plus/icons-vue'
-import { useUserStore } from '../../stores/user'
 
 const route = useRoute()
 const router = useRouter()
-const userStore = useUserStore()
 const homeworkId = route.params.id
 
 const homework = ref(null)
@@ -21,8 +19,7 @@ onMounted(async () => {
 const loadHomeworkDetail = async () => {
   loading.value = true
   try {
-    const studentId = userStore.userInfo?.id || ''
-    const response = await getStudentHomeworkDetail(studentId, homeworkId)
+    const response = await getHomeworkDetail(homeworkId)
     homework.value = response.data.data
   } catch (error) {
     ElMessage.error('获取作业详情失败：' + (error.message || '未知错误'))
@@ -41,7 +38,7 @@ const handleBack = () => {
 
 // 下载作业附件
 const handleDownloadAttachment = async () => {
-  if (!homework.value || !homework.value.attachmentUrl) {
+  if (!homework.value || !homework.value.attachment) {
     ElMessage.warning('该作业没有附件')
     return
   }
@@ -53,7 +50,7 @@ const handleDownloadAttachment = async () => {
       background: 'rgba(0, 0, 0, 0.7)'
     })
     
-    const response = await downloadHomework(homework.value.attachmentUrl)
+    const response = await downloadHomework(homework.value.attachment)
     
     // 创建下载链接
     const blob = new Blob([response.data])
@@ -62,7 +59,7 @@ const handleDownloadAttachment = async () => {
     link.href = url
     
     // 从URL中提取文件名
-    const fileName = homework.value.attachmentUrl.split('/').pop()
+    const fileName = homework.value.attachment.split('/').pop()
     link.download = fileName
     
     document.body.appendChild(link)
@@ -84,14 +81,14 @@ const handleDownloadAttachment = async () => {
       <h2>作业详情</h2>
       <div class="actions">
         <el-button 
-          v-if="homework && homework.attachmentUrl" 
+          v-if="homework && homework.attachment" 
           type="info" 
           @click="handleDownloadAttachment"
           :icon="Download"
         >
           下载附件
         </el-button>
-        <el-button v-if="homework && homework.status === 'UNSUBMITTED'" type="primary" @click="handleSubmit">提交作业</el-button>
+        <el-button v-if="homework && homework.reviewStatus === 'UNSUBMITTED'" type="primary" @click="handleSubmit">提交作业</el-button>
         <el-button @click="handleBack">返回</el-button>
       </div>
     </div>
@@ -100,20 +97,21 @@ const handleDownloadAttachment = async () => {
       <div class="info-section">
         <h3>作业信息</h3>
         <el-descriptions :column="2">
-          <el-descriptions-item label="作业名称">{{ homework.homeworkName }}</el-descriptions-item>
-          <el-descriptions-item label="作业类型">{{ homework.homeworkType === 'HOMEWORK' ? '作业' : '考试' }}</el-descriptions-item>
-          <el-descriptions-item label="课程名称">{{ homework.courseName }}</el-descriptions-item>
+          <el-descriptions-item label="作业名称">{{ homework.name }}</el-descriptions-item>
+          <el-descriptions-item label="作业类型">{{ homework.type === 'HOMEWORK' ? '作业' : '考试' }}</el-descriptions-item>
+          <el-descriptions-item label="课程名称">{{ homework.courseName || '未知课程' }}</el-descriptions-item>
           <el-descriptions-item label="截止时间">{{ homework.deadline }}</el-descriptions-item>
-          <el-descriptions-item label="提交时间">{{ homework.submitTime || '未提交' }}</el-descriptions-item>
+          <el-descriptions-item label="提交时间">{{ homework.studentHomeworkSubmitTime || '未提交' }}</el-descriptions-item>
           <el-descriptions-item label="提交状态" :span="2">
-            <el-tag v-if="homework.status === 'UNSUBMITTED'" type="warning">未提交</el-tag>
-            <el-tag v-else-if="homework.status === 'PENDING'" type="info">未评定</el-tag>
-            <el-tag v-else-if="homework.status === 'APPROVED'" type="success">评定通过</el-tag>
-            <el-tag v-else type="danger">评定未通过</el-tag>
+            <el-tag v-if="homework.reviewStatus === 'UNSUBMITTED'" type="warning">未提交</el-tag>
+            <el-tag v-else-if="homework.reviewStatus === 'PENDING'" type="info">未评定</el-tag>
+            <el-tag v-else-if="homework.reviewStatus === 'APPROVED'" type="success">评定通过</el-tag>
+            <el-tag v-else-if="homework.reviewStatus === 'REJECTED'" type="danger">评定未通过</el-tag>
+            <el-tag v-else type="info">未提交</el-tag>
           </el-descriptions-item>
-          <el-descriptions-item v-if="homework.attachmentUrl" label="作业附件" :span="2">
+          <el-descriptions-item v-if="homework.attachment" label="作业附件" :span="2">
             <el-button type="text" @click="handleDownloadAttachment" :icon="Download">
-              {{ homework.attachmentUrl.split('/').pop() }}
+              {{ homework.attachment.split('/').pop() }}
             </el-button>
           </el-descriptions-item>
         </el-descriptions>
@@ -121,19 +119,19 @@ const handleDownloadAttachment = async () => {
       
       <div class="content-section">
         <h3>作业内容</h3>
-        <div class="homework-content">{{ homework.homeworkContent }}</div>
+        <div class="homework-content">{{ homework.content || '无作业内容' }}</div>
       </div>
       
-      <div v-if="homework.status !== 'UNSUBMITTED'" class="submission-section">
+      <div v-if="homework.reviewStatus !== 'UNSUBMITTED'" class="submission-section">
         <h3>我的提交</h3>
-        <div class="submission-content">{{ homework.submissionContent || '无提交内容' }}</div>
+        <div class="submission-content">{{ homework.studentHomeworkContent || '无提交内容' }}</div>
       </div>
       
-      <div v-if="homework.status === 'APPROVED' || homework.status === 'REJECTED'" class="evaluation-section">
+      <div v-if="homework.reviewStatus === 'APPROVED' || homework.reviewStatus === 'REJECTED'" class="evaluation-section">
         <h3>老师评定</h3>
         <el-descriptions :column="1">
           <el-descriptions-item label="分数">{{ homework.score }}</el-descriptions-item>
-          <el-descriptions-item label="评语">{{ homework.evaluation || '无评语' }}</el-descriptions-item>
+          <el-descriptions-item label="评语">{{ homework.rejectedReason || '无评语' }}</el-descriptions-item>
         </el-descriptions>
       </div>
     </el-card>

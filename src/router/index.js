@@ -302,6 +302,14 @@ const routes = [
         }
       },
       {
+        path: 'resource/:id',
+        name: 'StudentResourceDetail',
+        component: () => import('../views/student/ResourceDetail.vue'),
+        meta: {
+          requiresAuth: true
+        }
+      },
+      {
         path: 'statistic',
         name: 'StudentStatistic',
         component: () => import('../views/student/Statistic.vue'),

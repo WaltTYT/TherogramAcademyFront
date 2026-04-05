@@ -53,8 +53,8 @@ const loadHomeworks = async () => {
 }
 
 const handleResourceDetail = (resourceId) => {
-  // 这里可以跳转到资源详情页面
-  console.log('查看资源详情：', resourceId)
+  // 跳转到资源详情页面
+  router.push(`/student/resource/${resourceId}`)
 }
 
 const handleHomeworkDetail = (homeworkId) => {
@@ -127,17 +127,17 @@ const handleDownloadResource = async (resource) => {
     
     <el-card v-if="course" class="course-card">
       <div class="course-info">
-        <h3>{{ course.courseName }}</h3>
+        <h3>{{ course.name }}</h3>
         <el-descriptions :column="2">
-          <el-descriptions-item label="课程简介">{{ course.courseIntroduction }}</el-descriptions-item>
-          <el-descriptions-item label="课程目标">{{ course.courseObjective }}</el-descriptions-item>
-          <el-descriptions-item label="课程内容">{{ course.courseContent }}</el-descriptions-item>
-          <el-descriptions-item label="课程大纲">{{ course.courseOutline }}</el-descriptions-item>
+          <el-descriptions-item label="课程简介">{{ course.profile }}</el-descriptions-item>
+          <el-descriptions-item label="课程目标">{{ course.target }}</el-descriptions-item>
+          <el-descriptions-item label="课程内容">{{ course.content }}</el-descriptions-item>
+          <el-descriptions-item label="课程大纲">{{ course.outline }}</el-descriptions-item>
           <el-descriptions-item label="学习进度" :span="2">
-            <el-progress :percentage="course.progress" :stroke-width="15" />
+            <el-progress :percentage="parseInt(course.progress) || 0" :stroke-width="15" />
             <div class="progress-info">
-              <span>当前进度：{{ course.progress }}%</span>
-              <span>学习时长：{{ course.studyTime }}分钟</span>
+              <span>当前进度：{{ course.progress || '0%' }}</span>
+              <span>学习时长：{{ course.studyTime || 0 }}分钟</span>
               <span v-if="course.score">成绩：{{ course.score }}</span>
             </div>
           </el-descriptions-item>
