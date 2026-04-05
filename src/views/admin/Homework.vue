@@ -108,8 +108,8 @@ const getCourses = async () => {
       // 学生获取选修的课程
       response = await courseApi.getSelectCoursePage({})
     } else {
-      // 教师和管理员获取创建的课程
-      response = await courseApi.getCreateCoursePage({})
+      // 教师和管理员获取所有课程
+      response = await courseApi.getCoursePage({})
     }
     if (response.data.code === 200) {
       courses.value = response.data.data.records
@@ -330,7 +330,7 @@ onMounted(() => {
                 <el-option
                   v-for="course in courses"
                   :key="course.id"
-                  :label="course.courseName"
+                  :label="course.name"
                   :value="course.id"
                 />
               </el-select>
@@ -532,7 +532,7 @@ onMounted(() => {
         </el-form-item>
         <el-form-item label="课程" prop="courseId">
           <el-select v-model="homeworkForm.courseId" style="width: 100%">
-            <el-option v-for="course in courses" :key="course.id" :label="course.courseName" :value="course.id" />
+            <el-option v-for="course in courses" :key="course.id" :label="course.name" :value="course.id" />
           </el-select>
         </el-form-item>
         <el-form-item label="作业内容" prop="homeworkContent">

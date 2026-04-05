@@ -102,8 +102,8 @@ const getCourses = async () => {
       // 学生获取选修的课程
       response = await courseApi.getSelectCoursePage({})
     } else {
-      // 教师和管理员获取创建的课程
-      response = await courseApi.getCreateCoursePage({})
+      // 教师和管理员获取所有课程
+      response = await courseApi.getCoursePage({})
     }
     if (response.data.code === 200) {
       courses.value = response.data.data.records
@@ -217,11 +217,11 @@ const openEditDialog = (resource) => {
   isEdit.value = true
   // 填充表单
   resourceForm.id = resource.id
-  resourceForm.sortId = resource.sortId
-  resourceForm.resourceName = resource.resourceName
+  resourceForm.sortId = resource.orderId
+  resourceForm.resourceName = resource.name
   resourceForm.resourceType = resource.resourceType
   resourceForm.courseId = resource.courseId
-  fileList.value = resource.resourceUrl ? [{ url: resource.resourceUrl }] : []
+  fileList.value = resource.uri ? [{ url: resource.uri }] : []
   dialogVisible.value = true
 }
 
@@ -252,7 +252,7 @@ const saveResource = async () => {
 
 // 删除教学资源
 const deleteResource = (resource) => {
-  ElMessageBox.confirm(`确定要删除教学资源「${resource.resourceName}」吗？`, '警告', {
+  ElMessageBox.confirm(`确定要删除教学资源「${resource.name}」吗？`, '警告', {
     confirmButtonText: '确定',
     cancelButtonText: '取消',
     type: 'warning'
@@ -282,13 +282,13 @@ const viewResourceDetail = (resource) => {
 // 下载教学资源
 const downloadResource = async (resource) => {
   try {
-    const response = await courseResourceApi.downloadCourseResource(resource.resourceUrl)
+    const response = await courseResourceApi.downloadCourseResource(resource.uri)
     // 创建下载链接
     const url = window.URL.createObjectURL(new Blob([response.data]))
     const link = document.createElement('a')
     link.href = url
     // 从URL中提取文件名
-    const fileName = resource.resourceUrl.split('/').pop()
+    const fileName = resource.uri.split('/').pop()
     link.setAttribute('download', fileName)
     document.body.appendChild(link)
     link.click()
@@ -332,7 +332,7 @@ onMounted(() => {
                 <el-option
                   v-for="course in courses"
                   :key="course.id"
-                  :label="course.courseName"
+                  :label="course.name"
                   :value="course.id"
                 />
               </el-select>
@@ -450,8 +450,8 @@ onMounted(() => {
         :cell-style="{ textAlign: 'center' }"
         :header-cell-style="{ textAlign: 'center', fontWeight: 'bold', backgroundColor: '#f5f7fa' }"
       >
-        <el-table-column prop="sortId" label="排序ID" width="80" />
-        <el-table-column prop="resourceName" label="资源名称" min-width="300" />
+        <el-table-column prop="orderId" label="排序ID" width="80" />
+        <el-table-column prop="name" label="资源名称" min-width="300" />
         <el-table-column prop="resourceType" label="资源类型" width="120">
           <template #default="{ row }">
             {{ resourceTypes.find(t => t.value == row.resourceType)?.label || row.resourceType }}
@@ -503,8 +503,8 @@ onMounted(() => {
         </el-form-item>
         <el-form-item label="课程" prop="courseId">
           <el-select v-model="resourceForm.courseId" style="width: 100%">
-            <el-option v-for="course in courses" :key="course.id" :label="course.courseName" :value="course.id" />
-          </el-select>
+              <el-option v-for="course in courses" :key="course.id" :label="course.name" :value="course.id" />
+            </el-select>
         </el-form-item>
         <el-form-item label="资源文件">
           <el-upload
