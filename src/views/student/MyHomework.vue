@@ -2,7 +2,7 @@
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage, ElLoading, ElInputNumber, ElDatePicker, ElSwitch, ElSelect, ElOption, ElIcon } from 'element-plus'
-import { getStudentHomeworkPage, remindHomework, getHomeworksByCourse } from '../../api/homework'
+import { getHomeworkPage, remindHomework, getHomeworksByCourse } from '../../api/homework'
 import { getUserDetail } from '../../api/user'
 import { getSelectCoursePage, getSelectedCoursesByUserId } from '../../api/course'
 import { useUserStore } from '../../stores/user'
@@ -11,6 +11,7 @@ const router = useRouter()
 const userStore = useUserStore()
 
 const homeworks = ref([])
+const courses = ref([])
 const reminders = ref([])
 const showAllReminders = ref(false)
 const maxVisibleReminders = 5
@@ -19,9 +20,17 @@ const currentPage = ref(1)
 const pageSize = ref(10)
 const total = ref(0)
 
+// 提交作业相关
+const showSubmitDialog = ref(false)
+const currentHomework = ref(null)
+const submitForm = ref({
+  content: '',
+  attachment: null
+})
+const uploadLoading = ref(false)
+
 const searchForm = ref({
   courseId: '',
-  homeworkName: '',
   homeworkType: '',
   status: '',
   startScore: 0,
@@ -56,6 +65,81 @@ const sortTypeOptions = [
   { value: 2, label: '按分数' },
   { value: 3, label: '按提交时间' }
 ]
+
+// 加载学生选修的课程
+const loadCourses = async () => {
+  try {
+    // 先获取用户详情，确保有学生 ID
+    let studentId = userStore.userInfo?.id
+    if (!studentId) {
+      try {
+        const userResponse = await getUserDetail()
+        if (userResponse.data.code === 200 && userResponse.data.data) {
+          studentId = userResponse.data.data.id
+          // 更新用户信息到 store
+          userStore.setUserInfo(userStore.token, userStore.roleType, userResponse.data.data)
+        }
+      } catch (error) {
+        console.error('获取用户详情失败:', error)
+        ElMessage.error('获取用户信息失败，无法查询课程')
+        courses.value = []
+        return
+      }
+    }
+    
+    console.log('开始获取学生选修课程，学生 ID:', studentId)
+    
+    // 确保学生ID存在
+    if (!studentId) {
+      console.error('学生ID不存在')
+      ElMessage.error('学生信息不完整，无法查询课程')
+      courses.value = []
+      return
+    }
+    
+    const response = await getSelectCoursePage({
+      name: "",
+      subjectId: "",
+      typeId: "",
+      startSelectCount: "",
+      endSelectCount: "",
+      startProgress: "0",
+      endProgress: "100",
+      startScore: "",
+      endScore: "",
+      startSelectTime: "2025-01-01T12:00:00",
+      endSelectTime: "2027-01-01T12:00:00",
+      startStudyTime: "0",
+      endStudyTime: "1000",
+      startCreateTime: "2025-01-01T00:00:00",
+      endCreateTime: "2027-01-01T12:00:00",
+      sortType: "4",
+      isAsc: "true",
+      pageNum: "1",
+      pageSize: "100"
+    })
+    
+    console.log('课程列表响应:', response)
+    
+    if (response.data.code === 200) {
+      if (response.data.data && Array.isArray(response.data.data.records)) {
+        courses.value = response.data.data.records
+        console.log('学生选修的课程:', courses.value)
+      } else {
+        courses.value = []
+        console.log('返回数据结构异常:', response.data.data)
+      }
+    } else {
+      console.log('返回错误:', response.data.message)
+      ElMessage.error('获取课程列表失败：' + (response.data.message || '未知错误'))
+      courses.value = []
+    }
+  } catch (error) {
+    console.error('获取课程列表失败:', error)
+    ElMessage.error('获取课程列表失败：' + (error.message || '未知错误'))
+    courses.value = []
+  }
+}
 
 const loadHomeworks = async () => {
   loading.value = true
@@ -111,10 +195,10 @@ const loadHomeworks = async () => {
       return
     }
     
-    const response = await getStudentHomeworkPage({
+    const response = await getHomeworkPage({
       studentId: studentId,
       courseId: searchForm.value.courseId || null,
-      name: searchForm.value.homeworkName || null,
+      name: null,
       type: searchForm.value.homeworkType || null,
       reviewStatus: searchForm.value.status || null,
       startScore: searchForm.value.startScore,
@@ -143,7 +227,12 @@ const loadHomeworks = async () => {
       } else if (response.data.data && Array.isArray(response.data.data.records)) {
         // 适配分页数据结构
         console.log('返回分页数据:', response.data.data.records)
-        homeworks.value = response.data.data.records
+        // 处理作业数据，确保 reviewStatus 字段正确
+        homeworks.value = response.data.data.records.map(homework => {
+          // 检查作业数据结构
+          console.log('作业数据:', homework)
+          return homework
+        })
         total.value = response.data.data.total || 0
       } else {
         console.log('返回数据结构异常:', response.data.data)
@@ -245,7 +334,6 @@ const handleSearch = () => {
 const handleReset = () => {
   searchForm.value = {
     courseId: '',
-    homeworkName: '',
     homeworkType: '',
     status: '',
     startScore: 0,
@@ -268,7 +356,6 @@ const toggleAdvancedSearch = () => {
   if (!showAdvancedSearch.value) {
     searchForm.value = {
       courseId: '',
-      homeworkName: '',
       homeworkType: '',
       status: '',
       startScore: 0,
@@ -344,9 +431,107 @@ const testStudentCourses = async () => {
   }
 }
 
+// 打开提交作业对话框
+const handleSubmitHomework = (homework) => {
+  currentHomework.value = homework
+  submitForm.value = {
+    content: '',
+    attachment: null
+  }
+  showSubmitDialog.value = true
+}
+
+// 保存提交的作业
+const saveSubmitHomework = async () => {
+  if (!currentHomework.value) {
+    ElMessage.error('作业信息不完整')
+    return
+  }
+  
+  try {
+    // 先获取用户详情，确保有学生 ID
+    let studentId = userStore.userInfo?.id
+    if (!studentId) {
+      try {
+        const userResponse = await getUserDetail()
+        if (userResponse.data.code === 200 && userResponse.data.data) {
+          studentId = userResponse.data.data.id
+          // 更新用户信息到 store
+          userStore.setUserInfo(userStore.token, userStore.roleType, userResponse.data.data)
+        }
+      } catch (error) {
+        console.error('获取用户详情失败:', error)
+        ElMessage.error('获取用户信息失败，无法提交作业')
+        return
+      }
+    }
+    
+    // 确保学生ID存在
+    if (!studentId) {
+      console.error('学生ID不存在')
+      ElMessage.error('学生信息不完整，无法提交作业')
+      return
+    }
+    
+    // 构建提交数据
+    const submitData = {
+      studentId: studentId,
+      homeworkId: currentHomework.value.id,
+      content: submitForm.value.content
+    }
+    
+    // 先提交作业
+    const submitResponse = await submitHomework(submitData)
+    console.log('作业提交响应:', submitResponse)
+    
+    if (submitResponse.data.code === 200) {
+      // 如果有附件，上传附件
+      if (submitForm.value.attachment) {
+        uploadLoading.value = true
+        try {
+          const uploadResponse = await uploadStudentHomework(
+            studentId,
+            currentHomework.value.id,
+            submitForm.value.attachment
+          )
+          console.log('附件上传响应:', uploadResponse)
+          
+          if (uploadResponse.data.code !== 200) {
+            ElMessage.warning('作业提交成功，但附件上传失败')
+          }
+        } catch (error) {
+          console.error('附件上传失败:', error)
+          ElMessage.warning('作业提交成功，但附件上传失败')
+        } finally {
+          uploadLoading.value = false
+        }
+      }
+      
+      ElMessage.success('作业提交成功')
+      showSubmitDialog.value = false
+      // 重新加载作业列表
+      loadHomeworks()
+    } else {
+      ElMessage.error('作业提交失败：' + (submitResponse.data.msg || '未知错误'))
+    }
+  } catch (error) {
+    console.error('提交作业失败:', error)
+    ElMessage.error('作业提交失败：' + (error.message || '未知错误'))
+  }
+}
+
+// 处理文件上传
+const handleFileUpload = (file) => {
+  submitForm.value.attachment = file.raw
+  return false // 阻止自动上传
+}
+
 onMounted(() => {
-  loadHomeworks()
-  loadReminders()
+  // 先加载课程，再加载作业
+  loadCourses().then(() => {
+    loadHomeworks()
+    loadReminders()
+  })
   // 执行测试
   testStudentCourses()
 })
@@ -387,13 +572,20 @@ onMounted(() => {
         <!-- 基础搜索条件 -->
         <el-row :gutter="20">
           <el-col :span="8">
-            <el-form-item label="作业名称" style="width: 100%;">
-              <el-input
-                v-model="searchForm.homeworkName"
-                placeholder="请输入作业名称"
+            <el-form-item label="课程" style="width: 100%;">
+              <el-select
+                v-model="searchForm.courseId"
+                placeholder="请选择课程"
                 clearable
-                @keyup.enter="handleSearch"
-              />
+                style="width: 100%;"
+              >
+                <el-option
+                  v-for="course in courses"
+                  :key="course.id"
+                  :label="course.name || course.courseName"
+                  :value="course.id"
+                />
+              </el-select>
             </el-form-item>
           </el-col>
           <el-col :span="8">
@@ -413,6 +605,9 @@ onMounted(() => {
               </el-select>
             </el-form-item>
           </el-col>
+        </el-row>
+        
+        <el-row :gutter="20">
           <el-col :span="8">
             <el-form-item label="提交状态" style="width: 100%;">
               <el-select
@@ -556,11 +751,6 @@ onMounted(() => {
       :header-cell-style="{ textAlign: 'center', fontWeight: 'bold', backgroundColor: '#f5f7fa' }"
     >
       <el-table-column prop="name" label="作业名称" min-width="300" />
-      <el-table-column label="课程名称" width="180">
-        <template #default="scope">
-          {{ scope.row.courseName || '未知课程' }}
-        </template>
-      </el-table-column>
       <el-table-column prop="type" label="作业类型" width="120">
         <template #default="scope">
           {{ scope.row.type === 'HOMEWORK' ? '作业' : scope.row.type === 'EXAM' ? '考试' : '未知' }}
@@ -578,9 +768,10 @@ onMounted(() => {
           <el-tag v-else type="info">未提交</el-tag>
         </template>
       </el-table-column>
-      <el-table-column label="操作" width="150">
+      <el-table-column label="操作" width="300">
         <template #default="scope">
-          <el-button type="primary" size="small" @click="handleHomeworkDetail(scope.row.id)">查看详情</el-button>
+          <el-button type="primary" size="small" @click="handleHomeworkDetail(scope.row.id)">查看</el-button>
+          <el-button type="success" size="small" @click="handleSubmitHomework(scope.row)">提交</el-button>
         </template>
       </el-table-column>
       <template #empty>
@@ -603,6 +794,49 @@ onMounted(() => {
       @size-change="loadHomeworks"
       @current-change="handlePageChange"
     />
+    
+    <!-- 提交作业对话框 -->
+    <el-dialog
+      v-model="showSubmitDialog"
+      :title="'提交作业: ' + (currentHomework?.name || '')"
+      width="500px"
+    >
+      <el-form :model="submitForm" label-width="100px">
+        <el-form-item label="作业内容">
+          <el-input
+            v-model="submitForm.content"
+            type="textarea"
+            rows="5"
+            placeholder="请输入作业内容"
+          />
+        </el-form-item>
+        <el-form-item label="上传附件">
+          <el-upload
+            class="upload-demo"
+            action=""
+            :auto-upload="false"
+            :on-change="handleFileUpload"
+            :show-file-list="true"
+            :file-list="[]"
+          >
+            <el-button size="small" type="primary">选择文件</el-button>
+            <template #tip>
+              <div class="el-upload__tip">
+                请选择要上传的作业文件
+              </div>
+            </template>
+          </el-upload>
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <span class="dialog-footer">
+          <el-button @click="showSubmitDialog = false">取消</el-button>
+          <el-button type="primary" @click="saveSubmitHomework" :loading="uploadLoading">
+            提交作业
+          </el-button>
+        </span>
+      </template>
+    </el-dialog>
   </div>
 </template>
 
