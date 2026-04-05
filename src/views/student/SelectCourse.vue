@@ -317,7 +317,7 @@ onMounted(() => {
           {{ reviewStatusMap[scope.row.reviewStatus] || scope.row.reviewStatus }}
         </template>
       </el-table-column>
-      <el-table-column label="操作" width="200">
+      <el-table-column label="操作" width="250">
         <template #default="scope">
           <div class="button-group">
             <el-button size="small" @click="handleCourseDetail(scope.row.id)" style="margin-right: 8px">查看详情</el-button>
