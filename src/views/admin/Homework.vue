@@ -133,19 +133,19 @@ const getHomeworks = async () => {
   try {
     const response = await homeworkApi.getHomeworkPage({
       courseId: selectedCourseId.value,
-      homeworkName: searchForm.homeworkName,
-      homeworkType: searchForm.homeworkType,
-      isFilterDeleted: searchForm.isFilterDeleted,
-      startSubmitCount: searchForm.startSubmitCount,
-      endSubmitCount: searchForm.endSubmitCount,
-      startDeadline: searchForm.startDeadline,
-      endDeadline: searchForm.endDeadline,
-      startCreateTime: searchForm.startCreateTime,
-      endCreateTime: searchForm.endCreateTime,
-      sortType: searchForm.sortType,
-      isAsc: searchForm.isAsc,
-      current: currentPage.value,
-      size: pageSize.value
+      name: searchForm.homeworkName,
+      type: searchForm.homeworkType || "HOMEWORK",
+      isDeleted: "false",
+      startSubmitCount: searchForm.startSubmitCount || "0",
+      endSubmitCount: searchForm.endSubmitCount || "7",
+      startDeadline: searchForm.startDeadline || "2025-01-01T12:00:00",
+      endDeadline: searchForm.endDeadline || "2027-12-01T12:00:00",
+      startCreateTime: searchForm.startCreateTime || "2025-01-01T12:00:00",
+      endCreateTime: searchForm.endCreateTime || "2027-01-01T12:00:00",
+      sortType: searchForm.sortType || "2",
+      isAsc: searchForm.isAsc?.toString() || "false",
+      pageNum: currentPage.value,
+      pageSize: pageSize.value
     })
     if (response.data.code === 200) {
       homeworks.value = response.data.data.records
