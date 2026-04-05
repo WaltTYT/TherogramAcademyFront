@@ -32,7 +32,7 @@ const searchForm = ref({
   endCreateTime: '2027-01-01T12:00:00',
   startSubmitTime: '2025-01-01T12:00:00',
   endSubmitTime: '2027-01-01T12:00:00',
-  sortType: '0',
+  sortType: 0,
   ascending: false
 })
 
@@ -51,10 +51,10 @@ const statusOptions = [
 ]
 
 const sortTypeOptions = [
-  { value: '0', label: '按截至时间' },
-  { value: '1', label: '按创建时间' },
-  { value: '2', label: '按分数' },
-  { value: '3', label: '按提交时间' }
+  { value: 0, label: '按截至时间' },
+  { value: 1, label: '按创建时间' },
+  { value: 2, label: '按分数' },
+  { value: 3, label: '按提交时间' }
 ]
 
 const loadHomeworks = async () => {
@@ -87,8 +87,8 @@ const loadHomeworks = async () => {
       name: searchForm.value.homeworkName || null,
       type: searchForm.value.homeworkType || null,
       reviewStatus: searchForm.value.status || null,
-      startScore: searchForm.value.startScore?.toString() || null,
-      endScore: searchForm.value.endScore?.toString() || null,
+      startScore: searchForm.value.startScore,
+      endScore: searchForm.value.endScore,
       startDeadline: searchForm.value.startDeadline,
       endDeadline: searchForm.value.endDeadline,
       startCreateTime: searchForm.value.startCreateTime,
@@ -96,9 +96,9 @@ const loadHomeworks = async () => {
       startSubmitTime: searchForm.value.startSubmitTime,
       endSubmitTime: searchForm.value.endSubmitTime,
       sortType: searchForm.value.sortType,
-      isAsc: searchForm.value.ascending?.toString() || 'false',
-      pageNum: currentPage.value.toString(),
-      pageSize: pageSize.value.toString()
+      isAsc: searchForm.value.ascending,
+      pageNum: currentPage.value,
+      pageSize: pageSize.value
     })
     
     // 确保学生ID存在
@@ -117,18 +117,18 @@ const loadHomeworks = async () => {
       name: searchForm.value.homeworkName || null,
       type: searchForm.value.homeworkType || null,
       reviewStatus: searchForm.value.status || null,
-      startScore: searchForm.value.startScore?.toString() || null,
-      endScore: searchForm.value.endScore?.toString() || null,
+      startScore: searchForm.value.startScore,
+      endScore: searchForm.value.endScore,
       startDeadline: searchForm.value.startDeadline,
       endDeadline: searchForm.value.endDeadline,
       startCreateTime: searchForm.value.startCreateTime,
       endCreateTime: searchForm.value.endCreateTime,
       startSubmitTime: searchForm.value.startSubmitTime,
       endSubmitTime: searchForm.value.endSubmitTime,
-      sortType: searchForm.value.sortType,
-      isAsc: searchForm.value.ascending?.toString() || 'false',
-      pageNum: currentPage.value.toString(),
-      pageSize: pageSize.value.toString()
+      sortType: parseInt(searchForm.value.sortType),
+      isAsc: searchForm.value.ascending,
+      pageNum: currentPage.value,
+      pageSize: pageSize.value
     })
     
     console.log('作业列表响应:', response)
@@ -256,7 +256,7 @@ const handleReset = () => {
     endCreateTime: '2027-01-01T12:00:00',
     startSubmitTime: '2025-01-01T12:00:00',
     endSubmitTime: '2027-01-01T12:00:00',
-    sortType: '0',
+    sortType: 0,
     ascending: false
   }
   currentPage.value = 1
@@ -279,7 +279,7 @@ const toggleAdvancedSearch = () => {
       endCreateTime: '2027-01-01T12:00:00',
       startSubmitTime: '2025-01-01T12:00:00',
       endSubmitTime: '2027-01-01T12:00:00',
-      sortType: '0',
+      sortType: 0,
       ascending: false
     }
   }

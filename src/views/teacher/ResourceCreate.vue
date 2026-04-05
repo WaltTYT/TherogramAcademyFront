@@ -1,7 +1,7 @@
 <script setup>
 import { ref, reactive } from 'vue'
 import { ElMessage, ElLoading } from 'element-plus'
-import { createCourseResource } from '../../api/courseResource'
+import { createCourseResource, uploadCourseResource } from '../../api/courseResource'
 import { getCreateCoursePage } from '../../api/course'
 
 const emit = defineEmits(['resource-created', 'cancel'])
@@ -15,6 +15,7 @@ const form = reactive({
 
 const loading = ref(false)
 const courses = ref([])
+const fileList = ref([])
 
 const resourceTypeOptions = [
   { value: 'VIDEO', label: '视频' },
@@ -24,17 +25,29 @@ const resourceTypeOptions = [
 
 const loadCourses = async () => {
   try {
-    const response = await getCreateCoursePage({ page: 1, size: 100 })
+    const response = await getCreateCoursePage({ pageNum: 1, pageSize: 100 })
     courses.value = response.data.data.records
   } catch (error) {
     ElMessage.error('获取课程列表失败：' + (error.message || '未知错误'))
   }
 }
 
+const handleFileChange = (file, fileList) => {
+  fileList.value = fileList
+}
+
 const handleSubmit = async () => {
   loading.value = true
   try {
-    await createCourseResource(form)
+    // 先创建教学资源
+    const createResponse = await createCourseResource(form)
+    const resourceId = createResponse.data.data
+    
+    // 如果有文件，上传附件
+    if (fileList.value.length > 0) {
+      await uploadCourseResource(resourceId, fileList.value[0].raw)
+    }
+    
     ElMessage.success('教学资源创建成功')
     emit('resource-created')
   } catch (error) {
@@ -70,6 +83,23 @@ loadCourses()
         <el-select v-model="form.courseId" style="width: 100%">
           <el-option v-for="(course, index) in courses" :key="index" :label="course.courseName" :value="course.id" />
         </el-select>
+      </el-form-item>
+      <el-form-item label="资源文件">
+        <el-upload
+          class="upload-demo"
+          :action="''"
+          :auto-upload="false"
+          :on-change="handleFileChange"
+          :file-list="fileList"
+          :limit="1"
+        >
+          <el-button type="primary">点击上传</el-button>
+          <template #tip>
+            <div class="el-upload__tip">
+              支持上传视频、课件、参考资料等文件
+            </div>
+          </template>
+        </el-upload>
       </el-form-item>
       <el-form-item>
         <el-button type="primary" @click="handleSubmit" :loading="loading">提交</el-button>

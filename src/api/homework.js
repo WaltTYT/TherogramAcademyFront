@@ -108,7 +108,7 @@ export const uploadStudentHomework = (studentId, homeworkId, file) => {
   formData.append('homeworkId', homeworkId)
   formData.append('file', file)
   return request({
-    url: '/homework/uploadHomework',
+    url: '/homework/uploadStudentHomework',
     method: 'post',
     data: formData,
     headers: {

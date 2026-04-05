@@ -135,8 +135,8 @@ const getCourseResources = async () => {
       endCreateTime: searchForm.endCreateTime,
       sortType: searchForm.sortType,
       ascending: searchForm.ascending,
-      current: currentPage.value,
-      size: pageSize.value
+      pageNum: currentPage.value,
+      pageSize: pageSize.value
     })
     if (response.data.code === 200) {
       courseResources.value = response.data.data.records

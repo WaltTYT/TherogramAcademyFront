@@ -44,7 +44,7 @@ const sortTypeOptions = [
 
 const loadCourses = async () => {
   try {
-    const response = await getCreateCoursePage({ page: 1, size: 100 })
+    const response = await getCreateCoursePage({ pageNum: 1, pageSize: 100 })
     courses.value = response.data.data.records
   } catch (error) {
     ElMessage.error('获取课程列表失败：' + (error.message || '未知错误'))
