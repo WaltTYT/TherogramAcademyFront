@@ -236,6 +236,109 @@ const handleDownload = (homework) => {
   window.location.href = `http://localhost:8085/api/homework/downloadHomework${homework.attachment}`
 }
 
+// 批改对话框
+const correctDialogVisible = ref(false)
+const currentHomework = ref(null)
+const studentSubmissions = ref([])
+const currentSubmission = ref(null)
+const correctForm = ref({
+  score: '',
+  comment: ''
+})
+
+// 打开批改对话框
+const handleCorrect = (homework) => {
+  currentHomework.value = homework
+  loadStudentSubmissions(homework.id)
+  correctDialogVisible.value = true
+}
+
+// 加载学生提交的作业
+const loadStudentSubmissions = async (homeworkId) => {
+  try {
+    // 这里需要调用后端API获取学生提交的作业列表
+    // 暂时使用模拟数据
+    studentSubmissions.value = [
+      {
+        id: 1,
+        studentId: 11,
+        studentName: '张三',
+        content: '这是我的作业内容',
+        attachment: '/attachments/homework/1_1.pdf',
+        submitTime: '2025-03-15 14:30:00',
+        score: null,
+        comment: null
+      },
+      {
+        id: 2,
+        studentId: 12,
+        studentName: '李四',
+        content: '作业已完成',
+        attachment: null,
+        submitTime: '2025-03-16 09:15:00',
+        score: null,
+        comment: null
+      }
+    ]
+  } catch (error) {
+    ElMessage.error('获取学生提交的作业失败：' + (error.message || '未知错误'))
+  }
+}
+
+// 选择学生作业进行批改
+const selectSubmission = (submission) => {
+  currentSubmission.value = submission
+  correctForm.value = {
+    score: submission.score || '',
+    comment: submission.comment || ''
+  }
+}
+
+// 下载学生提交的作业
+const downloadStudentSubmission = (submission) => {
+  if (!submission.attachment) {
+    ElMessage.error('学生未提交附件')
+    return
+  }
+  
+  // 构建下载链接
+  window.location.href = `http://localhost:8085/api/homework/downloadStudentHomework${submission.attachment}`
+}
+
+// 保存批改结果
+const saveCorrection = async () => {
+  if (!currentSubmission.value) {
+    ElMessage.error('请选择要批改的作业')
+    return
+  }
+  
+  try {
+    // 这里需要调用后端API保存批改结果
+    console.log('保存批改结果：', {
+      submissionId: currentSubmission.value.id,
+      score: correctForm.value.score,
+      comment: correctForm.value.comment
+    })
+    
+    ElMessage.success('批改成功')
+    // 更新本地数据
+    const index = studentSubmissions.value.findIndex(item => item.id === currentSubmission.value.id)
+    if (index !== -1) {
+      studentSubmissions.value[index].score = correctForm.value.score
+      studentSubmissions.value[index].comment = correctForm.value.comment
+    }
+  } catch (error) {
+    ElMessage.error('批改失败：' + (error.message || '未知错误'))
+  }
+}
+
+// 上传批改后的附件
+const uploadCorrectedFile = (file) => {
+  // 这里需要实现文件上传功能
+  console.log('上传批改后的文件：', file)
+  ElMessage.success('文件上传成功')
+}
+
 const handleDelete = async (homework) => {
   try {
     await ElMessageBox.confirm(
@@ -466,7 +569,7 @@ onMounted(() => {
           <el-button size="small" @click="handleHomeworkDetail(scope.row.id)" style="margin-right: 5px">查看</el-button>
           <el-button type="primary" size="small" @click="handleEdit(scope.row)" style="margin-right: 5px">编辑</el-button>
           <el-button type="danger" size="small" @click="handleDelete(scope.row)" style="margin-right: 5px">删除</el-button>
-          <el-button size="small" @click="handleDownload(scope.row)">下载</el-button>
+          <el-button size="small" @click="handleCorrect(scope.row)">批改</el-button>
         </template>
       </el-table-column>
       <template #empty>
@@ -525,6 +628,63 @@ onMounted(() => {
         <span class="dialog-footer">
           <el-button @click="editDialogVisible = false">取消</el-button>
           <el-button type="primary" @click="saveHomework">保存</el-button>
+        </span>
+      </template>
+    </el-dialog>
+    
+    <!-- 批改作业对话框 -->
+    <el-dialog v-model="correctDialogVisible" :title="`批改作业 - ${currentHomework?.name || ''}`" width="1000px">
+      <div class="correct-container">
+        <!-- 学生提交列表 -->
+        <div class="submission-list">
+          <h3>学生提交列表</h3>
+          <el-table :data="studentSubmissions" style="width: 100%" @row-click="selectSubmission">
+            <el-table-column prop="studentName" label="学生姓名" width="120" />
+            <el-table-column prop="content" label="提交内容" min-width="200" />
+            <el-table-column prop="submitTime" label="提交时间" width="180" />
+            <el-table-column prop="score" label="分数" width="80" />
+            <el-table-column label="操作" width="150">
+              <template #default="scope">
+                <el-button size="small" @click="downloadStudentSubmission(scope.row)" style="margin-right: 5px">下载</el-button>
+              </template>
+            </el-table-column>
+          </el-table>
+        </div>
+        
+        <!-- 批改区域 -->
+        <div class="correction-area" v-if="currentSubmission">
+          <h3>批改 - {{ currentSubmission.studentName }}</h3>
+          <el-form :model="correctForm" label-width="80px">
+            <el-form-item label="分数">
+              <el-input v-model="correctForm.score" placeholder="请输入分数" style="width: 120px" />
+            </el-form-item>
+            <el-form-item label="评语">
+              <el-input v-model="correctForm.comment" type="textarea" rows="4" style="width: 100%" />
+            </el-form-item>
+            <el-form-item label="上传批改附件">
+              <el-upload
+                class="upload-demo"
+                action="http://localhost:8085/api/homework/uploadStudentHomework"
+                :on-success="uploadCorrectedFile"
+                :auto-upload="false"
+                :file-list="[]"
+              >
+                <el-button type="primary">点击上传</el-button>
+                <template #tip>
+                  <div class="el-upload__tip">只能上传jpg/png文件，且不超过500kb</div>
+                </template>
+              </el-upload>
+            </el-form-item>
+          </el-form>
+          <el-button type="primary" @click="saveCorrection" style="margin-top: 20px">保存批改</el-button>
+        </div>
+        <div v-else class="no-selection">
+          <p>请选择一个学生作业进行批改</p>
+        </div>
+      </div>
+      <template #footer>
+        <span class="dialog-footer">
+          <el-button @click="correctDialogVisible = false">关闭</el-button>
         </span>
       </template>
     </el-dialog>
@@ -667,6 +827,46 @@ onMounted(() => {
 
 :deep(.el-select-dropdown) {
   min-width: 300px;
+}
+
+/* 批改对话框样式 */
+.correct-container {
+  padding: 20px 0;
+}
+
+.submission-list {
+  margin-bottom: 30px;
+}
+
+.submission-list h3,
+.correction-area h3 {
+  font-size: 16px;
+  font-weight: bold;
+  margin-bottom: 15px;
+  color: #333;
+}
+
+.correction-area {
+  margin-top: 20px;
+  padding-top: 20px;
+  border-top: 1px solid #e4e7ed;
+}
+
+.no-selection {
+  text-align: center;
+  padding: 40px 0;
+  color: #909399;
+  font-size: 14px;
+}
+
+:deep(.el-upload) {
+  margin-top: 10px;
+}
+
+:deep(.el-upload__tip) {
+  font-size: 12px;
+  color: #909399;
+  margin-top: 5px;
 }
 
 </style>
