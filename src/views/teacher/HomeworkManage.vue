@@ -3,7 +3,7 @@ import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage, ElLoading, ElDialog, ElInputNumber, ElDatePicker, ElSwitch, ElSelect, ElOption, ElMessageBox } from 'element-plus'
 import { getHomeworkPage, deleteHomework, modifyHomework } from '../../api/homework'
-import { getCoursePage } from '../../api/course'
+import { getCreateCoursePage } from '../../api/course'
 import HomeworkCreate from './HomeworkCreate.vue'
 
 const router = useRouter()
@@ -83,7 +83,20 @@ const sortTypeOptions = [
 
 const loadCourses = async () => {
   try {
-    const response = await getCoursePage({ pageNum: 1, pageSize: 100 })
+    const response = await getCreateCoursePage({
+      name: "",
+      subjectId: "",
+      typeId: "",
+      isSelected: "false",
+      startSelectCount: "0",
+      endSelectCount: "7",
+      startCreateTime: "2025-01-01T12:00:00",
+      endCreateTime: "2027-01-01T12:00:00",
+      sortType: "1",
+      isAsc: "true",
+      pageNum: 1,
+      pageSize: 100
+    })
     courses.value = response.data.data.records
   } catch (error) {
     ElMessage.error('获取课程列表失败：' + (error.message || '未知错误'))

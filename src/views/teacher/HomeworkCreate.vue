@@ -25,7 +25,20 @@ const homeworkTypeOptions = [
 
 const loadCourses = async () => {
   try {
-    const response = await getCreateCoursePage({ page: 1, size: 100 })
+    const response = await getCreateCoursePage({
+      name: "",
+      subjectId: "",
+      typeId: "",
+      isSelected: "false",
+      startSelectCount: "0",
+      endSelectCount: "7",
+      startCreateTime: "2025-01-01T12:00:00",
+      endCreateTime: "2027-01-01T12:00:00",
+      sortType: "1",
+      isAsc: "true",
+      pageNum: 1,
+      pageSize: 100
+    })
     courses.value = response.data.data.records
   } catch (error) {
     ElMessage.error('获取课程列表失败：' + (error.message || '未知错误'))
@@ -77,7 +90,7 @@ loadCourses()
       </el-form-item>
       <el-form-item label="课程" required>
         <el-select v-model="form.courseId" style="width: 100%">
-          <el-option v-for="(course, index) in courses" :key="index" :label="course.courseName" :value="course.id" />
+          <el-option v-for="(course, index) in courses" :key="index" :label="course.name || course.courseName" :value="course.id" />
         </el-select>
       </el-form-item>
       <el-form-item label="作业内容" required>
