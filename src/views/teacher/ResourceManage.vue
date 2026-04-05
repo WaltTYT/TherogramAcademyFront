@@ -55,17 +55,17 @@ const loadResources = async () => {
   loading.value = true
   try {
     const response = await getCourseResourcePage({
-      page: currentPage.value,
-      size: pageSize.value,
       courseId: searchForm.value.courseId,
-      resourceName: searchForm.value.resourceName,
+      name: searchForm.value.resourceName,
       resourceType: searchForm.value.resourceType,
-      startViewCount: searchForm.value.startViewCount,
-      endViewCount: searchForm.value.endViewCount,
-      startCreateTime: searchForm.value.startCreateTime,
-      endCreateTime: searchForm.value.endCreateTime,
-      sortType: searchForm.value.sortType,
-      ascending: searchForm.value.ascending
+      startViewCount: searchForm.value.startViewCount || "0",
+      endViewCount: searchForm.value.endViewCount || "7",
+      startCreateTime: searchForm.value.startCreateTime || "2025-01-01T12:00:00",
+      endCreateTime: searchForm.value.endCreateTime || "2027-01-01T12:00:00",
+      sortType: searchForm.value.sortType || "1",
+      isAsc: searchForm.value.ascending?.toString() || "true",
+      pageNum: currentPage.value,
+      pageSize: pageSize.value
     })
     resources.value = response.data.data.records
     total.value = response.data.data.total
