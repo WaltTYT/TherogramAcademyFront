@@ -1,9 +1,9 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { ElMessage, ElLoading, ElDialog, ElInputNumber, ElDatePicker, ElSwitch, ElSelect, ElOption } from 'element-plus'
-import { getCourseResourcePage, deleteCourseResource } from '../../api/courseResource'
-import { getCreateCoursePage } from '../../api/course'
+import { ElMessage, ElLoading, ElDialog, ElInputNumber, ElDatePicker, ElSwitch, ElSelect, ElOption, ElMessageBox } from 'element-plus'
+import { getCourseResourcePage, deleteCourseResource, modifyCourseResource, downloadCourseResource } from '../../api/courseResource'
+import { getCoursePage } from '../../api/course'
 import ResourceCreate from './ResourceCreate.vue'
 
 const router = useRouter()
@@ -15,6 +15,41 @@ const currentPage = ref(1)
 const pageSize = ref(10)
 const total = ref(0)
 const createDialogVisible = ref(false)
+
+// 编辑对话框
+const editDialogVisible = ref(false)
+const dialogTitle = ref('')
+const isEdit = ref(false)
+
+// 资源表单
+const resourceForm = ref({
+  id: '',
+  orderId: '',
+  name: '',
+  resourceType: '',
+  courseId: ''
+})
+
+const resourceFormRules = {
+  orderId: [
+    { required: true, message: '请输入排序ID', trigger: 'blur' }
+  ],
+  name: [
+    { required: true, message: '请输入资源名称', trigger: 'blur' }
+  ],
+  resourceType: [
+    { required: true, message: '请选择资源类型', trigger: 'change' }
+  ],
+  courseId: [
+    { required: true, message: '请选择课程', trigger: 'change' }
+  ]
+}
+
+const resourceFormRef = ref(null)
+
+// 上传文件
+const uploadUrl = '/api/courseResource/uploadCourseResource'
+const fileList = ref([])
 
 const searchForm = ref({
   courseId: '',
@@ -44,7 +79,7 @@ const sortTypeOptions = [
 
 const loadCourses = async () => {
   try {
-    const response = await getCreateCoursePage({ pageNum: 1, pageSize: 100 })
+    const response = await getCoursePage({ pageNum: 1, pageSize: 100 })
     courses.value = response.data.data.records
   } catch (error) {
     ElMessage.error('获取课程列表失败：' + (error.message || '未知错误'))
@@ -56,14 +91,14 @@ const loadResources = async () => {
   try {
     const response = await getCourseResourcePage({
       courseId: searchForm.value.courseId,
-      name: searchForm.value.resourceName,
+      resourceName: searchForm.value.resourceName,
       resourceType: searchForm.value.resourceType,
-      startViewCount: searchForm.value.startViewCount || "0",
-      endViewCount: searchForm.value.endViewCount || "7",
-      startCreateTime: searchForm.value.startCreateTime || "2025-01-01T12:00:00",
-      endCreateTime: searchForm.value.endCreateTime || "2027-01-01T12:00:00",
-      sortType: searchForm.value.sortType || "1",
-      isAsc: searchForm.value.ascending?.toString() || "true",
+      startViewCount: searchForm.value.startViewCount,
+      endViewCount: searchForm.value.endViewCount,
+      startCreateTime: searchForm.value.startCreateTime,
+      endCreateTime: searchForm.value.endCreateTime,
+      sortType: searchForm.value.sortType,
+      ascending: searchForm.value.ascending,
       pageNum: currentPage.value,
       pageSize: pageSize.value
     })
@@ -127,18 +162,100 @@ const handleResourceDetail = (resourceId) => {
   router.push(`/teacher/resource/${resourceId}`)
 }
 
-const handleDelete = async (resourceId) => {
-  if (confirm('确定要删除这个教学资源吗？')) {
-    loading.value = true
-    try {
-      await deleteCourseResource(resourceId)
-      ElMessage.success('教学资源删除成功')
-      loadResources()
-    } catch (error) {
-      ElMessage.error('教学资源删除失败：' + (error.message || '未知错误'))
-    } finally {
-      loading.value = false
+// 处理文件上传
+const handleResourceUpload = (response, uploadFile) => {
+  if (response.data.code === 200) {
+    ElMessage.success('资源上传成功')
+  } else {
+    ElMessage.error('资源上传失败')
+  }
+}
+
+const handleResourceRemove = (file, fileList) => {
+  // 移除文件时的处理
+}
+
+// 打开编辑对话框
+const handleEdit = (resource) => {
+  dialogTitle.value = '编辑教学资源'
+  isEdit.value = true
+  // 填充表单
+  resourceForm.value.id = resource.id
+  resourceForm.value.orderId = resource.orderId
+  resourceForm.value.name = resource.name
+  resourceForm.value.resourceType = resource.resourceType
+  resourceForm.value.courseId = resource.courseId
+  fileList.value = resource.uri ? [{ url: resource.uri }] : []
+  editDialogVisible.value = true
+}
+
+// 保存资源
+const saveResource = async () => {
+  await resourceFormRef.value.validate(async (valid) => {
+    if (valid) {
+      try {
+        const response = await modifyCourseResource(resourceForm.value)
+        if (response.data.code === 200) {
+          ElMessage.success('修改教学资源成功')
+          editDialogVisible.value = false
+          loadResources()
+        } else {
+          ElMessage.error(response.data.message || '修改教学资源失败')
+        }
+      } catch (error) {
+        ElMessage.error('修改教学资源失败')
+      }
     }
+  })
+}
+
+// 下载资源
+const handleDownload = async (resource) => {
+  if (!resource.uri) {
+    ElMessage.error('资源文件不存在')
+    return
+  }
+  
+  try {
+    const response = await downloadCourseResource(resource.uri)
+    // 创建下载链接
+    const url = window.URL.createObjectURL(new Blob([response.data]))
+    const link = document.createElement('a')
+    link.href = url
+    // 从URL中提取文件名
+    const fileName = resource.uri.split('/').pop()
+    link.setAttribute('download', fileName)
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+  } catch (error) {
+    ElMessage.error('下载教学资源失败')
+  }
+}
+
+const handleDelete = async (resource) => {
+  try {
+    await ElMessageBox.confirm(
+      `确定要删除资源「${resource.name}」吗？\n删除后将无法恢复。`,
+      '删除资源',
+      {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning',
+        center: true
+      }
+    )
+    
+    loading.value = true
+    await deleteCourseResource(resource.id)
+    ElMessage.success('资源删除成功')
+    loadResources()
+  } catch (error) {
+    if (error !== 'cancel') {
+      ElMessage.error('资源删除失败：' + (error.message || '未知错误'))
+    }
+  } finally {
+    loading.value = false
   }
 }
 
@@ -174,7 +291,7 @@ onMounted(() => {
                 <el-option
                   v-for="course in courses"
                   :key="course.id"
-                  :label="course.courseName"
+                  :label="course.name"
                   :value="course.id"
                 />
               </el-select>
@@ -291,8 +408,8 @@ onMounted(() => {
       :cell-style="{ textAlign: 'center' }"
       :header-cell-style="{ textAlign: 'center', fontWeight: 'bold', backgroundColor: '#f5f7fa' }"
     >
-      <el-table-column prop="sortId" label="排序ID" width="80" />
-      <el-table-column prop="resourceName" label="资源名称" min-width="300" />
+      <el-table-column prop="orderId" label="排序ID" width="80" />
+      <el-table-column prop="name" label="资源名称" min-width="300" />
       <el-table-column prop="resourceType" label="资源类型" width="120">
         <template #default="scope">
           {{ scope.row.resourceType === 'VIDEO' ? '视频' : scope.row.resourceType === 'MATERIAL' ? '课件' : '参考资料' }}
@@ -300,10 +417,12 @@ onMounted(() => {
       </el-table-column>
       <el-table-column prop="viewCount" label="查看次数" width="140" />
       <el-table-column prop="createTime" label="创建时间" width="180" />
-      <el-table-column label="操作" width="200">
+      <el-table-column label="操作" width="300">
         <template #default="scope">
-          <el-button type="primary" size="small" @click="handleResourceDetail(scope.row.id)" style="margin-right: 5px">查看详情</el-button>
-          <el-button type="danger" size="small" @click="handleDelete(scope.row.id)">删除</el-button>
+          <el-button size="small" @click="handleResourceDetail(scope.row.id)" style="margin-right: 5px">查看</el-button>
+          <el-button type="primary" size="small" @click="handleEdit(scope.row)" style="margin-right: 5px">编辑</el-button>
+          <el-button type="danger" size="small" @click="handleDelete(scope.row)" style="margin-right: 5px">删除</el-button>
+          <el-button size="small" @click="handleDownload(scope.row)">下载</el-button>
         </template>
       </el-table-column>
       <template #empty>
@@ -333,6 +452,52 @@ onMounted(() => {
       destroy-on-close
     >
       <ResourceCreate @resource-created="handleResourceCreated" @cancel="createDialogVisible = false" />
+    </el-dialog>
+    
+    <!-- 编辑资源对话框 -->
+    <el-dialog v-model="editDialogVisible" :title="dialogTitle" width="900px">
+      <el-form ref="resourceFormRef" :model="resourceForm" :rules="resourceFormRules" label-width="120px">
+        <el-form-item label="排序ID" prop="orderId">
+          <el-input v-model="resourceForm.orderId" style="width: 100%"></el-input>
+        </el-form-item>
+        <el-form-item label="资源名称" prop="name">
+          <el-input v-model="resourceForm.name" style="width: 100%"></el-input>
+        </el-form-item>
+        <el-form-item label="资源类型" prop="resourceType">
+          <el-select v-model="resourceForm.resourceType" style="width: 100%">
+            <el-option v-for="option in resourceTypeOptions" :key="option.value" :label="option.label" :value="option.value" />
+          </el-select>
+        </el-form-item>
+        <el-form-item label="课程" prop="courseId">
+          <el-select v-model="resourceForm.courseId" style="width: 100%">
+              <el-option v-for="course in courses" :key="course.id" :label="course.name" :value="course.id" />
+            </el-select>
+        </el-form-item>
+        <el-form-item label="资源文件">
+          <el-upload
+            class="upload-demo"
+            :action="uploadUrl"
+            :on-success="handleResourceUpload"
+            :on-remove="handleResourceRemove"
+            :file-list="fileList"
+            :auto-upload="false"
+            :data="{ id: resourceForm.id }"
+          >
+            <el-button type="primary">点击上传</el-button>
+            <template #tip>
+              <div class="el-upload__tip">
+                支持上传视频、课件、参考资料等文件
+              </div>
+            </template>
+          </el-upload>
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <span class="dialog-footer">
+          <el-button @click="editDialogVisible = false">取消</el-button>
+          <el-button type="primary" @click="saveResource">保存</el-button>
+        </span>
+      </template>
     </el-dialog>
   </div>
 </template>
@@ -433,6 +598,46 @@ onMounted(() => {
 .header .el-button {
   padding: 8px 16px;
   font-size: 14px;
+}
+
+/* 编辑对话框样式 */
+.dialog-footer {
+  text-align: right;
+}
+
+/* 表单样式优化 */
+:deep(.el-form-item__label) {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 120px;
+}
+
+:deep(.el-select) {
+  min-width: 300px;
+  width: 100%;
+}
+
+:deep(.el-input) {
+  min-width: 200px;
+  width: 100%;
+}
+
+:deep(.el-select .el-select__input) {
+  padding-left: 10px;
+  width: 100%;
+}
+
+:deep(.el-select .el-select__caret) {
+  right: 10px;
+}
+
+:deep(.el-select .el-select__placeholder) {
+  padding-left: 10px;
+}
+
+:deep(.el-select-dropdown) {
+  min-width: 300px;
 }
 
 </style>

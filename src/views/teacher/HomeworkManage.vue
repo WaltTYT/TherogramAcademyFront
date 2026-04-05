@@ -1,8 +1,8 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { ElMessage, ElLoading, ElDialog, ElInputNumber, ElDatePicker, ElSwitch, ElSelect, ElOption } from 'element-plus'
-import { getHomeworkPage, deleteHomework } from '../../api/homework'
+import { ElMessage, ElLoading, ElDialog, ElInputNumber, ElDatePicker, ElSwitch, ElSelect, ElOption, ElMessageBox } from 'element-plus'
+import { getHomeworkPage, deleteHomework, modifyHomework } from '../../api/homework'
 import { getCoursePage } from '../../api/course'
 import HomeworkCreate from './HomeworkCreate.vue'
 
@@ -15,6 +15,41 @@ const currentPage = ref(1)
 const pageSize = ref(10)
 const total = ref(0)
 const createDialogVisible = ref(false)
+
+// 编辑对话框
+const editDialogVisible = ref(false)
+const dialogTitle = ref('')
+const isEdit = ref(false)
+
+// 作业表单
+const homeworkForm = ref({
+  id: '',
+  name: '',
+  type: '',
+  deadline: '',
+  content: '',
+  courseId: ''
+})
+
+const homeworkFormRules = {
+  name: [
+    { required: true, message: '请输入作业名称', trigger: 'blur' }
+  ],
+  type: [
+    { required: true, message: '请选择作业类型', trigger: 'change' }
+  ],
+  deadline: [
+    { required: true, message: '请选择截止时间', trigger: 'change' }
+  ],
+  content: [
+    { required: true, message: '请输入作业内容', trigger: 'blur' }
+  ],
+  courseId: [
+    { required: true, message: '请选择课程', trigger: 'change' }
+  ]
+}
+
+const homeworkFormRef = ref(null)
 
 const searchForm = ref({
   courseId: '',
@@ -143,18 +178,74 @@ const handleHomeworkDetail = (homeworkId) => {
   router.push(`/teacher/homework/${homeworkId}`)
 }
 
-const handleDelete = async (homeworkId) => {
-  if (confirm('确定要删除这个作业吗？')) {
-    loading.value = true
-    try {
-      await deleteHomework(homeworkId)
-      ElMessage.success('作业删除成功')
-      loadHomeworks()
-    } catch (error) {
-      ElMessage.error('作业删除失败：' + (error.message || '未知错误'))
-    } finally {
-      loading.value = false
+// 打开编辑对话框
+const handleEdit = (homework) => {
+  dialogTitle.value = '编辑作业'
+  isEdit.value = true
+  // 填充表单
+  homeworkForm.value.id = homework.id
+  homeworkForm.value.name = homework.name || homework.homeworkName
+  homeworkForm.value.type = homework.type || homework.homeworkType
+  homeworkForm.value.deadline = homework.deadline
+  homeworkForm.value.content = homework.content
+  homeworkForm.value.courseId = homework.courseId
+  editDialogVisible.value = true
+}
+
+// 保存作业
+const saveHomework = async () => {
+  await homeworkFormRef.value.validate(async (valid) => {
+    if (valid) {
+      try {
+        const response = await modifyHomework(homeworkForm.value)
+        if (response.data.code === 200) {
+          ElMessage.success('修改作业成功')
+          editDialogVisible.value = false
+          loadHomeworks()
+        } else {
+          ElMessage.error(response.data.message || '修改作业失败')
+        }
+      } catch (error) {
+        ElMessage.error('修改作业失败')
+      }
     }
+  })
+}
+
+// 下载作业
+const handleDownload = (homework) => {
+  if (!homework.attachment) {
+    ElMessage.error('作业附件不存在')
+    return
+  }
+  
+  // 构建下载链接
+  window.location.href = `http://localhost:8085/api/homework/downloadHomework${homework.attachment}`
+}
+
+const handleDelete = async (homework) => {
+  try {
+    await ElMessageBox.confirm(
+      `确定要删除作业「${homework.name || homework.homeworkName}」吗？\n删除后将无法恢复，且相关的学生作业数据也会被删除。`,
+      '删除作业',
+      {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning',
+        center: true
+      }
+    )
+    
+    loading.value = true
+    await deleteHomework(homework.id)
+    ElMessage.success('作业删除成功')
+    loadHomeworks()
+  } catch (error) {
+    if (error !== 'cancel') {
+      ElMessage.error('作业删除失败：' + (error.message || '未知错误'))
+    }
+  } finally {
+    loading.value = false
   }
 }
 
@@ -357,10 +448,12 @@ onMounted(() => {
       <el-table-column prop="deadline" label="截止时间" width="180" />
       <el-table-column prop="submitCount" label="提交人数" width="100" />
       <el-table-column prop="createTime" label="创建时间" width="180" />
-      <el-table-column label="操作" width="200">
+      <el-table-column label="操作" width="300">
         <template #default="scope">
-          <el-button type="primary" size="small" @click="handleHomeworkDetail(scope.row.id)" style="margin-right: 5px">查看详情</el-button>
-          <el-button type="danger" size="small" @click="handleDelete(scope.row.id)">删除</el-button>
+          <el-button size="small" @click="handleHomeworkDetail(scope.row.id)" style="margin-right: 5px">查看</el-button>
+          <el-button type="primary" size="small" @click="handleEdit(scope.row)" style="margin-right: 5px">编辑</el-button>
+          <el-button type="danger" size="small" @click="handleDelete(scope.row)" style="margin-right: 5px">删除</el-button>
+          <el-button size="small" @click="handleDownload(scope.row)">下载</el-button>
         </template>
       </el-table-column>
       <template #empty>
@@ -390,6 +483,37 @@ onMounted(() => {
       destroy-on-close
     >
       <HomeworkCreate @homework-created="handleHomeworkCreated" @cancel="createDialogVisible = false" />
+    </el-dialog>
+    
+    <!-- 编辑作业对话框 -->
+    <el-dialog v-model="editDialogVisible" :title="dialogTitle" width="900px">
+      <el-form ref="homeworkFormRef" :model="homeworkForm" :rules="homeworkFormRules" label-width="120px">
+        <el-form-item label="作业名称" prop="name">
+          <el-input v-model="homeworkForm.name" style="width: 100%"></el-input>
+        </el-form-item>
+        <el-form-item label="作业类型" prop="type">
+          <el-select v-model="homeworkForm.type" style="width: 100%">
+            <el-option v-for="option in homeworkTypeOptions" :key="option.value" :label="option.label" :value="option.value" />
+          </el-select>
+        </el-form-item>
+        <el-form-item label="截止时间" prop="deadline">
+          <el-date-picker v-model="homeworkForm.deadline" type="datetime" style="width: 100%"></el-date-picker>
+        </el-form-item>
+        <el-form-item label="作业内容" prop="content">
+          <el-input v-model="homeworkForm.content" type="textarea" rows="4" style="width: 100%"></el-input>
+        </el-form-item>
+        <el-form-item label="课程" prop="courseId">
+          <el-select v-model="homeworkForm.courseId" style="width: 100%">
+              <el-option v-for="course in courses" :key="course.id" :label="course.name" :value="course.id" />
+            </el-select>
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <span class="dialog-footer">
+          <el-button @click="editDialogVisible = false">取消</el-button>
+          <el-button type="primary" @click="saveHomework">保存</el-button>
+        </span>
+      </template>
     </el-dialog>
   </div>
 </template>
@@ -490,6 +614,46 @@ onMounted(() => {
 .header .el-button {
   padding: 8px 16px;
   font-size: 14px;
+}
+
+/* 编辑对话框样式 */
+.dialog-footer {
+  text-align: right;
+}
+
+/* 表单样式优化 */
+:deep(.el-form-item__label) {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 120px;
+}
+
+:deep(.el-select) {
+  min-width: 300px;
+  width: 100%;
+}
+
+:deep(.el-input) {
+  min-width: 200px;
+  width: 100%;
+}
+
+:deep(.el-select .el-select__input) {
+  padding-left: 10px;
+  width: 100%;
+}
+
+:deep(.el-select .el-select__caret) {
+  right: 10px;
+}
+
+:deep(.el-select .el-select__placeholder) {
+  padding-left: 10px;
+}
+
+:deep(.el-select-dropdown) {
+  min-width: 300px;
 }
 
 </style>

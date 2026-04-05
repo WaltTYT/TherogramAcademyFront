@@ -120,14 +120,14 @@ const handleEditCourse = (course) => {
   editMode.value = true
   currentCourse.value = course
   courseForm.value = {
-    courseName: course.courseName,
-    courseDescription: course.courseDescription,
-    courseObjective: course.courseObjective || '',
-    courseContent: course.courseContent || '',
-    courseOutline: course.courseOutline || '',
-    courseSubject: course.courseSubject,
-    courseType: course.courseType,
-    courseCover: course.courseCover || ''
+    courseName: course.name,
+    courseDescription: course.profile,
+    courseObjective: course.target || '',
+    courseContent: course.content || '',
+    courseOutline: course.outline || '',
+    courseSubject: course.subjectId,
+    courseType: course.typeId,
+    courseCover: course.cover || ''
   }
   dialogVisible.value = true
 }
@@ -154,10 +154,29 @@ const handleSubmit = async () => {
   try {
     await courseFormRef.value.validate()
     if (editMode.value) {
-      await courseApi.updateCourse(currentCourse.value.courseId, courseForm.value)
+      await courseApi.modifyCourse({
+        id: currentCourse.value.id,
+        name: courseForm.value.courseName,
+        profile: courseForm.value.courseDescription,
+        target: courseForm.value.courseObjective,
+        content: courseForm.value.courseContent,
+        outline: courseForm.value.courseOutline,
+        subjectId: courseForm.value.courseSubject,
+        typeId: courseForm.value.courseType,
+        cover: courseForm.value.courseCover
+      })
       ElMessage.success('课程更新成功')
     } else {
-      await courseApi.createCourse(courseForm.value)
+      await courseApi.createCourse({
+        name: courseForm.value.courseName,
+        profile: courseForm.value.courseDescription,
+        target: courseForm.value.courseObjective,
+        content: courseForm.value.courseContent,
+        outline: courseForm.value.courseOutline,
+        subjectId: courseForm.value.courseSubject,
+        typeId: courseForm.value.courseType,
+        cover: courseForm.value.courseCover
+      })
       ElMessage.success('课程创建成功')
     }
     dialogVisible.value = false
@@ -170,7 +189,7 @@ const handleSubmit = async () => {
 const getCourses = async () => {
   try {
     loading.value = true
-    const response = await courseApi.getCoursePage({
+    const response = await courseApi.getCreateCoursePage({
       name: searchForm.value.courseName,
       subjectId: searchForm.value.courseSubject,
       typeId: searchForm.value.courseType,
@@ -390,16 +409,24 @@ onMounted(() => {
       :cell-style="{ textAlign: 'center' }"
       :header-cell-style="{ textAlign: 'center', fontWeight: 'bold', backgroundColor: '#f5f7fa' }"
     >
-      <el-table-column prop="courseId" label="课程ID" width="100" />
-      <el-table-column prop="courseName" label="课程名称" min-width="300" />
-      <el-table-column prop="courseSubject" label="课程科目" width="120" />
-      <el-table-column prop="courseType" label="课程类型" width="120" />
+      <el-table-column prop="id" label="课程ID" width="100" />
+      <el-table-column prop="name" label="课程名称" min-width="300" />
+      <el-table-column label="课程科目" width="120">
+        <template #default="scope">
+          {{ courseSubjects.find(s => s.value === scope.row.subjectId)?.label || scope.row.subjectId }}
+        </template>
+      </el-table-column>
+      <el-table-column label="课程类型" width="120">
+        <template #default="scope">
+          {{ courseTypes.find(t => t.value === scope.row.typeId)?.label || scope.row.typeId }}
+        </template>
+      </el-table-column>
       <el-table-column prop="createTime" label="创建时间" width="180" />
       <el-table-column label="操作" width="240">
         <template #default="scope">
-          <el-button size="small" @click="handleCourseDetail(scope.row.courseId)" style="margin-right: 5px">查看</el-button>
+          <el-button size="small" @click="handleCourseDetail(scope.row.id)" style="margin-right: 5px">查看</el-button>
           <el-button size="small" type="primary" @click="handleEditCourse(scope.row)" style="margin-right: 5px">编辑</el-button>
-          <el-button size="small" type="danger" @click="handleDeleteCourse(scope.row.courseId)">删除</el-button>
+          <el-button size="small" type="danger" @click="handleDeleteCourse(scope.row.id)">删除</el-button>
         </template>
       </el-table-column>
       <template #empty>
