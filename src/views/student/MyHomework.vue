@@ -72,6 +72,11 @@ const loadHomeworks = async () => {
         }
       } catch (error) {
         console.error('获取用户详情失败:', error)
+        ElMessage.error('获取用户信息失败，无法查询作业')
+        homeworks.value = []
+        total.value = 0
+        loading.value = false
+        return
       }
     }
     
@@ -96,8 +101,18 @@ const loadHomeworks = async () => {
       pageSize: pageSize.value.toString()
     })
     
+    // 确保学生ID存在
+    if (!studentId) {
+      console.error('学生ID不存在')
+      ElMessage.error('学生信息不完整，无法查询作业')
+      homeworks.value = []
+      total.value = 0
+      loading.value = false
+      return
+    }
+    
     const response = await getStudentHomeworkPage({
-      studentId: studentId || null,
+      studentId: studentId,
       courseId: searchForm.value.courseId || null,
       name: searchForm.value.homeworkName || null,
       type: searchForm.value.homeworkType || null,
@@ -135,8 +150,14 @@ const loadHomeworks = async () => {
         homeworks.value = []
         total.value = 0
       }
+      
+      // 显示空数据提示
+      if (homeworks.value.length === 0) {
+        console.log('当前学生没有作业记录')
+      }
     } else {
       console.log('返回错误:', response.data.message)
+      ElMessage.error('获取作业列表失败：' + (response.data.message || '未知错误'))
       homeworks.value = []
       total.value = 0
     }
@@ -157,8 +178,54 @@ const loadReminders = async () => {
     console.log('作业提醒响应:', response)
     // 根据后端返回的数据结构调整
     if (response.data.code === 200) {
-      reminders.value = Array.isArray(response.data.data) ? response.data.data : []
-      console.log('作业提醒数据:', reminders.value)
+      let allReminders = Array.isArray(response.data.data) ? response.data.data : []
+      console.log('所有作业提醒数据:', allReminders)
+      
+      // 检查提醒数据的结构
+      if (allReminders.length > 0) {
+        console.log('提醒数据结构:', Object.keys(allReminders[0]))
+      }
+      
+      // 获取当前学生ID
+      let studentId = userStore.userInfo?.id
+      if (!studentId) {
+        try {
+          const userResponse = await getUserDetail()
+          if (userResponse.data.code === 200 && userResponse.data.data) {
+            studentId = userResponse.data.data.id
+          }
+        } catch (error) {
+          console.error('获取用户详情失败:', error)
+        }
+      }
+      
+      console.log('当前学生ID:', studentId)
+      
+      // 过滤只显示当前学生的作业提醒
+      if (studentId) {
+        // 尝试不同的字段名
+        const filteredByStudentId = allReminders.filter(reminder => reminder.studentId === studentId)
+        const filteredById = allReminders.filter(reminder => reminder.id === studentId)
+        
+        console.log('按studentId过滤结果:', filteredByStudentId)
+        console.log('按id过滤结果:', filteredById)
+        
+        // 选择有数据的过滤结果
+        if (filteredByStudentId.length > 0) {
+          reminders.value = filteredByStudentId
+        } else if (filteredById.length > 0) {
+          reminders.value = filteredById
+        } else {
+          // 如果都没有，则为空
+          reminders.value = []
+          console.log('没有找到当前学生的作业提醒')
+        }
+        
+        console.log('过滤后当前学生的作业提醒:', reminders.value)
+      } else {
+        reminders.value = []
+        console.log('学生ID不存在，无法过滤作业提醒')
+      }
     } else {
       console.log('获取作业提醒失败:', response.data.message)
       reminders.value = []
