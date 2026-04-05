@@ -312,7 +312,7 @@ const deleteCourse = (course) => {
 
 // 查看课程详情
 const viewCourseDetail = (course) => {
-  router.push(`/course/detail/${course.id}`)
+  router.push(`/admin/course/detail/${course.id}`)
 }
 
 // 获取待审核课程列表

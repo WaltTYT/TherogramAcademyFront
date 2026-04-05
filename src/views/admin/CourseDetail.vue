@@ -59,7 +59,7 @@ const getCourseDetail = async () => {
   const courseId = route.params.id
   if (!courseId) {
     ElMessage.error('课程ID不存在')
-    router.push('/course')
+    router.push('/admin/course')
     return
   }
   
@@ -70,11 +70,21 @@ const getCourseDetail = async () => {
     if (userStore.roleType === 'STUDENT') {
       response = await courseApi.getSelectCourseDetail(courseId)
     } else {
-      response = await courseApi.getCreateCourseDetail(courseId)
+      response = await courseApi.getCourseDetail(courseId)
     }
     
     if (response.data.code === 200) {
-      course.value = response.data.data
+      // 映射后端返回的字段名到前端使用的字段名
+      course.value = {
+        ...response.data.data,
+        courseName: response.data.data.name || response.data.data.courseName,
+        courseIntroduction: response.data.data.profile || response.data.data.courseIntroduction,
+        courseObjective: response.data.data.target || response.data.data.courseObjective,
+        courseContent: response.data.data.content || response.data.data.courseContent,
+        courseOutline: response.data.data.outline || response.data.data.courseOutline,
+        courseSubject: response.data.data.subjectId || response.data.data.courseSubject,
+        courseType: response.data.data.typeId || response.data.data.courseType
+      }
       // 检查是否已选修
       if (userStore.roleType === 'STUDENT' && response.data.data) {
         isSelected.value = true
@@ -148,7 +158,7 @@ const updateProgress = async () => {
 
 // 返回课程列表
 const goBack = () => {
-  router.push('/course')
+  router.push('/admin/course')
 }
 
 // 生命周期

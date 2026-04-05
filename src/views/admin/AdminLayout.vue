@@ -6,6 +6,7 @@ import { logout } from '../../api/user'
 import { ElMessage } from 'element-plus'
 import { HomeFilled, Document, Picture, View, User, DataAnalysis, Search } from '@element-plus/icons-vue'
 import CourseManagement from './CourseManagement.vue'
+import CourseDetail from './CourseDetail.vue'
 import CourseResource from './CourseResource.vue'
 import Homework from './Homework.vue'
 import HomeworkDetail from './HomeworkDetail.vue'
@@ -80,6 +81,8 @@ const currentComponent = computed(() => {
   const path = route.path
   if (path === '/admin/course') {
     return CourseManagement
+  } else if (path.startsWith('/admin/course/detail/')) {
+    return CourseDetail
   } else if (path === '/admin/course-resource') {
     return CourseResource
   } else if (path === '/admin/homework') {
