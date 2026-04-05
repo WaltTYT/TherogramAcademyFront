@@ -46,19 +46,19 @@ const getResourceDetail = async () => {
 
 // 下载教学资源
 const downloadResource = async () => {
-  if (!resource.value || !resource.value.resourceUrl) {
+  if (!resource.value || !resource.value.uri) {
     ElMessage.warning('资源文件不存在')
     return
   }
   
   try {
-    const response = await courseResourceApi.downloadCourseResource(resource.value.resourceUrl)
+    const response = await courseResourceApi.downloadCourseResource(resource.value.uri)
     // 创建下载链接
     const url = window.URL.createObjectURL(new Blob([response.data]))
     const link = document.createElement('a')
     link.href = url
     // 从URL中提取文件名
-    const fileName = resource.value.resourceUrl.split('/').pop()
+    const fileName = resource.value.uri.split('/').pop()
     link.setAttribute('download', fileName)
     document.body.appendChild(link)
     link.click()
@@ -70,7 +70,7 @@ const downloadResource = async () => {
 
 // 返回教学资源列表
 const goBack = () => {
-  router.push('/course-resource')
+  router.push('/admin/course-resource')
 }
 
 // 生命周期
@@ -95,7 +95,7 @@ onMounted(() => {
     <div class="content" v-if="resource" :loading="loading">
       <el-card shadow="hover" class="resource-card">
         <div class="resource-header">
-          <h3>{{ resource.resourceName }}</h3>
+          <h3>{{ resource.name }}</h3>
           <div class="resource-actions">
             <el-button type="primary" @click="downloadResource">下载资源</el-button>
           </div>
@@ -103,7 +103,7 @@ onMounted(() => {
         
         <el-descriptions :column="1" border>
           <el-descriptions-item label="排序ID">
-            {{ resource.sortId }}
+            {{ resource.orderId }}
           </el-descriptions-item>
           <el-descriptions-item label="资源类型">
             {{ resourceTypes.find(t => t.value == resource.resourceType)?.label || resource.resourceType }}
@@ -118,8 +118,8 @@ onMounted(() => {
             {{ resource.createTime }}
           </el-descriptions-item>
           <el-descriptions-item label="资源文件">
-            <span v-if="resource.resourceUrl">
-              {{ resource.resourceUrl.split('/').pop() }}
+            <span v-if="resource.uri">
+              {{ resource.uri.split('/').pop() }}
             </span>
             <span v-else>
               暂无资源文件

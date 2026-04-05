@@ -8,6 +8,7 @@ import { HomeFilled, Document, Picture, View, User, DataAnalysis, Search } from 
 import CourseManagement from './CourseManagement.vue'
 import CourseDetail from './CourseDetail.vue'
 import CourseResource from './CourseResource.vue'
+import CourseResourceDetail from './CourseResourceDetail.vue'
 import Homework from './Homework.vue'
 import HomeworkDetail from './HomeworkDetail.vue'
 import CourseStatistic from './CourseStatistic.vue'
@@ -28,7 +29,7 @@ const updateActiveMenu = () => {
     activeMenu.value = '1'
   } else if (path === '/admin/course') {
     activeMenu.value = '2'
-  } else if (path === '/admin/course-resource') {
+  } else if (path === '/admin/course-resource' || path.startsWith('/admin/course-resource/detail/')) {
     activeMenu.value = '3'
   } else if (path === '/admin/homework' || path.startsWith('/admin/homework/detail/')) {
     activeMenu.value = '4'
@@ -85,6 +86,8 @@ const currentComponent = computed(() => {
     return CourseDetail
   } else if (path === '/admin/course-resource') {
     return CourseResource
+  } else if (path.startsWith('/admin/course-resource/detail/')) {
+    return CourseResourceDetail
   } else if (path === '/admin/homework') {
     return Homework
   } else if (path.startsWith('/admin/homework/detail/')) {

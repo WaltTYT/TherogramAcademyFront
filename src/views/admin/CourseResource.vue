@@ -276,7 +276,7 @@ const deleteResource = (resource) => {
 // 查看教学资源详情
 const viewResourceDetail = (resource) => {
   // 跳转到教学资源详情页面
-  router.push(`/course-resource/detail/${resource.id}`)
+  router.push(`/admin/course-resource/detail/${resource.id}`)
 }
 
 // 下载教学资源
