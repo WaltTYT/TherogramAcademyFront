@@ -2,7 +2,7 @@
 import { ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ElMessage, ElLoading } from 'element-plus'
-import { getCourseDetail, updateCourseProgress } from '../../api/course'
+import { getCourseDetail } from '../../api/course'
 import { getCourseResourcePage, downloadCourseResource } from '../../api/courseResource'
 import { getHomeworkPage } from '../../api/homework'
 import { Download } from '@element-plus/icons-vue'
@@ -61,19 +61,7 @@ const handleHomeworkDetail = (homeworkId) => {
   router.push(`/student/homework/${homeworkId}`)
 }
 
-const handleUpdateProgress = async (progress) => {
-  try {
-    await updateCourseProgress({
-      courseId: courseId,
-      progress: progress,
-      studyTime: course.value.studyTime + 10 // 假设学习了10分钟
-    })
-    ElMessage.success('学习进度更新成功')
-    await loadCourseDetail()
-  } catch (error) {
-    ElMessage.error('更新学习进度失败：' + (error.message || '未知错误'))
-  }
-}
+
 
 const handleBack = () => {
   router.push('/student/my-course')
@@ -134,14 +122,7 @@ const handleDownloadResource = async (resource) => {
           <el-descriptions-item label="课程目标">{{ course.target }}</el-descriptions-item>
           <el-descriptions-item label="课程内容">{{ course.content }}</el-descriptions-item>
           <el-descriptions-item label="课程大纲">{{ course.outline }}</el-descriptions-item>
-          <el-descriptions-item label="学习进度" :span="2">
-            <el-progress :percentage="parseInt(course.progress) || 0" :stroke-width="15" />
-            <div class="progress-info">
-              <span>当前进度：{{ course.progress || '0%' }}</span>
-              <span>学习时长：{{ course.studyTime || 0 }}分钟</span>
-              <span v-if="course.score">成绩：{{ course.score }}</span>
-            </div>
-          </el-descriptions-item>
+          <el-descriptions-item label="成绩" v-if="course.score" :span="2">{{ course.score }}</el-descriptions-item>
         </el-descriptions>
       </div>
       
@@ -235,13 +216,7 @@ const handleDownloadResource = async (resource) => {
   border-bottom: 1px solid #e0e0e0;
 }
 
-.progress-info {
-  display: flex;
-  justify-content: space-between;
-  margin-top: 10px;
-  font-size: 14px;
-  color: #666;
-}
+
 
 .el-table {
   margin-top: 20px;
