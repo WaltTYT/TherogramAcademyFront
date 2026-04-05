@@ -89,24 +89,24 @@ const loadingReview = ref(false)
 // 课程表单
 const courseForm = reactive({
   id: '',
-  courseName: '',
-  courseIntroduction: '',
-  courseObjective: '',
-  courseContent: '',
-  courseOutline: '',
-  courseSubject: '',
-  courseType: '',
+  name: '',
+  profile: '',
+  target: '',
+  content: '',
+  outline: '',
+  subjectId: '',
+  typeId: '',
   cover: ''
 })
 
 const courseFormRules = {
-  courseName: [
+  name: [
     { required: true, message: '请输入课程名称', trigger: 'blur' }
   ],
-  courseSubject: [
+  subjectId: [
     { required: true, message: '请选择课程科目', trigger: 'change' }
   ],
-  courseType: [
+  typeId: [
     { required: true, message: '请选择课程类型', trigger: 'change' }
   ]
 }
@@ -133,7 +133,7 @@ const handleCoverRemove = (file, fileList) => {
 const getCourses = async () => {
   loading.value = true
   try {
-    const response = await courseApi.getCreateCoursePage({
+    const response = await courseApi.getCoursePage({
       courseName: searchForm.courseName,
       courseSubject: searchForm.courseSubject,
       courseType: searchForm.courseType,
@@ -213,13 +213,13 @@ const openCreateDialog = () => {
   isEdit.value = false
   // 重置表单
   courseForm.id = ''
-  courseForm.courseName = ''
-  courseForm.courseIntroduction = ''
-  courseForm.courseObjective = ''
-  courseForm.courseContent = ''
-  courseForm.courseOutline = ''
-  courseForm.courseSubject = ''
-  courseForm.courseType = ''
+  courseForm.name = ''
+  courseForm.profile = ''
+  courseForm.target = ''
+  courseForm.content = ''
+  courseForm.outline = ''
+  courseForm.subjectId = ''
+  courseForm.typeId = ''
   courseForm.cover = ''
   fileList.value = []
   dialogVisible.value = true
@@ -231,13 +231,13 @@ const openEditDialog = (course) => {
   isEdit.value = true
   // 填充表单
   courseForm.id = course.id
-  courseForm.courseName = course.courseName
-  courseForm.courseIntroduction = course.courseIntroduction
-  courseForm.courseObjective = course.courseObjective
-  courseForm.courseContent = course.courseContent
-  courseForm.courseOutline = course.courseOutline
-  courseForm.courseSubject = course.courseSubject
-  courseForm.courseType = course.courseType
+  courseForm.name = course.name
+  courseForm.profile = course.profile
+  courseForm.target = course.target
+  courseForm.content = course.content
+  courseForm.outline = course.outline
+  courseForm.subjectId = course.subjectId
+  courseForm.typeId = course.typeId
   courseForm.cover = course.cover
   fileList.value = course.cover ? [{ url: course.cover }] : []
   dialogVisible.value = true
@@ -492,15 +492,15 @@ onMounted(() => {
         :header-cell-style="{ textAlign: 'center', fontWeight: 'bold', backgroundColor: '#f5f7fa' }"
       >
         <el-table-column prop="id" label="课程ID" width="100" />
-        <el-table-column prop="courseName" label="课程名称" min-width="300" />
-        <el-table-column prop="courseSubject" label="课程科目" width="120">
+        <el-table-column prop="name" label="课程名称" min-width="300" />
+        <el-table-column prop="subjectId" label="课程科目" width="120">
           <template #default="{ row }">
-            {{ courseSubjects.find(s => s.value == row.courseSubject)?.label || row.courseSubject }}
+            {{ courseSubjects.find(s => s.value == row.subjectId)?.label || row.subjectId }}
           </template>
         </el-table-column>
-        <el-table-column prop="courseType" label="课程类型" width="180">
+        <el-table-column prop="typeId" label="课程类型" width="180">
           <template #default="{ row }">
-            {{ courseTypes.find(t => t.value == row.courseType)?.label || row.courseType }}
+            {{ courseTypes.find(t => t.value == row.typeId)?.label || row.typeId }}
           </template>
         </el-table-column>
         <el-table-column prop="createTime" label="创建时间" width="180" />
@@ -534,28 +534,28 @@ onMounted(() => {
     <!-- 课程编辑对话框 -->
     <el-dialog v-model="dialogVisible" :title="dialogTitle" width="800px">
       <el-form ref="courseFormRef" :model="courseForm" :rules="courseFormRules" label-width="100px">
-        <el-form-item label="课程名称" prop="courseName">
-          <el-input v-model="courseForm.courseName"  />
+        <el-form-item label="课程名称" prop="name">
+          <el-input v-model="courseForm.name"  />
         </el-form-item>
-        <el-form-item label="课程简介" prop="courseIntroduction">
-          <el-input v-model="courseForm.courseIntroduction" type="textarea" />
+        <el-form-item label="课程简介" prop="profile">
+          <el-input v-model="courseForm.profile" type="textarea" />
         </el-form-item>
-        <el-form-item label="课程目标" prop="courseObjective">
-          <el-input v-model="courseForm.courseObjective" type="textarea" />
+        <el-form-item label="课程目标" prop="target">
+          <el-input v-model="courseForm.target" type="textarea" />
         </el-form-item>
-        <el-form-item label="课程内容" prop="courseContent">
-          <el-input v-model="courseForm.courseContent" type="textarea"  />
+        <el-form-item label="课程内容" prop="content">
+          <el-input v-model="courseForm.content" type="textarea"  />
         </el-form-item>
-        <el-form-item label="课程大纲" prop="courseOutline">
-          <el-input v-model="courseForm.courseOutline" type="textarea"  />
+        <el-form-item label="课程大纲" prop="outline">
+          <el-input v-model="courseForm.outline" type="textarea"  />
         </el-form-item>
-        <el-form-item label="课程科目" prop="courseSubject">
-          <el-select v-model="courseForm.courseSubject" >
+        <el-form-item label="课程科目" prop="subjectId">
+          <el-select v-model="courseForm.subjectId" >
             <el-option v-for="subject in courseSubjects" :key="subject.value" :label="subject.label" :value="subject.value" />
           </el-select>
         </el-form-item>
-        <el-form-item label="课程类型" prop="courseType">
-          <el-select v-model="courseForm.courseType" >
+        <el-form-item label="课程类型" prop="typeId">
+          <el-select v-model="courseForm.typeId" >
             <el-option v-for="type in courseTypes" :key="type.value" :label="type.label" :value="type.value" />
           </el-select>
         </el-form-item>
@@ -598,15 +598,15 @@ onMounted(() => {
           :header-cell-style="{ textAlign: 'center', fontWeight: 'bold', backgroundColor: '#f5f7fa' }"
         >
           <el-table-column prop="id" label="课程ID" width="100" />
-          <el-table-column prop="courseName" label="课程名称" min-width="300" />
-          <el-table-column prop="courseSubject" label="课程科目" width="120">
+          <el-table-column prop="name" label="课程名称" min-width="300" />
+          <el-table-column prop="subjectId" label="课程科目" width="120">
             <template #default="{ row }">
-              {{ courseSubjects.find(s => s.value == row.courseSubject)?.label || row.courseSubject }}
+              {{ courseSubjects.find(s => s.value == row.subjectId)?.label || row.subjectId }}
             </template>
           </el-table-column>
-          <el-table-column prop="courseType" label="课程类型" width="200">
+          <el-table-column prop="typeId" label="课程类型" width="200">
             <template #default="{ row }">
-              {{ courseTypes.find(t => t.value == row.courseType)?.label || row.courseType }}
+              {{ courseTypes.find(t => t.value == row.typeId)?.label || row.typeId }}
             </template>
           </el-table-column>
           <el-table-column prop="createTime" label="提交时间" width="200" />
