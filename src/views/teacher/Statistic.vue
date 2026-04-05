@@ -1,7 +1,7 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { ElMessage } from 'element-plus'
-import { Document, User, View } from '@element-plus/icons-vue'
+import { Document, User, View, Timer, UserFilled, DataAnalysis } from '@element-plus/icons-vue'
 import { 
   getPersonalCourseCount, 
   getPersonalSelectCount, 
