@@ -3,7 +3,7 @@ import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage, ElLoading, ElDialog, ElInputNumber, ElDatePicker, ElSwitch, ElSelect, ElOption } from 'element-plus'
 import { getHomeworkPage, deleteHomework } from '../../api/homework'
-import { getCreateCoursePage } from '../../api/course'
+import { getCoursePage } from '../../api/course'
 import HomeworkCreate from './HomeworkCreate.vue'
 
 const router = useRouter()
@@ -48,7 +48,7 @@ const sortTypeOptions = [
 
 const loadCourses = async () => {
   try {
-    const response = await getCreateCoursePage({ page: 1, size: 100 })
+    const response = await getCoursePage({ pageNum: 1, pageSize: 100 })
     courses.value = response.data.data.records
   } catch (error) {
     ElMessage.error('获取课程列表失败：' + (error.message || '未知错误'))
@@ -190,7 +190,7 @@ onMounted(() => {
                 <el-option
                   v-for="course in courses"
                   :key="course.id"
-                  :label="course.courseName"
+                  :label="course.name"
                   :value="course.id"
                 />
               </el-select>
@@ -348,11 +348,10 @@ onMounted(() => {
       :cell-style="{ textAlign: 'center' }"
       :header-cell-style="{ textAlign: 'center', fontWeight: 'bold', backgroundColor: '#f5f7fa' }"
     >
-      <el-table-column prop="homeworkName" label="作业名称" min-width="300" />
-      <el-table-column prop="courseName" label="课程名称" width="180" />
-      <el-table-column prop="homeworkType" label="作业类型" width="120">
+      <el-table-column prop="name" label="作业名称" min-width="300" />
+      <el-table-column prop="type" label="作业类型" width="120">
         <template #default="scope">
-          {{ scope.row.homeworkType === 'HOMEWORK' ? '作业' : '考试' }}
+          {{ scope.row.type === 'HOMEWORK' ? '作业' : '考试' }}
         </template>
       </el-table-column>
       <el-table-column prop="deadline" label="截止时间" width="180" />
