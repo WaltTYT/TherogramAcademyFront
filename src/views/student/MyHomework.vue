@@ -2,9 +2,13 @@
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage, ElLoading, ElInputNumber, ElDatePicker, ElSwitch, ElSelect, ElOption, ElIcon } from 'element-plus'
-import { getStudentHomeworkPage, remindHomework } from '../../api/homework'
+import { getStudentHomeworkPage, remindHomework, getHomeworksByCourse } from '../../api/homework'
+import { getUserDetail } from '../../api/user'
+import { getSelectCoursePage, getSelectedCoursesByUserId } from '../../api/course'
+import { useUserStore } from '../../stores/user'
 
 const router = useRouter()
+const userStore = useUserStore()
 
 const homeworks = ref([])
 const reminders = ref([])
@@ -56,13 +60,30 @@ const sortTypeOptions = [
 const loadHomeworks = async () => {
   loading.value = true
   try {
-    const response = await getStudentHomeworkPage({
-      courseId: searchForm.value.courseId,
-      name: searchForm.value.homeworkName,
+    // 先获取用户详情，确保有学生 ID
+    let studentId = userStore.userInfo?.id
+    if (!studentId) {
+      try {
+        const userResponse = await getUserDetail()
+        if (userResponse.data.code === 200 && userResponse.data.data) {
+          studentId = userResponse.data.data.id
+          // 更新用户信息到 store
+          userStore.setUserInfo(userStore.token, userStore.roleType, userResponse.data.data)
+        }
+      } catch (error) {
+        console.error('获取用户详情失败:', error)
+      }
+    }
+    
+    console.log('开始获取作业列表，学生 ID:', studentId)
+    console.log('查询参数:', {
+      studentId: studentId || null,
+      courseId: searchForm.value.courseId || null,
+      name: searchForm.value.homeworkName || null,
       type: searchForm.value.homeworkType || null,
       reviewStatus: searchForm.value.status || null,
-      startScore: searchForm.value.startScore,
-      endScore: searchForm.value.endScore,
+      startScore: searchForm.value.startScore?.toString() || null,
+      endScore: searchForm.value.endScore?.toString() || null,
       startDeadline: searchForm.value.startDeadline,
       endDeadline: searchForm.value.endDeadline,
       startCreateTime: searchForm.value.startCreateTime,
@@ -74,25 +95,53 @@ const loadHomeworks = async () => {
       pageNum: currentPage.value.toString(),
       pageSize: pageSize.value.toString()
     })
+    
+    const response = await getStudentHomeworkPage({
+      studentId: studentId || null,
+      courseId: searchForm.value.courseId || null,
+      name: searchForm.value.homeworkName || null,
+      type: searchForm.value.homeworkType || null,
+      reviewStatus: searchForm.value.status || null,
+      startScore: searchForm.value.startScore?.toString() || null,
+      endScore: searchForm.value.endScore?.toString() || null,
+      startDeadline: searchForm.value.startDeadline,
+      endDeadline: searchForm.value.endDeadline,
+      startCreateTime: searchForm.value.startCreateTime,
+      endCreateTime: searchForm.value.endCreateTime,
+      startSubmitTime: searchForm.value.startSubmitTime,
+      endSubmitTime: searchForm.value.endSubmitTime,
+      sortType: searchForm.value.sortType,
+      isAsc: searchForm.value.ascending?.toString() || 'false',
+      pageNum: currentPage.value.toString(),
+      pageSize: pageSize.value.toString()
+    })
+    
+    console.log('作业列表响应:', response)
+    
     // 根据后端返回的数据结构调整
     if (response.data.code === 200) {
       // 检查数据结构
       if (Array.isArray(response.data.data)) {
+        console.log('直接返回数组:', response.data.data)
         homeworks.value = response.data.data
         total.value = homeworks.value.length
       } else if (response.data.data && Array.isArray(response.data.data.records)) {
         // 适配分页数据结构
+        console.log('返回分页数据:', response.data.data.records)
         homeworks.value = response.data.data.records
         total.value = response.data.data.total || 0
       } else {
+        console.log('返回数据结构异常:', response.data.data)
         homeworks.value = []
         total.value = 0
       }
     } else {
+      console.log('返回错误:', response.data.message)
       homeworks.value = []
       total.value = 0
     }
   } catch (error) {
+    console.error('获取作业列表失败:', error)
     ElMessage.error('获取作业列表失败：' + (error.message || '未知错误'))
     homeworks.value = []
     total.value = 0
@@ -103,14 +152,19 @@ const loadHomeworks = async () => {
 
 const loadReminders = async () => {
   try {
+    console.log('开始获取作业提醒...')
     const response = await remindHomework()
+    console.log('作业提醒响应:', response)
     // 根据后端返回的数据结构调整
     if (response.data.code === 200) {
       reminders.value = Array.isArray(response.data.data) ? response.data.data : []
+      console.log('作业提醒数据:', reminders.value)
     } else {
+      console.log('获取作业提醒失败:', response.data.message)
       reminders.value = []
     }
   } catch (error) {
+    console.error('获取作业提醒失败:', error)
     ElMessage.error('获取作业提醒失败：' + (error.message || '未知错误'))
     reminders.value = []
   }
@@ -173,9 +227,61 @@ const handleHomeworkDetail = (homeworkId) => {
   router.push(`/student/homework/${homeworkId}`)
 }
 
+// 测试函数：检查学生是否有选修课程和作业
+const testStudentCourses = async () => {
+  try {
+    console.log('开始测试学生课程和作业...')
+    
+    // 1. 获取学生选修的课程
+    const studentId = 11
+    console.log('测试学生 ID:', studentId)
+    
+    const coursesResponse = await getSelectedCoursesByUserId(studentId)
+    console.log('学生选修课程响应:', coursesResponse)
+    
+    if (coursesResponse.data.code === 200) {
+      const courses = coursesResponse.data.data
+      console.log('学生选修的课程:', courses)
+      
+      if (courses && courses.length > 0) {
+        console.log('学生有', courses.length, '门选修课程')
+        
+        // 2. 检查每门课程是否有作业
+        for (const course of courses) {
+          console.log('检查课程:', course.courseName, '(ID:', course.id, ')')
+          
+          try {
+            const homeworksResponse = await getHomeworksByCourse(course.id)
+            console.log('课程作业响应:', homeworksResponse)
+            
+            if (homeworksResponse.data.code === 200) {
+              const homeworks = homeworksResponse.data.data
+              console.log('课程', course.courseName, '的作业:', homeworks)
+              
+              if (homeworks && homeworks.length > 0) {
+                console.log('课程', course.courseName, '有', homeworks.length, '个作业')
+              } else {
+                console.log('课程', course.courseName, '没有作业')
+              }
+            }
+          } catch (error) {
+            console.error('获取课程作业失败:', error)
+          }
+        }
+      } else {
+        console.log('学生没有选修任何课程')
+      }
+    }
+  } catch (error) {
+    console.error('测试失败:', error)
+  }
+}
+
 onMounted(() => {
   loadHomeworks()
   loadReminders()
+  // 执行测试
+  testStudentCourses()
 })
 </script>
 

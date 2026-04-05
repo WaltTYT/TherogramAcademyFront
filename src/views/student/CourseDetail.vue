@@ -81,7 +81,8 @@ const handleBack = () => {
 
 // 下载资源
 const handleDownloadResource = async (resource) => {
-  if (!resource || !resource.attachmentUrl) {
+  const resourcePath = resource.attachmentUrl || resource.uri
+  if (!resource || !resourcePath) {
     ElMessage.warning('该资源没有附件')
     return
   }
@@ -93,7 +94,7 @@ const handleDownloadResource = async (resource) => {
       background: 'rgba(0, 0, 0, 0.7)'
     })
     
-    const response = await downloadCourseResource(resource.attachmentUrl)
+    const response = await downloadCourseResource(resourcePath)
     
     // 创建下载链接
     const blob = new Blob([response.data])
@@ -102,7 +103,7 @@ const handleDownloadResource = async (resource) => {
     link.href = url
     
     // 从URL中提取文件名
-    const fileName = resource.attachmentUrl.split('/').pop()
+    const fileName = resourcePath.split('/').pop()
     link.download = fileName
     
     document.body.appendChild(link)

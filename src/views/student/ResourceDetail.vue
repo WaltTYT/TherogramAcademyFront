@@ -29,7 +29,8 @@ const loadResourceDetail = async () => {
 }
 
 const handleDownloadResource = async () => {
-  if (!resource.value || !resource.value.uri) {
+  const resourcePath = resource.value?.attachmentUrl || resource.value?.uri
+  if (!resource.value || !resourcePath) {
     ElMessage.warning('该资源没有附件')
     return
   }
@@ -41,7 +42,7 @@ const handleDownloadResource = async () => {
       background: 'rgba(0, 0, 0, 0.7)'
     })
     
-    const response = await downloadCourseResource(resource.value.uri)
+    const response = await downloadCourseResource(resourcePath)
     
     // 创建下载链接
     const blob = new Blob([response.data])
@@ -50,7 +51,7 @@ const handleDownloadResource = async () => {
     link.href = url
     
     // 从URL中提取文件名
-    const fileName = resource.value.uri.split('/').pop()
+    const fileName = resourcePath.split('/').pop()
     link.download = fileName
     
     document.body.appendChild(link)
@@ -76,7 +77,7 @@ const handleBack = () => {
       <h2>资源详情</h2>
       <div class="actions">
         <el-button 
-          v-if="resource && resource.uri" 
+          v-if="resource && (resource.attachmentUrl || resource.uri)" 
           type="primary" 
           @click="handleDownloadResource"
           :icon="Download"
@@ -97,8 +98,8 @@ const handleBack = () => {
           <el-descriptions-item label="查看次数">{{ resource.viewCount }}</el-descriptions-item>
           <el-descriptions-item label="创建时间">{{ resource.createTime }}</el-descriptions-item>
           <el-descriptions-item label="更新时间">{{ resource.updateTime }}</el-descriptions-item>
-          <el-descriptions-item v-if="resource.uri" label="资源路径" :span="2">
-            {{ resource.uri }}
+          <el-descriptions-item v-if="resource.attachmentUrl || resource.uri" label="资源路径" :span="2">
+            {{ resource.attachmentUrl || resource.uri }}
           </el-descriptions-item>
         </el-descriptions>
       </div>
