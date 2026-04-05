@@ -127,10 +127,9 @@ onMounted(() => {
         <h3>课程完成率排行</h3>
         <el-table :data="overallCompletionRateRank" style="width: 100%" empty-text="暂无数据">
           <el-table-column prop="courseName" label="课程名称" />
-          <el-table-column prop="completionRate" label="完成率">
+          <el-table-column prop="completionRate" label="完成率" width="1000">
             <template #default="{ row }">
               <div class="completion-rate">
-                <span>{{ row.completionRate }}%</span>
                 <el-progress 
                   :percentage="row.completionRate" 
                   :format="() => ''" 
@@ -140,6 +139,7 @@ onMounted(() => {
                     { color: '#F56C6C', percentage: 100 }
                   ]"
                 />
+                <span>{{ row.completionRate }}%</span>
               </div>
             </template>
           </el-table-column>
@@ -240,12 +240,21 @@ onMounted(() => {
 .completion-rate {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 15px;
+  white-space: nowrap;
+  justify-content: center;
 }
 
 .completion-rate span {
-  width: 60px;
+  width: 70px;
   font-weight: bold;
+  text-align: right;
+  flex-shrink: 0;
+}
+
+.completion-rate .el-progress {
+  flex: 1;
+  min-width: 150px;
 }
 
 .sectional-stats {
