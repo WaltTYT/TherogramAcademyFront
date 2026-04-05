@@ -116,11 +116,17 @@ const loadRankData = async () => {
       const scoreRankResponse = await personalScoreRank()
       if (scoreRankResponse.data.code === 200) {
         const rankData = scoreRankResponse.data.data
-        // 将 Map 转换为数组
-        scoreRank.value = Object.entries(rankData).map(([name, value]) => ({
-          name,
-          value: parseFloat(value)
-        })).sort((a, b) => b.value - a.value)
+        // 检查 rankData 是否为空对象
+        if (rankData && Object.keys(rankData).length > 0) {
+          // 将 Map 转换为数组
+          scoreRank.value = Object.entries(rankData).map(([name, value]) => ({
+            name,
+            value: parseFloat(value)
+          })).sort((a, b) => b.value - a.value)
+        } else {
+          // 如果数据为空，设置为空数组
+          scoreRank.value = []
+        }
       }
     } else {
       // 加载全站课程完成率排行
@@ -138,11 +144,17 @@ const loadRankData = async () => {
       const scoreRankResponse = await overallScoreRank()
       if (scoreRankResponse.data.code === 200) {
         const rankData = scoreRankResponse.data.data
-        // 将 Map 转换为数组
-        scoreRank.value = Object.entries(rankData).map(([name, value]) => ({
-          name,
-          value: parseFloat(value)
-        })).sort((a, b) => b.value - a.value)
+        // 检查 rankData 是否为空对象
+        if (rankData && Object.keys(rankData).length > 0) {
+          // 将 Map 转换为数组
+          scoreRank.value = Object.entries(rankData).map(([name, value]) => ({
+            name,
+            value: parseFloat(value)
+          })).sort((a, b) => b.value - a.value)
+        } else {
+          // 如果数据为空，设置为空数组
+          scoreRank.value = []
+        }
       }
     }
   } catch (error) {

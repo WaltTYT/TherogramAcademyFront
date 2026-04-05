@@ -319,8 +319,10 @@ onMounted(() => {
       </el-table-column>
       <el-table-column label="操作" width="200">
         <template #default="scope">
-          <el-button size="small" @click="handleCourseDetail(scope.row.id)" style="margin-right: 5px">查看</el-button>
-          <el-button size="small" type="primary" @click="handleSelectCourse(scope.row.id)">选课</el-button>
+          <div class="button-group">
+            <el-button size="small" @click="handleCourseDetail(scope.row.id)" style="margin-right: 8px">查看详情</el-button>
+            <el-button size="small" type="primary" @click="handleSelectCourse(scope.row.id)">选课</el-button>
+          </div>
         </template>
       </el-table-column>
       <template #empty>
@@ -397,6 +399,13 @@ onMounted(() => {
   margin: 0;
 }
 
+.button-group {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+}
+
 /* 表格样式优化 */
 :deep(.el-table) {
   border-radius: 4px;
@@ -415,13 +424,28 @@ onMounted(() => {
   background-color: #f5f7fa !important;
 }
 
+:deep(.el-button) {
+  border-radius: 6px;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
 :deep(.el-button--primary) {
   background-color: #409eff;
   border-color: #409eff;
 }
 
+:deep(.el-button--primary:hover) {
+  background-color: #66b1ff;
+  border-color: #66b1ff;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(64, 158, 255, 0.3);
+}
+
 :deep(.el-button:hover) {
-  opacity: 0.8;
+  opacity: 0.9;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
 }
 
 :deep(.el-form-item__label) {

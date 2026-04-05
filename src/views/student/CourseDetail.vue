@@ -147,7 +147,7 @@ const handleDownloadResource = async (resource) => {
       <div class="resources-section">
         <h3>教学资源</h3>
         <el-table :data="resources" style="width: 100%">
-          <el-table-column prop="resourceName" label="资源名称" />
+          <el-table-column prop="name" label="资源名称" />
           <el-table-column prop="resourceType" label="资源类型" width="120">
             <template #default="scope">
               {{ scope.row.resourceType === 'VIDEO' ? '视频' : scope.row.resourceType === 'MATERIAL' ? '课件' : '参考资料' }}
@@ -166,10 +166,10 @@ const handleDownloadResource = async (resource) => {
       <div class="homeworks-section">
         <h3>课程作业</h3>
         <el-table :data="homeworks" style="width: 100%">
-          <el-table-column prop="homeworkName" label="作业名称" />
-          <el-table-column prop="homeworkType" label="作业类型" width="100">
+          <el-table-column prop="name" label="作业名称" />
+          <el-table-column prop="type" label="作业类型" width="100">
             <template #default="scope">
-              {{ scope.row.homeworkType === 'HOMEWORK' ? '作业' : '考试' }}
+              {{ scope.row.type === 'HOMEWORK' ? '作业' : '考试' }}
             </template>
           </el-table-column>
           <el-table-column prop="deadline" label="截止时间" width="180" />

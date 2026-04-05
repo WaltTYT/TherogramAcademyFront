@@ -334,14 +334,14 @@ const router = createRouter({
   routes
 })
 
-router.beforeEach((to, from, next) => {
+router.beforeEach((to, from) => {
   const userStore = useUserStore()
   const requiresAuth = to.meta.requiresAuth !== false
   
   if (requiresAuth && !userStore.token) {
-    next('/login')
+    return '/login'
   } else {
-    next()
+    return true
   }
 })
 

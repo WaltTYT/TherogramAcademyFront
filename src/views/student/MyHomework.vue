@@ -1,13 +1,15 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { ElMessage, ElLoading, ElInputNumber, ElDatePicker, ElSwitch, ElSelect, ElOption } from 'element-plus'
+import { ElMessage, ElLoading, ElInputNumber, ElDatePicker, ElSwitch, ElSelect, ElOption, ElIcon } from 'element-plus'
 import { getStudentHomeworkPage, remindHomework } from '../../api/homework'
 
 const router = useRouter()
 
 const homeworks = ref([])
 const reminders = ref([])
+const showAllReminders = ref(false)
+const maxVisibleReminders = 5
 const loading = ref(false)
 const currentPage = ref(1)
 const pageSize = ref(10)
@@ -72,10 +74,28 @@ const loadHomeworks = async () => {
       pageNum: currentPage.value.toString(),
       pageSize: pageSize.value.toString()
     })
-    homeworks.value = response.data.data.records
-    total.value = response.data.data.total
+    // 根据后端返回的数据结构调整
+    if (response.data.code === 200) {
+      // 检查数据结构
+      if (Array.isArray(response.data.data)) {
+        homeworks.value = response.data.data
+        total.value = homeworks.value.length
+      } else if (response.data.data && Array.isArray(response.data.data.records)) {
+        // 适配分页数据结构
+        homeworks.value = response.data.data.records
+        total.value = response.data.data.total || 0
+      } else {
+        homeworks.value = []
+        total.value = 0
+      }
+    } else {
+      homeworks.value = []
+      total.value = 0
+    }
   } catch (error) {
     ElMessage.error('获取作业列表失败：' + (error.message || '未知错误'))
+    homeworks.value = []
+    total.value = 0
   } finally {
     loading.value = false
   }
@@ -84,9 +104,15 @@ const loadHomeworks = async () => {
 const loadReminders = async () => {
   try {
     const response = await remindHomework()
-    reminders.value = response.data
+    // 根据后端返回的数据结构调整
+    if (response.data.code === 200) {
+      reminders.value = Array.isArray(response.data.data) ? response.data.data : []
+    } else {
+      reminders.value = []
+    }
   } catch (error) {
     ElMessage.error('获取作业提醒失败：' + (error.message || '未知错误'))
+    reminders.value = []
   }
 }
 
@@ -159,16 +185,25 @@ onMounted(() => {
     
     <!-- 作业提醒 -->
     <el-card v-if="reminders.length > 0" class="reminder-card">
-      <h3>作业提醒</h3>
+      <div class="reminder-header">
+        <h3>作业提醒</h3>
+        <el-button 
+          v-if="reminders.length > maxVisibleReminders" 
+          type="text" 
+          @click="showAllReminders = !showAllReminders"
+        >
+          {{ showAllReminders ? '收起' : `查看全部(${reminders.length})` }}
+        </el-button>
+      </div>
       <el-alert
-        v-for="(reminder, index) in reminders"
+        v-for="(reminder, index) in (showAllReminders ? reminders : reminders.slice(0, maxVisibleReminders))"
         :key="index"
         :title="reminder.name || '未知作业'"
         :type="'warning'"
         :closable="false"
       >
         <div class="reminder-content">
-          <span>截止时间：{{ reminder.deadline }}</span>
+          <span>截止时间：{{ reminder.deadline || '未设置' }}</span>
           <el-button type="primary" size="small" @click="handleHomeworkDetail(reminder.id)">查看详情</el-button>
         </div>
       </el-alert>
@@ -377,7 +412,9 @@ onMounted(() => {
       </el-table-column>
       <template #empty>
         <div class="empty-state">
-          <el-icon class="empty-icon"><i class="el-icon-info"></i></el-icon>
+          <div class="empty-icon">
+            <i class="el-icon-info"></i>
+          </div>
           <p>暂无作业数据</p>
           <p style="font-size: 14px; color: #909399; margin-top: 8px;">您还没有任何作业</p>
         </div>
@@ -415,11 +452,18 @@ onMounted(() => {
   margin-bottom: 30px;
 }
 
+.reminder-card .reminder-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+}
+
 .reminder-card h3 {
   font-size: 18px;
   font-weight: bold;
   color: #333;
-  margin-bottom: 15px;
+  margin: 0;
 }
 
 .reminder-content {
