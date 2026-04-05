@@ -113,9 +113,12 @@ const loadRankData = async () => {
       }
       
       // 加载个人成绩排行
+      console.log('开始获取个人成绩排行...')
       const scoreRankResponse = await personalScoreRank()
+      console.log('个人成绩排行响应:', scoreRankResponse)
       if (scoreRankResponse.data.code === 200) {
         const rankData = scoreRankResponse.data.data
+        console.log('个人成绩排行数据:', rankData)
         // 检查 rankData 是否为空对象
         if (rankData && Object.keys(rankData).length > 0) {
           // 将 Map 转换为数组
@@ -123,10 +126,14 @@ const loadRankData = async () => {
             name,
             value: parseFloat(value)
           })).sort((a, b) => b.value - a.value)
+          console.log('处理后个人成绩排行数据:', scoreRank.value)
         } else {
           // 如果数据为空，设置为空数组
           scoreRank.value = []
+          console.log('个人成绩排行数据为空')
         }
+      } else {
+        console.log('获取个人成绩排行失败:', scoreRankResponse.data.message)
       }
     } else {
       // 加载全站课程完成率排行
