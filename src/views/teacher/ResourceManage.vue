@@ -329,7 +329,7 @@ onMounted(() => {
     <el-dialog
       v-model="createDialogVisible"
       title="创建教学资源"
-      width="800px"
+      width="900px"
       destroy-on-close
     >
       <ResourceCreate @resource-created="handleResourceCreated" @cancel="createDialogVisible = false" />
