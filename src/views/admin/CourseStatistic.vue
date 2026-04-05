@@ -127,7 +127,7 @@ onMounted(() => {
         <h3>课程完成率排行</h3>
         <el-table :data="overallCompletionRateRank" style="width: 100%" empty-text="暂无数据">
           <el-table-column prop="courseName" label="课程名称" />
-          <el-table-column prop="completionRate" label="完成率" width="1000">
+          <el-table-column prop="completionRate" label="完成率" width="1400">
             <template #default="{ row }">
               <div class="completion-rate">
                 <el-progress 
@@ -242,13 +242,13 @@ onMounted(() => {
   align-items: center;
   gap: 15px;
   white-space: nowrap;
-  justify-content: center;
+  justify-content: flex-start;
 }
 
 .completion-rate span {
   width: 70px;
   font-weight: bold;
-  text-align: right;
+  text-align: left;
   flex-shrink: 0;
 }
 
