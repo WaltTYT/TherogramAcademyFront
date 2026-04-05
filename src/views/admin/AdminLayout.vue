@@ -18,6 +18,31 @@ const route = useRoute()
 const userStore = useUserStore()
 
 const searchQuery = ref('')
+const activeMenu = ref('1')
+
+// 根据当前路由设置activeMenu
+const updateActiveMenu = () => {
+  const path = route.path
+  if (path === '/admin') {
+    activeMenu.value = '1'
+  } else if (path === '/admin/course') {
+    activeMenu.value = '2'
+  } else if (path === '/admin/course-resource') {
+    activeMenu.value = '3'
+  } else if (path === '/admin/homework' || path.startsWith('/admin/homework/detail/')) {
+    activeMenu.value = '4'
+  } else if (path === '/admin/statistics') {
+    activeMenu.value = '5'
+  }
+}
+
+// 初始化时更新
+updateActiveMenu()
+
+// 监听路由变化
+router.afterEach(() => {
+  updateActiveMenu()
+})
 
 const handleSearch = () => {
   if (searchQuery.value.trim()) {
@@ -123,7 +148,7 @@ const handleMenuSelect = (key) => {
     <el-container class="main-container">
       <el-aside width="200px" class="aside">
         <el-menu
-          default-active="1"
+          :default-active="activeMenu"
           class="el-menu-vertical-demo"
           @select="handleMenuSelect"
         >

@@ -26,6 +26,30 @@ const activeMenu = ref('dashboard')
 const showUserManagement = ref(false)
 const searchQuery = ref('')
 
+// 根据当前路由设置activeMenu
+const updateActiveMenu = () => {
+  const path = route.path
+  if (path === '/teacher') {
+    activeMenu.value = 'dashboard'
+  } else if (path === '/teacher/course') {
+    activeMenu.value = 'course'
+  } else if (path === '/teacher/resource') {
+    activeMenu.value = 'resource'
+  } else if (path === '/teacher/homework') {
+    activeMenu.value = 'homework'
+  } else if (path === '/teacher/statistic') {
+    activeMenu.value = 'statistic'
+  }
+}
+
+// 初始化时更新
+updateActiveMenu()
+
+// 监听路由变化
+router.afterEach(() => {
+  updateActiveMenu()
+})
+
 const handleSearch = () => {
   if (searchQuery.value.trim()) {
     // 这里可以添加搜索逻辑，例如跳转到搜索结果页面
