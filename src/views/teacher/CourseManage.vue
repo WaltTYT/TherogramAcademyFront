@@ -425,39 +425,42 @@ onMounted(() => {
     <el-dialog
       :title="editMode ? '编辑课程' : '创建课程'"
       v-model="dialogVisible"
-      width="800px"
+      width="900px"
     >
-      <el-form ref="courseFormRef" :model="courseForm" :rules="courseRules" label-width="100px">
+      <el-form ref="courseFormRef" :model="courseForm" :rules="courseRules" label-width="120px">
         <el-form-item label="课程名称" prop="courseName">
-          <el-input v-model="courseForm.courseName"></el-input>
+          <el-input v-model="courseForm.courseName" style="width: 100%"></el-input>
         </el-form-item>
         <el-form-item label="课程简介" prop="courseDescription">
-          <el-input v-model="courseForm.courseDescription" type="textarea"></el-input>
+          <el-input v-model="courseForm.courseDescription" type="textarea" style="width: 100%"></el-input>
         </el-form-item>
         <el-form-item label="课程目标">
-          <el-input v-model="courseForm.courseObjective" type="textarea"></el-input>
+          <el-input v-model="courseForm.courseObjective" type="textarea" style="width: 100%"></el-input>
         </el-form-item>
         <el-form-item label="课程内容">
-          <el-input v-model="courseForm.courseContent" type="textarea"></el-input>
+          <el-input v-model="courseForm.courseContent" type="textarea" style="width: 100%"></el-input>
         </el-form-item>
         <el-form-item label="课程大纲">
-          <el-input v-model="courseForm.courseOutline" type="textarea"></el-input>
+          <el-input v-model="courseForm.courseOutline" type="textarea" style="width: 100%"></el-input>
         </el-form-item>
         <el-form-item label="课程科目" prop="courseSubject">
-          <el-select v-model="courseForm.courseSubject">
-            <el-option label="数学" value="数学"></el-option>
-            <el-option label="语文" value="语文"></el-option>
-            <el-option label="英语" value="英语"></el-option>
-            <el-option label="物理" value="物理"></el-option>
-            <el-option label="化学" value="化学"></el-option>
-            <el-option label="生物" value="生物"></el-option>
+          <el-select v-model="courseForm.courseSubject" style="width: 100%">
+            <el-option 
+              v-for="(subject, index) in courseSubjects" 
+              :key="index" 
+              :label="subject.label" 
+              :value="subject.value"
+            />
           </el-select>
         </el-form-item>
         <el-form-item label="课程类型" prop="courseType">
-          <el-select v-model="courseForm.courseType">
-            <el-option label="必修课" value="必修课"></el-option>
-            <el-option label="选修课" value="选修课"></el-option>
-            <el-option label="通识课" value="通识课"></el-option>
+          <el-select v-model="courseForm.courseType" style="width: 100%">
+            <el-option 
+              v-for="(type, index) in courseTypes" 
+              :key="index" 
+              :label="type.label" 
+              :value="type.value"
+            />
           </el-select>
         </el-form-item>
         <el-form-item label="课程封面">
@@ -587,4 +590,50 @@ onMounted(() => {
   font-size: 14px;
 }
 
+/* 对话框样式优化 */
+:deep(.el-dialog__header) {
+  padding: 20px 20px 10px;
+}
+
+:deep(.el-dialog__title) {
+  font-size: 18px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 90%;
+}
+
+:deep(.el-form-item__label) {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 120px;
+}
+
+:deep(.el-select) {
+  min-width: 300px;
+  width: 100%;
+}
+
+:deep(.el-input) {
+  min-width: 200px;
+  width: 100%;
+}
+
+:deep(.el-select .el-select__input) {
+  padding-left: 10px;
+  width: 100%;
+}
+
+:deep(.el-select .el-select__caret) {
+  right: 10px;
+}
+
+:deep(.el-select .el-select__placeholder) {
+  padding-left: 10px;
+}
+
+:deep(.el-select-dropdown) {
+  min-width: 300px;
+}
 </style>
