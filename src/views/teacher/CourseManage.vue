@@ -170,18 +170,19 @@ const handleSubmit = async () => {
 const getCourses = async () => {
   try {
     loading.value = true
-    const response = await courseApi.getCourses({
-      page: page.value,
-      pageSize: pageSize.value,
-      courseName: searchForm.value.courseName,
-      courseSubject: searchForm.value.courseSubject,
-      courseType: searchForm.value.courseType,
-      startSelectCount: searchForm.value.startSelectCount,
-      endSelectCount: searchForm.value.endSelectCount,
-      startCreateTime: searchForm.value.startCreateTime,
-      endCreateTime: searchForm.value.endCreateTime,
-      sortType: searchForm.value.sortType,
-      ascending: searchForm.value.ascending
+    const response = await courseApi.getCoursePage({
+      name: searchForm.value.courseName,
+      subjectId: searchForm.value.courseSubject,
+      typeId: searchForm.value.courseType,
+      isSelected: "false",
+      startSelectCount: searchForm.value.startSelectCount || "0",
+      endSelectCount: searchForm.value.endSelectCount || "7",
+      startCreateTime: searchForm.value.startCreateTime || "2025-01-01T12:00:00",
+      endCreateTime: searchForm.value.endCreateTime || "2027-01-01T12:00:00",
+      sortType: searchForm.value.sortType || "1",
+      isAsc: searchForm.value.ascending?.toString() || "true",
+      pageNum: page.value,
+      pageSize: pageSize.value
     })
     courses.value = response.data.data.records
     total.value = response.data.data.total
