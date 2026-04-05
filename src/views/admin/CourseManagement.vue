@@ -144,8 +144,8 @@ const getCourses = async () => {
       endCreateTime: searchForm.endCreateTime,
       sortType: searchForm.sortType,
       ascending: searchForm.ascending,
-      current: currentPage.value,
-      size: pageSize.value
+      pageNum: currentPage.value,
+      pageSize: pageSize.value
     })
     console.log('getCourses response:', response)
     if (response.data.code === 200) {
