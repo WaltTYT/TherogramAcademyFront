@@ -156,13 +156,13 @@ const downloadHomework = async () => {
   }
   
   try {
-    const response = await homeworkApi.downloadHomework(homework.value.attachment)
+    // 从attachment中提取文件名
+    const fileName = homework.value.attachment.split('/').pop()
+    const response = await homeworkApi.downloadHomework(homework.value.id, fileName)
     // 创建下载链接
     const url = window.URL.createObjectURL(new Blob([response.data]))
     const link = document.createElement('a')
     link.href = url
-    // 从URL中提取文件名
-    const fileName = homework.value.attachment.split('/').pop()
     link.setAttribute('download', fileName)
     document.body.appendChild(link)
     link.click()

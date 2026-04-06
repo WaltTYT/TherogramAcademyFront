@@ -409,15 +409,20 @@ const handleFileUpload = (file) => {
 }
 
 // 下载作业附件
-const downloadHomeworkFile = async (relativePath) => {
+const downloadHomeworkFile = async (homework) => {
+  if (!homework || !homework.attachment) {
+    ElMessage.warning('作业附件不存在')
+    return
+  }
+  
   try {
-    const response = await downloadHomework(relativePath)
+    // 从attachment中提取文件名
+    const fileName = homework.attachment.split('/').pop()
+    const response = await downloadHomework(homework.id, fileName)
     // 创建下载链接
     const url = window.URL.createObjectURL(new Blob([response.data]))
     const link = document.createElement('a')
     link.href = url
-    // 提取文件名
-    const fileName = relativePath.split('/').pop()
     link.setAttribute('download', fileName)
     document.body.appendChild(link)
     link.click()
@@ -430,15 +435,23 @@ const downloadHomeworkFile = async (relativePath) => {
 }
 
 // 下载学生作业附件
-const downloadMySubmission = async (relativePath) => {
+const downloadMySubmission = async (homework) => {
+  if (!homework || !homework.studentHomeworkAttachment) {
+    ElMessage.warning('学生作业附件不存在')
+    return
+  }
+  
   try {
-    const response = await downloadStudentHomework(relativePath)
+    // 从studentHomeworkAttachment中提取文件名
+    const fileName = homework.studentHomeworkAttachment.split('/').pop()
+    // 获取学生ID（需要从用户信息中获取）
+    const userStore = useUserStore()
+    const studentId = userStore.userId
+    const response = await downloadStudentHomework(studentId, homework.id, fileName)
     // 创建下载链接
     const url = window.URL.createObjectURL(new Blob([response.data]))
     const link = document.createElement('a')
     link.href = url
-    // 提取文件名
-    const fileName = relativePath.split('/').pop()
     link.setAttribute('download', fileName)
     document.body.appendChild(link)
     link.click()
@@ -695,8 +708,8 @@ onMounted(() => {
             </el-button>
             <template #dropdown>
               <el-dropdown-menu>
-                <el-dropdown-item v-if="scope.row.attachment" @click="downloadHomeworkFile(scope.row.attachment)">下载作业附件</el-dropdown-item>
-                <el-dropdown-item v-if="scope.row.studentHomeworkAttachment" @click="downloadMySubmission(scope.row.studentHomeworkAttachment)">下载我的提交</el-dropdown-item>
+                <el-dropdown-item v-if="scope.row.attachment" @click="downloadHomeworkFile(scope.row)">下载作业附件</el-dropdown-item>
+                <el-dropdown-item v-if="scope.row.studentHomeworkAttachment" @click="downloadMySubmission(scope.row)">下载我的提交</el-dropdown-item>
               </el-dropdown-menu>
             </template>
           </el-dropdown>

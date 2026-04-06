@@ -506,7 +506,7 @@ onMounted(() => {
         <el-table-column prop="deadline" label="截至时间" width="180" />
         <el-table-column prop="createTime" label="创建时间" width="180" />
         <el-table-column prop="submitCount" label="提交人数" width="100" />
-        <el-table-column label="操作" width="240">
+        <el-table-column label="操作" width="320">
           <template #default="{ row }">
             <el-button size="small" @click="viewHomeworkDetail(row)" style="margin-right: 5px">查看</el-button>
             <el-button size="small" type="primary" @click="openEditDialog(row)" style="margin-right: 5px">编辑</el-button>

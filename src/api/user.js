@@ -54,7 +54,15 @@ export const uploadUserAvatar = (id, file) => {
 
 // 下载用户头像
 export const downloadUserAvatar = (relativePath) => {
-  return request.get(`/user/downloadUser/${relativePath}`, {
+  // 确保路径格式正确，添加User前缀
+  let path = relativePath
+  if (path && !path.startsWith('User/')) {
+    // 去除开头的斜杠
+    path = path.replace(/^\//, '')
+    // 添加User前缀
+    path = `User/${path}`
+  }
+  return request.get(`/user/downloadUser/${path}`, {
     responseType: 'blob'
   })
 }

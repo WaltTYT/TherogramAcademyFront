@@ -118,18 +118,18 @@ export const uploadStudentHomework = (studentId, homeworkId, file) => {
 }
 
 // 下载作业附件
-export const downloadHomework = (relativePath) => {
+export const downloadHomework = (homeworkId, fileName) => {
   return request({
-    url: `/homework/downloadHomework/${relativePath}`,
+    url: `/homework/downloadHomework/${homeworkId}/${fileName}`,
     method: 'get',
     responseType: 'blob'
   })
 }
 
 // 下载学生作业附件
-export const downloadStudentHomework = (relativePath) => {
+export const downloadStudentHomework = (studentId, homeworkId, fileName) => {
   return request({
-    url: `/homework/downloadStudentHomework/${relativePath}`,
+    url: `/homework/downloadStudentHomework/${studentId}/${homeworkId}/${fileName}`,
     method: 'get',
     responseType: 'blob'
   })

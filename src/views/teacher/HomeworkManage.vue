@@ -236,8 +236,10 @@ const handleDownload = (homework) => {
     return
   }
   
+  // 从attachment中提取文件名
+  const fileName = homework.attachment.split('/').pop()
   // 构建下载链接
-  window.location.href = `http://localhost:8085/api/homework/downloadHomework${homework.attachment}`
+  window.location.href = `http://localhost:8085/api/homework/downloadHomework/${homework.id}/${fileName}`
 }
 
 // 批改对话框
