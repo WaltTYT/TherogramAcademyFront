@@ -101,10 +101,16 @@ const getCourses = async () => {
     let response
     if (userStore.roleType === 'STUDENT') {
       // 学生获取选修的课程
-      response = await courseApi.getSelectCoursePage({})
+      response = await courseApi.getSelectCoursePage({
+        pageNum: 1,
+        pageSize: 100
+      })
     } else {
       // 教师和管理员获取所有课程
-      response = await courseApi.getCoursePage({})
+      response = await courseApi.getCoursePage({
+        pageNum: 1,
+        pageSize: 100
+      })
     }
     if (response.data.code === 200) {
       courses.value = response.data.data.records
