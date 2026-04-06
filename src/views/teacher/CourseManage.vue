@@ -1,7 +1,7 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { ElMessage, ElTable, ElTableColumn, ElButton, ElPagination, ElDialog, ElForm, ElFormItem, ElInput, ElSelect, ElOption, ElUpload, ElInputNumber, ElDatePicker, ElSwitch, ElMessage as ElMessage2 } from 'element-plus'
+import { ElMessage, ElTable, ElTableColumn, ElButton, ElPagination, ElDialog, ElForm, ElFormItem, ElInput, ElSelect, ElOption, ElUpload, ElInputNumber, ElDatePicker, ElSwitch, ElMessageBox, ElMessage as ElMessage2 } from 'element-plus'
 import * as courseApi from '../../api/course'
 
 const router = useRouter()
@@ -134,21 +134,34 @@ const handleEditCourse = (course) => {
 
 const handleDeleteCourse = async (courseId) => {
   try {
+    await ElMessageBox.confirm(
+      `确定要删除课程吗？\n删除后将无法恢复，且相关的作业和资源数据也会被删除。`,
+      '删除课程',
+      {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning',
+        center: true
+      }
+    )
+    
     console.log('开始删除课程，课程ID:', courseId)
     const response = await courseApi.deleteCourse(courseId)
     console.log('删除课程响应:', response)
     ElMessage.success('课程删除成功')
     getCourses()
   } catch (error) {
-    console.error('课程删除失败:', error)
-    console.error('错误响应:', error.response)
-    let errorMessage = '课程删除失败'
-    if (error.response && error.response.data && error.response.data.msg) {
-      errorMessage = '课程删除失败: ' + error.response.data.msg
-    } else if (error.message) {
-      errorMessage = '课程删除失败: ' + error.message
+    if (error !== 'cancel') {
+      console.error('课程删除失败:', error)
+      console.error('错误响应:', error.response)
+      let errorMessage = '课程删除失败'
+      if (error.response && error.response.data && error.response.data.msg) {
+        errorMessage = '课程删除失败: ' + error.response.data.msg
+      } else if (error.message) {
+        errorMessage = '课程删除失败: ' + error.message
+      }
+      ElMessage.error(errorMessage)
     }
-    ElMessage.error(errorMessage)
   }
 }
 
