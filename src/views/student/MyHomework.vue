@@ -1,17 +1,16 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { ElMessage, ElLoading, ElInputNumber, ElDatePicker, ElSwitch, ElSelect, ElOption, ElIcon } from 'element-plus'
-import { getHomeworkPage, remindHomework, getHomeworksByCourse } from '../../api/homework'
+import { ElMessage, ElLoading, ElInputNumber, ElDatePicker, ElSwitch, ElSelect, ElOption, ElIcon, ElDropdown, ElDropdownMenu, ElDropdownItem } from 'element-plus'
+import { getStudentHomeworkPage, remindHomework, getHomeworksByCourse, uploadStudentHomework, submitHomework, downloadHomework, downloadStudentHomework, getStudentHomeworkDetail } from '../../api/homework'
 import { getUserDetail } from '../../api/user'
-import { getSelectCoursePage, getSelectedCoursesByUserId } from '../../api/course'
+
 import { useUserStore } from '../../stores/user'
 
 const router = useRouter()
 const userStore = useUserStore()
 
 const homeworks = ref([])
-const courses = ref([])
 const reminders = ref([])
 const showAllReminders = ref(false)
 const maxVisibleReminders = 5
@@ -30,17 +29,17 @@ const submitForm = ref({
 const uploadLoading = ref(false)
 
 const searchForm = ref({
-  courseId: '',
+  homeworkName: '',
   homeworkType: '',
   status: '',
-  startScore: 0,
-  endScore: 100,
-  startDeadline: '2025-01-01T12:00:00',
-  endDeadline: '2027-12-01T12:00:00',
-  startCreateTime: '2025-01-01T12:00:00',
-  endCreateTime: '2027-01-01T12:00:00',
-  startSubmitTime: '2025-01-01T12:00:00',
-  endSubmitTime: '2027-01-01T12:00:00',
+  startScore: '',
+  endScore: '',
+  startDeadline: '',
+  endDeadline: '',
+  startCreateTime: '',
+  endCreateTime: '',
+  startSubmitTime: '',
+  endSubmitTime: '',
   sortType: 0,
   ascending: false
 })
@@ -66,80 +65,7 @@ const sortTypeOptions = [
   { value: 3, label: '按提交时间' }
 ]
 
-// 加载学生选修的课程
-const loadCourses = async () => {
-  try {
-    // 先获取用户详情，确保有学生 ID
-    let studentId = userStore.userInfo?.id
-    if (!studentId) {
-      try {
-        const userResponse = await getUserDetail()
-        if (userResponse.data.code === 200 && userResponse.data.data) {
-          studentId = userResponse.data.data.id
-          // 更新用户信息到 store
-          userStore.setUserInfo(userStore.token, userStore.roleType, userResponse.data.data)
-        }
-      } catch (error) {
-        console.error('获取用户详情失败:', error)
-        ElMessage.error('获取用户信息失败，无法查询课程')
-        courses.value = []
-        return
-      }
-    }
-    
-    console.log('开始获取学生选修课程，学生 ID:', studentId)
-    
-    // 确保学生ID存在
-    if (!studentId) {
-      console.error('学生ID不存在')
-      ElMessage.error('学生信息不完整，无法查询课程')
-      courses.value = []
-      return
-    }
-    
-    const response = await getSelectCoursePage({
-      name: "",
-      subjectId: "",
-      typeId: "",
-      startSelectCount: "",
-      endSelectCount: "",
-      startProgress: "0",
-      endProgress: "100",
-      startScore: "",
-      endScore: "",
-      startSelectTime: "2025-01-01T12:00:00",
-      endSelectTime: "2027-01-01T12:00:00",
-      startStudyTime: "0",
-      endStudyTime: "1000",
-      startCreateTime: "2025-01-01T00:00:00",
-      endCreateTime: "2027-01-01T12:00:00",
-      sortType: "4",
-      isAsc: "true",
-      pageNum: "1",
-      pageSize: "100"
-    })
-    
-    console.log('课程列表响应:', response)
-    
-    if (response.data.code === 200) {
-      if (response.data.data && Array.isArray(response.data.data.records)) {
-        courses.value = response.data.data.records
-        console.log('学生选修的课程:', courses.value)
-      } else {
-        courses.value = []
-        console.log('返回数据结构异常:', response.data.data)
-      }
-    } else {
-      console.log('返回错误:', response.data.message)
-      ElMessage.error('获取课程列表失败：' + (response.data.message || '未知错误'))
-      courses.value = []
-    }
-  } catch (error) {
-    console.error('获取课程列表失败:', error)
-    ElMessage.error('获取课程列表失败：' + (error.message || '未知错误'))
-    courses.value = []
-  }
-}
+
 
 const loadHomeworks = async () => {
   loading.value = true
@@ -167,7 +93,7 @@ const loadHomeworks = async () => {
     console.log('开始获取作业列表，学生 ID:', studentId)
     console.log('查询参数:', {
       studentId: studentId || null,
-      courseId: searchForm.value.courseId || null,
+      courseId: null,
       name: searchForm.value.homeworkName || null,
       type: searchForm.value.homeworkType || null,
       reviewStatus: searchForm.value.status || null,
@@ -195,20 +121,20 @@ const loadHomeworks = async () => {
       return
     }
     
-    const response = await getHomeworkPage({
+    const response = await getStudentHomeworkPage({
       studentId: studentId,
-      courseId: searchForm.value.courseId || null,
-      name: null,
+      courseId: null,
+      name: searchForm.value.homeworkName || null,
       type: searchForm.value.homeworkType || null,
       reviewStatus: searchForm.value.status || null,
-      startScore: searchForm.value.startScore,
-      endScore: searchForm.value.endScore,
-      startDeadline: searchForm.value.startDeadline,
-      endDeadline: searchForm.value.endDeadline,
-      startCreateTime: searchForm.value.startCreateTime,
-      endCreateTime: searchForm.value.endCreateTime,
-      startSubmitTime: searchForm.value.startSubmitTime,
-      endSubmitTime: searchForm.value.endSubmitTime,
+      startScore: searchForm.value.startScore || null,
+      endScore: searchForm.value.endScore || null,
+      startDeadline: searchForm.value.startDeadline || null,
+      endDeadline: searchForm.value.endDeadline || null,
+      startCreateTime: searchForm.value.startCreateTime || null,
+      endCreateTime: searchForm.value.endCreateTime || null,
+      startSubmitTime: searchForm.value.startSubmitTime || null,
+      endSubmitTime: searchForm.value.endSubmitTime || null,
       sortType: parseInt(searchForm.value.sortType),
       isAsc: searchForm.value.ascending,
       pageNum: currentPage.value,
@@ -333,17 +259,17 @@ const handleSearch = () => {
 
 const handleReset = () => {
   searchForm.value = {
-    courseId: '',
+    homeworkName: '',
     homeworkType: '',
     status: '',
-    startScore: 0,
-    endScore: 100,
-    startDeadline: '2025-01-01T12:00:00',
-    endDeadline: '2027-12-01T12:00:00',
-    startCreateTime: '2025-01-01T12:00:00',
-    endCreateTime: '2027-01-01T12:00:00',
-    startSubmitTime: '2025-01-01T12:00:00',
-    endSubmitTime: '2027-01-01T12:00:00',
+    startScore: '',
+    endScore: '',
+    startDeadline: '',
+    endDeadline: '',
+    startCreateTime: '',
+    endCreateTime: '',
+    startSubmitTime: '',
+    endSubmitTime: '',
     sortType: 0,
     ascending: false
   }
@@ -355,17 +281,17 @@ const toggleAdvancedSearch = () => {
   showAdvancedSearch.value = !showAdvancedSearch.value
   if (!showAdvancedSearch.value) {
     searchForm.value = {
-      courseId: '',
+      homeworkName: '',
       homeworkType: '',
       status: '',
-      startScore: 0,
-      endScore: 100,
-      startDeadline: '2025-01-01T12:00:00',
-      endDeadline: '2027-12-01T12:00:00',
-      startCreateTime: '2025-01-01T12:00:00',
-      endCreateTime: '2027-01-01T12:00:00',
-      startSubmitTime: '2025-01-01T12:00:00',
-      endSubmitTime: '2027-01-01T12:00:00',
+      startScore: '',
+      endScore: '',
+      startDeadline: '',
+      endDeadline: '',
+      startCreateTime: '',
+      endCreateTime: '',
+      startSubmitTime: '',
+      endSubmitTime: '',
       sortType: 0,
       ascending: false
     }
@@ -381,55 +307,7 @@ const handleHomeworkDetail = (homeworkId) => {
   router.push(`/student/homework/${homeworkId}`)
 }
 
-// 测试函数：检查学生是否有选修课程和作业
-const testStudentCourses = async () => {
-  try {
-    console.log('开始测试学生课程和作业...')
-    
-    // 1. 获取学生选修的课程
-    const studentId = 11
-    console.log('测试学生 ID:', studentId)
-    
-    const coursesResponse = await getSelectedCoursesByUserId(studentId)
-    console.log('学生选修课程响应:', coursesResponse)
-    
-    if (coursesResponse.data.code === 200) {
-      const courses = coursesResponse.data.data
-      console.log('学生选修的课程:', courses)
-      
-      if (courses && courses.length > 0) {
-        console.log('学生有', courses.length, '门选修课程')
-        
-        // 2. 检查每门课程是否有作业
-        for (const course of courses) {
-          console.log('检查课程:', course.courseName, '(ID:', course.id, ')')
-          
-          try {
-            const homeworksResponse = await getHomeworksByCourse(course.id)
-            console.log('课程作业响应:', homeworksResponse)
-            
-            if (homeworksResponse.data.code === 200) {
-              const homeworks = homeworksResponse.data.data
-              console.log('课程', course.courseName, '的作业:', homeworks)
-              
-              if (homeworks && homeworks.length > 0) {
-                console.log('课程', course.courseName, '有', homeworks.length, '个作业')
-              } else {
-                console.log('课程', course.courseName, '没有作业')
-              }
-            }
-          } catch (error) {
-            console.error('获取课程作业失败:', error)
-          }
-        }
-      } else {
-        console.log('学生没有选修任何课程')
-      }
-    }
-  } catch (error) {
-    console.error('测试失败:', error)
-  }
-}
+
 
 // 打开提交作业对话框
 const handleSubmitHomework = (homework) => {
@@ -526,14 +404,52 @@ const handleFileUpload = (file) => {
   return false // 阻止自动上传
 }
 
+// 下载作业附件
+const downloadHomeworkFile = async (relativePath) => {
+  try {
+    const response = await downloadHomework(relativePath)
+    // 创建下载链接
+    const url = window.URL.createObjectURL(new Blob([response.data]))
+    const link = document.createElement('a')
+    link.href = url
+    // 提取文件名
+    const fileName = relativePath.split('/').pop()
+    link.setAttribute('download', fileName)
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+    ElMessage.success('附件下载成功')
+  } catch (error) {
+    console.error('下载作业附件失败:', error)
+    ElMessage.error('下载附件失败：' + (error.message || '未知错误'))
+  }
+}
+
+// 下载学生作业附件
+const downloadMySubmission = async (relativePath) => {
+  try {
+    const response = await downloadStudentHomework(relativePath)
+    // 创建下载链接
+    const url = window.URL.createObjectURL(new Blob([response.data]))
+    const link = document.createElement('a')
+    link.href = url
+    // 提取文件名
+    const fileName = relativePath.split('/').pop()
+    link.setAttribute('download', fileName)
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+    ElMessage.success('附件下载成功')
+  } catch (error) {
+    console.error('下载学生作业附件失败:', error)
+    ElMessage.error('下载附件失败：' + (error.message || '未知错误'))
+  }
+}
+
 onMounted(() => {
-  // 先加载课程，再加载作业
-  loadCourses().then(() => {
-    loadHomeworks()
-    loadReminders()
-  })
-  // 执行测试
-  testStudentCourses()
+  // 加载作业和提醒
+  loadHomeworks()
+  loadReminders()
 })
 </script>
 
@@ -572,23 +488,6 @@ onMounted(() => {
         <!-- 基础搜索条件 -->
         <el-row :gutter="20">
           <el-col :span="8">
-            <el-form-item label="课程" style="width: 100%;">
-              <el-select
-                v-model="searchForm.courseId"
-                placeholder="请选择课程"
-                clearable
-                style="width: 100%;"
-              >
-                <el-option
-                  v-for="course in courses"
-                  :key="course.id"
-                  :label="course.name || course.courseName"
-                  :value="course.id"
-                />
-              </el-select>
-            </el-form-item>
-          </el-col>
-          <el-col :span="8">
             <el-form-item label="作业类型" style="width: 100%;">
               <el-select
                 v-model="searchForm.homeworkType"
@@ -603,6 +502,16 @@ onMounted(() => {
                   :value="option.value"
                 />
               </el-select>
+            </el-form-item>
+          </el-col>
+          <el-col :span="8">
+            <el-form-item label="作业名称" style="width: 100%;">
+              <el-input
+                v-model="searchForm.homeworkName"
+                placeholder="请输入作业名称"
+                clearable
+                @keyup.enter="handleSearch"
+              />
             </el-form-item>
           </el-col>
         </el-row>
@@ -758,7 +667,11 @@ onMounted(() => {
       </el-table-column>
       <el-table-column prop="deadline" label="截止时间" width="180" />
       <el-table-column prop="studentHomeworkSubmitTime" label="提交时间" width="180" />
-      <el-table-column prop="score" label="成绩" width="80" />
+      <el-table-column prop="score" label="成绩" width="80">
+        <template #default="scope">
+          {{ scope.row.score === 'PENDING' ? '未评定' : scope.row.score }}
+        </template>
+      </el-table-column>
       <el-table-column prop="reviewStatus" label="提交状态" width="120">
         <template #default="scope">
           <el-tag v-if="scope.row.reviewStatus === 'UNSUBMITTED'" type="warning">未提交</el-tag>
@@ -768,10 +681,21 @@ onMounted(() => {
           <el-tag v-else type="info">未提交</el-tag>
         </template>
       </el-table-column>
-      <el-table-column label="操作" width="300">
+      <el-table-column label="操作" width="400">
         <template #default="scope">
           <el-button type="primary" size="small" @click="handleHomeworkDetail(scope.row.id)">查看</el-button>
           <el-button type="success" size="small" @click="handleSubmitHomework(scope.row)">提交</el-button>
+          <el-dropdown v-if="scope.row.attachment || scope.row.studentHomeworkAttachment" style="margin-left: 10px;">
+            <el-button type="info" size="small">
+              下载 <el-icon class="el-icon--right"><i class="el-icon-arrow-down"></i></el-icon>
+            </el-button>
+            <template #dropdown>
+              <el-dropdown-menu>
+                <el-dropdown-item v-if="scope.row.attachment" @click="downloadHomeworkFile(scope.row.attachment)">下载作业附件</el-dropdown-item>
+                <el-dropdown-item v-if="scope.row.studentHomeworkAttachment" @click="downloadMySubmission(scope.row.studentHomeworkAttachment)">下载我的提交</el-dropdown-item>
+              </el-dropdown-menu>
+            </template>
+          </el-dropdown>
         </template>
       </el-table-column>
       <template #empty>
