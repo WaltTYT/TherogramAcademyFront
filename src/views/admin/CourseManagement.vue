@@ -332,7 +332,17 @@ const getPendingCourses = async () => {
   try {
     const response = await courseApi.getPendingCourses()
     if (response.data.code === 200) {
-      pendingCourses.value = response.data.data
+      // 映射后端返回的字段名到前端使用的字段名
+      pendingCourses.value = response.data.data.map(course => ({
+        ...course,
+        courseName: course.name || course.courseName,
+        courseIntroduction: course.profile || course.courseIntroduction,
+        courseObjective: course.target || course.courseObjective,
+        courseContent: course.content || course.courseContent,
+        courseOutline: course.outline || course.courseOutline,
+        courseSubject: course.subjectId || course.courseSubject,
+        courseType: course.typeId || course.courseType
+      }))
     } else {
       ElMessage.error(response.data.message || '获取待审核课程失败')
     }
