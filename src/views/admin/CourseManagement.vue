@@ -82,9 +82,7 @@ const isEdit = ref(false)
 
 // 审核课程对话框
 const reviewDialogVisible = ref(false)
-const reviewDialogTitle = ref('审核课程申请')
-const pendingCourses = ref([])
-const loadingReview = ref(false)
+const reviewDialogTitle = ref('审核课程')
 
 // 课程表单
 const courseForm = reactive({
@@ -326,36 +324,8 @@ const viewCourseDetail = (course) => {
   router.push(`/admin/course/detail/${course.id}`)
 }
 
-// 获取待审核课程列表
-const getPendingCourses = async () => {
-  loadingReview.value = true
-  try {
-    const response = await courseApi.getPendingCourses()
-    if (response.data.code === 200) {
-      // 映射后端返回的字段名到前端使用的字段名
-      pendingCourses.value = response.data.data.map(course => ({
-        ...course,
-        courseName: course.name || course.courseName,
-        courseIntroduction: course.profile || course.courseIntroduction,
-        courseObjective: course.target || course.courseObjective,
-        courseContent: course.content || course.courseContent,
-        courseOutline: course.outline || course.courseOutline,
-        courseSubject: course.subjectId || course.courseSubject,
-        courseType: course.typeId || course.courseType
-      }))
-    } else {
-      ElMessage.error(response.data.message || '获取待审核课程失败')
-    }
-  } catch (error) {
-    ElMessage.error('获取待审核课程失败')
-  } finally {
-    loadingReview.value = false
-  }
-}
-
 // 打开审核课程对话框
 const openReviewDialog = () => {
-  getPendingCourses()
   reviewDialogVisible.value = true
 }
 
@@ -365,7 +335,7 @@ const reviewCourse = async (course, status) => {
     const response = await courseApi.reviewCourse({ id: course.id, status })
     if (response.data.code === 200) {
       ElMessage.success('审核成功')
-      getPendingCourses()
+      getCourses()
     } else {
       ElMessage.error(response.data.message || '审核失败')
     }
@@ -632,8 +602,7 @@ onMounted(() => {
     <el-dialog v-model="reviewDialogVisible" :title="reviewDialogTitle" width="1200px">
       <div class="review-dialog-content">
         <el-table 
-          :data="pendingCourses" 
-          :loading="loadingReview" 
+          :data="courses" 
           style="width: 100%" 
           empty-text=""
           :cell-style="{ textAlign: 'center' }"

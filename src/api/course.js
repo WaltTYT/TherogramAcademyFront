@@ -50,11 +50,6 @@ export const getSelectCourseDetail = (id) => {
   return request.get(`/course/selectDetail/${id}`)
 }
 
-// 获取待审核课程
-export const getPendingCourses = () => {
-  return request.get('/course/pending')
-}
-
 // 审核课程
 export const reviewCourse = (data) => {
   return request.post('/course/review', data)
