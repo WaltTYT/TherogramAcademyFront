@@ -25,12 +25,12 @@ const searchForm = reactive({
   homeworkName: '',
   homeworkType: '',
   isFilterDeleted: false,
-  startSubmitCount: '',
-  endSubmitCount: '',
-  startDeadline: '',
-  endDeadline: '',
-  startCreateTime: '',
-  endCreateTime: '',
+  startSubmitCount: 0,
+  endSubmitCount: 150,
+  startDeadline: '2025-01-01T12:00:00',
+  endDeadline: '2027-12-01T12:00:00',
+  startCreateTime: '2025-01-01T12:00:00',
+  endCreateTime: '2027-01-01T12:00:00',
   sortType: '0',
   isAsc: true
 })
@@ -136,14 +136,14 @@ const getHomeworks = async () => {
       name: searchForm.homeworkName,
       type: searchForm.homeworkType || "HOMEWORK",
       isDeleted: "false",
-      startSubmitCount: searchForm.startSubmitCount || "0",
-      endSubmitCount: searchForm.endSubmitCount || "7",
+      startSubmitCount: searchForm.startSubmitCount || 0,
+      endSubmitCount: searchForm.endSubmitCount || 150,
       startDeadline: searchForm.startDeadline || "2025-01-01T12:00:00",
       endDeadline: searchForm.endDeadline || "2027-12-01T12:00:00",
       startCreateTime: searchForm.startCreateTime || "2025-01-01T12:00:00",
       endCreateTime: searchForm.endCreateTime || "2027-01-01T12:00:00",
-      sortType: searchForm.sortType || "2",
-      isAsc: searchForm.isAsc?.toString() || "false",
+      sortType: searchForm.sortType || "0",
+      isAsc: searchForm.isAsc?.toString() || "true",
       pageNum: currentPage.value,
       pageSize: pageSize.value
     })
@@ -171,12 +171,12 @@ const handleReset = () => {
   searchForm.homeworkName = ''
   searchForm.homeworkType = ''
   searchForm.isFilterDeleted = false
-  searchForm.startSubmitCount = ''
-  searchForm.endSubmitCount = ''
-  searchForm.startDeadline = ''
-  searchForm.endDeadline = ''
-  searchForm.startCreateTime = ''
-  searchForm.endCreateTime = ''
+  searchForm.startSubmitCount = 0
+  searchForm.endSubmitCount = 150
+  searchForm.startDeadline = '2025-01-01T12:00:00'
+  searchForm.endDeadline = '2027-12-01T12:00:00'
+  searchForm.startCreateTime = '2025-01-01T12:00:00'
+  searchForm.endCreateTime = '2027-01-01T12:00:00'
   searchForm.sortType = '0'
   searchForm.isAsc = true
   currentPage.value = 1
@@ -190,12 +190,12 @@ const toggleAdvancedSearch = () => {
     searchForm.homeworkName = ''
     searchForm.homeworkType = ''
     searchForm.isFilterDeleted = false
-    searchForm.startSubmitCount = ''
-    searchForm.endSubmitCount = ''
-    searchForm.startDeadline = ''
-    searchForm.endDeadline = ''
-    searchForm.startCreateTime = ''
-    searchForm.endCreateTime = ''
+    searchForm.startSubmitCount = 0
+    searchForm.endSubmitCount = 150
+    searchForm.startDeadline = '2025-01-01T12:00:00'
+    searchForm.endDeadline = '2027-12-01T12:00:00'
+    searchForm.startCreateTime = '2025-01-01T12:00:00'
+    searchForm.endCreateTime = '2027-01-01T12:00:00'
     searchForm.sortType = '0'
     searchForm.isAsc = true
   }
@@ -233,12 +233,12 @@ const openEditDialog = (homework) => {
   isEdit.value = true
   // 填充表单
   homeworkForm.id = homework.id
-  homeworkForm.homeworkName = homework.homeworkName
-  homeworkForm.homeworkType = homework.homeworkType
+  homeworkForm.homeworkName = homework.name || homework.homeworkName
+  homeworkForm.homeworkType = homework.type || homework.homeworkType
   homeworkForm.deadline = homework.deadline
-  homeworkForm.homeworkContent = homework.homeworkContent
+  homeworkForm.homeworkContent = homework.content || homework.homeworkContent
   homeworkForm.courseId = homework.courseId
-  fileList.value = homework.homeworkUrl ? [{ url: homework.homeworkUrl }] : []
+  fileList.value = homework.attachment || homework.homeworkUrl ? [{ url: homework.attachment || homework.homeworkUrl }] : []
   dialogVisible.value = true
 }
 
@@ -269,7 +269,7 @@ const saveHomework = async () => {
 
 // 删除作业
 const deleteHomework = (homework) => {
-  ElMessageBox.confirm(`确定要删除作业「${homework.homeworkName}」吗？`, '警告', {
+  ElMessageBox.confirm(`确定要删除作业「${homework.name || homework.homeworkName}」吗？`, '警告', {
     confirmButtonText: '确定',
     cancelButtonText: '取消',
     type: 'warning'
@@ -475,15 +475,19 @@ onMounted(() => {
         :cell-style="{ textAlign: 'center' }"
         :header-cell-style="{ textAlign: 'center', fontWeight: 'bold', backgroundColor: '#f5f7fa' }"
       >
-        <el-table-column prop="homeworkName" label="作业名称" min-width="300" />
-        <el-table-column prop="homeworkType" label="作业类型" width="120">
+        <el-table-column label="作业名称" min-width="300">
           <template #default="{ row }">
-            {{ homeworkTypes.find(t => t.value == row.homeworkType)?.label || row.homeworkType }}
+            {{ row.name || row.homeworkName }}
+          </template>
+        </el-table-column>
+        <el-table-column label="作业类型" width="120">
+          <template #default="{ row }">
+            {{ homeworkTypes.find(t => t.value == (row.type || row.homeworkType))?.label || (row.type || row.homeworkType) }}
           </template>
         </el-table-column>
         <el-table-column prop="deadline" label="截至时间" width="180" />
-        <el-table-column prop="submitCount" label="提交人数" width="100" />
         <el-table-column prop="createTime" label="创建时间" width="180" />
+        <el-table-column prop="submitCount" label="提交人数" width="100" />
         <el-table-column label="操作" width="240">
           <template #default="{ row }">
             <el-button size="small" @click="viewHomeworkDetail(row)" style="margin-right: 5px">查看</el-button>

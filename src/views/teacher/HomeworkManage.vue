@@ -55,14 +55,14 @@ const searchForm = ref({
   courseId: '',
   homeworkName: '',
   homeworkType: '',
-  startScore: null,
-  endScore: null,
-  startDeadline: '',
-  endDeadline: '',
-  startCreateTime: '',
-  endCreateTime: '',
-  startSubmitTime: '',
-  endSubmitTime: '',
+  startScore: 0,
+  endScore: 100,
+  startDeadline: '2025-01-01T12:00:00',
+  endDeadline: '2027-12-01T12:00:00',
+  startCreateTime: '2025-01-01T12:00:00',
+  endCreateTime: '2027-01-01T12:00:00',
+  startSubmitTime: '2025-01-01T12:00:00',
+  endSubmitTime: '2027-01-01T12:00:00',
   sortType: 0,
   ascending: true
 })
@@ -107,21 +107,24 @@ const loadHomeworks = async () => {
   loading.value = true
   try {
     const response = await getHomeworkPage({
-      page: currentPage.value,
-      size: pageSize.value,
-      courseId: searchForm.value.courseId,
-      homeworkName: searchForm.value.homeworkName,
-      homeworkType: searchForm.value.homeworkType,
+      pageNum: currentPage.value,
+      pageSize: pageSize.value,
+      courseId: searchForm.value.courseId ? parseInt(searchForm.value.courseId) : null,
+      name: searchForm.value.homeworkName,
+      type: searchForm.value.homeworkType,
       startScore: searchForm.value.startScore,
       endScore: searchForm.value.endScore,
-      startDeadline: searchForm.value.startDeadline,
-      endDeadline: searchForm.value.endDeadline,
-      startCreateTime: searchForm.value.startCreateTime,
-      endCreateTime: searchForm.value.endCreateTime,
-      startSubmitTime: searchForm.value.startSubmitTime,
-      endSubmitTime: searchForm.value.endSubmitTime,
-      sortType: searchForm.value.sortType,
-      ascending: searchForm.value.ascending
+      startDeadline: searchForm.value.startDeadline || '2025-01-01T12:00:00',
+      endDeadline: searchForm.value.endDeadline || '2027-12-01T12:00:00',
+      startCreateTime: searchForm.value.startCreateTime || '2025-01-01T12:00:00',
+      endCreateTime: searchForm.value.endCreateTime || '2027-01-01T12:00:00',
+      startSubmitTime: searchForm.value.startSubmitTime || '2025-01-01T12:00:00',
+      endSubmitTime: searchForm.value.endSubmitTime || '2027-01-01T12:00:00',
+      startSubmitCount: 0,
+      endSubmitCount: 7,
+      sortType: 0,
+      isAsc: true,
+      isDeleted: false
     })
     homeworks.value = response.data.data.records
     total.value = response.data.data.total
@@ -142,14 +145,14 @@ const handleReset = () => {
     courseId: '',
     homeworkName: '',
     homeworkType: '',
-    startScore: null,
-    endScore: null,
-    startDeadline: '',
-    endDeadline: '',
-    startCreateTime: '',
-    endCreateTime: '',
-    startSubmitTime: '',
-    endSubmitTime: '',
+    startScore: 0,
+    endScore: 100,
+    startDeadline: '2025-01-01T12:00:00',
+    endDeadline: '2027-12-01T12:00:00',
+    startCreateTime: '2025-01-01T12:00:00',
+    endCreateTime: '2027-01-01T12:00:00',
+    startSubmitTime: '2025-01-01T12:00:00',
+    endSubmitTime: '2027-01-01T12:00:00',
     sortType: 0,
     ascending: true
   }
@@ -164,14 +167,14 @@ const toggleAdvancedSearch = () => {
       courseId: '',
       homeworkName: '',
       homeworkType: '',
-      startScore: null,
-      endScore: null,
-      startDeadline: '',
-      endDeadline: '',
-      startCreateTime: '',
-      endCreateTime: '',
-      startSubmitTime: '',
-      endSubmitTime: '',
+      startScore: 0,
+      endScore: 100,
+      startDeadline: '2025-01-01T12:00:00',
+      endDeadline: '2027-12-01T12:00:00',
+      startCreateTime: '2025-01-01T12:00:00',
+      endCreateTime: '2027-01-01T12:00:00',
+      startSubmitTime: '2025-01-01T12:00:00',
+      endSubmitTime: '2027-01-01T12:00:00',
       sortType: 0,
       ascending: true
     }
@@ -562,8 +565,8 @@ onMounted(() => {
         </template>
       </el-table-column>
       <el-table-column prop="deadline" label="截止时间" width="180" />
-      <el-table-column prop="submitCount" label="提交人数" width="100" />
-      <el-table-column prop="createTime" label="创建时间" width="180" />
+        <el-table-column prop="createTime" label="创建时间" width="180" />
+        <el-table-column prop="submitCount" label="提交人数" width="100" />
       <el-table-column label="操作" width="300">
         <template #default="scope">
           <el-button size="small" @click="handleHomeworkDetail(scope.row.id)" style="margin-right: 5px">查看</el-button>
