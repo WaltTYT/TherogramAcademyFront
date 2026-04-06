@@ -1,6 +1,6 @@
 <script setup>
 import { ref, onMounted } from 'vue'
-import { ElMessage, ElCard, ElTable, ElTableColumn, ElProgress, ElEmpty, ElTabs, ElTabPane } from 'element-plus'
+import { ElMessage, ElCard, ElTable, ElTableColumn, ElProgress, ElEmpty } from 'element-plus'
 import { useRouter } from 'vue-router'
 import { useUserStore } from '../../stores/user'
 import { Document, User, View, Timer, UserFilled, DataAnalysis } from '@element-plus/icons-vue'
@@ -9,18 +9,6 @@ import * as instructionStatisticApi from '../../api/instructionStatistic'
 
 const router = useRouter()
 const userStore = useUserStore()
-
-// 统计类型：personal 或 overall
-const activeTab = ref('personal')
-
-// 个人统计数据
-const personalStats = ref({
-  courseCount: 0,
-  selectCount: 0,
-  completionRate: 0,
-  studyTime: 0,
-  averageScore: 0
-})
 
 // 全站统计数据
 const overallStats = ref({
@@ -42,64 +30,40 @@ const overallCompletionRateSectional = ref([])
 
 const loading = ref(false)
 
-// 切换统计类型
-const handleTabChange = async (tab) => {
-  activeTab.value = tab
-  await loadStats()
-  await loadRankData()
-}
-
 // 加载统计数据
 const loadStats = async () => {
   loading.value = true
   try {
-    if (activeTab.value === 'personal') {
-      // 加载个人统计数据
-      const courseCountResponse = await courseStatisticApi.getPersonalCourseCount()
-      const selectCountResponse = await courseStatisticApi.getPersonalSelectCount()
-      const completionRateResponse = await courseStatisticApi.getPersonalCourseCompletionRateAverage()
-      const studyTimeResponse = await instructionStatisticApi.personalStudyTime()
-      const scoreAverageResponse = await instructionStatisticApi.personalScoreAverage()
-      
-      personalStats.value = {
-        courseCount: courseCountResponse.data.data || 0,
-        selectCount: selectCountResponse.data.data || 0,
-        completionRate: completionRateResponse.data.data || 0,
-        studyTime: studyTimeResponse.data.data || 0,
-        averageScore: scoreAverageResponse.data.data || 0
-      }
-    } else {
-      // 加载全站统计数据
-      const teacherCountResponse = await instructionStatisticApi.teacherUserCount()
-      const studentCountResponse = await instructionStatisticApi.studentUserCount()
-      const courseCountResponse = await courseStatisticApi.getOverallCourseCount()
-      const selectCountResponse = await courseStatisticApi.getOverallSelectCount()
-      const completionRateResponse = await courseStatisticApi.getOverallCourseCompletionRateAverage()
-      const studyTimeResponse = await instructionStatisticApi.overallStudyTime()
-      const scoreAverageResponse = await instructionStatisticApi.overallScoreAverage()
-      
-      overallStats.value = {
-        teacherCount: teacherCountResponse.data.data || 0,
-        studentCount: studentCountResponse.data.data || 0,
-        courseCount: courseCountResponse.data.data || 0,
-        selectCount: selectCountResponse.data.data || 0,
-        completionRate: completionRateResponse.data.data || 0,
-        studyTime: studyTimeResponse.data.data || 0,
-        averageScore: scoreAverageResponse.data.data || 0
-      }
-      
-      // 获取全站课程完成率分段统计
-      const sectionalResponse = await courseStatisticApi.getOverallCourseCompletionRateSectional()
-      if (sectionalResponse.data.code === 200) {
-        const sectionalData = sectionalResponse.data.data
-        // 转换List<Integer>为数组格式，适配模板
-        const ranges = ['0~20%', '21~40%', '41~60%', '61~80%', '81~100%']
-        overallCompletionRateSectional.value = ranges.map((range, index) => ({
-          range,
-          count: sectionalData[index] || 0,
-          ratio: sectionalData[index] ? Math.round((sectionalData[index] / sectionalData.reduce((a, b) => a + b, 0)) * 100) : 0
-        })).filter(item => item.count > 0)
-      }
+    // 加载全站统计数据
+    const teacherCountResponse = await instructionStatisticApi.teacherUserCount()
+    const studentCountResponse = await instructionStatisticApi.studentUserCount()
+    const courseCountResponse = await courseStatisticApi.getOverallCourseCount()
+    const selectCountResponse = await courseStatisticApi.getOverallSelectCount()
+    const completionRateResponse = await courseStatisticApi.getOverallCourseCompletionRateAverage()
+    const studyTimeResponse = await instructionStatisticApi.overallStudyTime()
+    const scoreAverageResponse = await instructionStatisticApi.overallScoreAverage()
+    
+    overallStats.value = {
+      teacherCount: teacherCountResponse.data.data || 0,
+      studentCount: studentCountResponse.data.data || 0,
+      courseCount: courseCountResponse.data.data || 0,
+      selectCount: selectCountResponse.data.data || 0,
+      completionRate: completionRateResponse.data.data || 0,
+      studyTime: studyTimeResponse.data.data || 0,
+      averageScore: scoreAverageResponse.data.data || 0
+    }
+    
+    // 获取全站课程完成率分段统计
+    const sectionalResponse = await courseStatisticApi.getOverallCourseCompletionRateSectional()
+    if (sectionalResponse.data.code === 200) {
+      const sectionalData = sectionalResponse.data.data
+      // 转换List<Integer>为数组格式，适配模板
+      const ranges = ['0~20%', '21~40%', '41~60%', '61~80%', '81~100%']
+      overallCompletionRateSectional.value = ranges.map((range, index) => ({
+        range,
+        count: sectionalData[index] || 0,
+        ratio: sectionalData[index] ? Math.round((sectionalData[index] / sectionalData.reduce((a, b) => a + b, 0)) * 100) : 0
+      })).filter(item => item.count > 0)
     }
   } catch (error) {
     ElMessage.error('获取统计数据失败：' + (error.message || '未知错误'))
@@ -111,46 +75,24 @@ const loadStats = async () => {
 // 加载排行榜数据
 const loadRankData = async () => {
   try {
-    if (activeTab.value === 'personal') {
-      // 加载个人课程完成率排行
-      const completionRateRankResponse = await courseStatisticApi.getPersonalCourseCompletionRateRank()
-      if (completionRateRankResponse.data.code === 200) {
-        const rankData = completionRateRankResponse.data.data
-        completionRateRank.value = Object.entries(rankData).map(([name, value]) => ({
-          name,
-          value: parseFloat(value)
-        })).sort((a, b) => b.value - a.value)
-      }
-      
-      // 加载个人成绩排行
-      const scoreRankResponse = await instructionStatisticApi.personalScoreRank()
-      if (scoreRankResponse.data.code === 200) {
-        const rankData = scoreRankResponse.data.data
-        scoreRank.value = Object.entries(rankData).map(([name, value]) => ({
-          name,
-          value: parseFloat(value)
-        })).sort((a, b) => b.value - a.value)
-      }
-    } else {
-      // 加载全站课程完成率排行
-      const completionRateRankResponse = await courseStatisticApi.getOverallCourseCompletionRateRank()
-      if (completionRateRankResponse.data.code === 200) {
-        const rankData = completionRateRankResponse.data.data
-        completionRateRank.value = Object.entries(rankData).map(([name, value]) => ({
-          name,
-          value: parseFloat(value)
-        })).sort((a, b) => b.value - a.value)
-      }
-      
-      // 加载全站成绩排行
-      const scoreRankResponse = await instructionStatisticApi.overallScoreRank()
-      if (scoreRankResponse.data.code === 200) {
-        const rankData = scoreRankResponse.data.data
-        scoreRank.value = Object.entries(rankData).map(([name, value]) => ({
-          name,
-          value: parseFloat(value)
-        })).sort((a, b) => b.value - a.value)
-      }
+    // 加载全站课程完成率排行
+    const completionRateRankResponse = await courseStatisticApi.getOverallCourseCompletionRateRank()
+    if (completionRateRankResponse.data.code === 200) {
+      const rankData = completionRateRankResponse.data.data
+      completionRateRank.value = Object.entries(rankData).map(([name, value]) => ({
+        name,
+        value: parseFloat(value)
+      })).sort((a, b) => b.value - a.value)
+    }
+    
+    // 加载全站成绩排行
+    const scoreRankResponse = await instructionStatisticApi.overallScoreRank()
+    if (scoreRankResponse.data.code === 200) {
+      const rankData = scoreRankResponse.data.data
+      scoreRank.value = Object.entries(rankData).map(([name, value]) => ({
+        name,
+        value: parseFloat(value)
+      })).sort((a, b) => b.value - a.value)
     }
   } catch (error) {
     ElMessage.error('获取排行榜数据失败：' + (error.message || '未知错误'))
@@ -176,80 +118,9 @@ onMounted(async () => {
       <h2>统计分析</h2>
     </div>
     
-    <!-- 标签页切换 -->
-    <el-tabs v-model="activeTab" @tab-click="(tab) => handleTabChange(tab.props.name)" class="stat-tabs">
-      <el-tab-pane label="个人统计" name="personal">
-        
-      </el-tab-pane>
-      <el-tab-pane label="全站统计" name="overall">
-        
-      </el-tab-pane>
-    </el-tabs>
-    
     <div class="stats-container">
-      <!-- 个人统计 -->
-      <div v-if="activeTab === 'personal'" class="stats-section">
-        <div class="stats-cards">
-          <el-card shadow="hover" class="stat-card">
-            <div class="stat-content">
-              <div class="stat-icon course-icon">
-                <el-icon><Document /></el-icon>
-              </div>
-              <div class="stat-info">
-                <div class="stat-number">{{ personalStats.courseCount }}</div>
-                <div class="stat-label">课程总数</div>
-              </div>
-            </div>
-          </el-card>
-          <el-card shadow="hover" class="stat-card">
-            <div class="stat-content">
-              <div class="stat-icon user-icon">
-                <el-icon><User /></el-icon>
-              </div>
-              <div class="stat-info">
-                <div class="stat-number">{{ personalStats.selectCount }}</div>
-                <div class="stat-label">选课人数</div>
-              </div>
-            </div>
-          </el-card>
-          <el-card shadow="hover" class="stat-card">
-            <div class="stat-content">
-              <div class="stat-icon view-icon">
-                <el-icon><View /></el-icon>
-              </div>
-              <div class="stat-info">
-                <div class="stat-number">{{ personalStats.completionRate }}%</div>
-                <div class="stat-label">课程完成率</div>
-              </div>
-            </div>
-          </el-card>
-          <el-card shadow="hover" class="stat-card">
-            <div class="stat-content">
-              <div class="stat-icon time-icon">
-                <el-icon><Timer /></el-icon>
-              </div>
-              <div class="stat-info">
-                <div class="stat-number">{{ personalStats.studyTime }}</div>
-                <div class="stat-label">学习时长(分钟)</div>
-              </div>
-            </div>
-          </el-card>
-          <el-card shadow="hover" class="stat-card">
-            <div class="stat-content">
-              <div class="stat-icon score-icon">
-                <el-icon><DataAnalysis /></el-icon>
-              </div>
-              <div class="stat-info">
-                <div class="stat-number">{{ personalStats.averageScore }}</div>
-                <div class="stat-label">平均成绩</div>
-              </div>
-            </div>
-          </el-card>
-        </div>
-      </div>
-      
       <!-- 全站统计 -->
-      <div v-if="activeTab === 'overall'" class="stats-section">
+      <div class="stats-section">
         <div class="stats-cards">
           <el-card shadow="hover" class="stat-card">
             <div class="stat-content">
@@ -335,7 +206,7 @@ onMounted(async () => {
         <el-card class="chart-card">
           <template #header>
             <div class="card-header">
-              <span>{{ activeTab === 'personal' ? '个人' : '全站' }}课程完成率排行</span>
+              <span>全站课程完成率排行</span>
             </div>
           </template>
           <div class="chart-content">
@@ -355,7 +226,7 @@ onMounted(async () => {
         <el-card class="chart-card">
           <template #header>
             <div class="card-header">
-              <span>{{ activeTab === 'personal' ? '个人' : '全站' }}成绩排行</span>
+              <span>全站成绩排行</span>
             </div>
           </template>
           <div class="chart-content">
@@ -375,7 +246,7 @@ onMounted(async () => {
       </div>
       
       <!-- 全站课程完成率分段统计 -->
-      <div v-if="activeTab === 'overall'" class="stats-section">
+      <div class="stats-section">
         <h3>课程完成率分段统计</h3>
         <div class="sectional-stats">
           <div v-for="item in overallCompletionRateSectional" :key="item.range" class="sectional-item">
@@ -411,29 +282,6 @@ onMounted(async () => {
   color: #333;
   font-size: 24px;
   font-weight: bold;
-}
-
-.stat-tabs {
-  margin-bottom: 30px;
-}
-
-.stat-tabs .el-tabs__header {
-  margin-bottom: 20px;
-}
-
-.stat-tabs .el-tabs__item {
-  font-size: 16px;
-  font-weight: 500;
-  color: #606266;
-}
-
-.stat-tabs .el-tabs__item.is-active {
-  color: #409eff;
-  font-weight: bold;
-}
-
-.stat-tabs .el-tabs__content {
-  margin-top: 0;
 }
 
 .stats-container {
