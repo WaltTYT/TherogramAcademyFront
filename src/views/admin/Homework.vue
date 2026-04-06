@@ -293,7 +293,7 @@ const deleteHomework = (homework) => {
 // 查看作业详情
 const viewHomeworkDetail = (homework) => {
   // 跳转到作业详情页面
-  router.push(`/homework/detail/${homework.id}`)
+  router.push(`/admin/homework/detail/${homework.id}`)
 }
 
 // 生命周期

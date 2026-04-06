@@ -1,7 +1,7 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { ElMessage, ElLoading, ElInputNumber, ElDatePicker, ElSwitch, ElSelect, ElOption } from 'element-plus'
+import { ElMessage, ElLoading, ElInputNumber, ElDatePicker, ElSwitch, ElSelect, ElOption, ElMessageBox } from 'element-plus'
 import { getSelectCoursePage, deselectCourse } from '../../api/course'
 
 const router = useRouter()
@@ -178,17 +178,28 @@ const handleCourseDetail = (courseId) => {
 }
 
 const handleDeselect = async (courseId) => {
-  if (confirm('确定要退选这门课程吗？')) {
+  try {
+    await ElMessageBox.confirm(
+      '确定要退选这门课程吗？',
+      '退选课程',
+      {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning',
+        center: true
+      }
+    )
+    
     loading.value = true
-    try {
-      await deselectCourse(courseId)
-      ElMessage.success('退选成功')
-      loadCourses()
-    } catch (error) {
+    await deselectCourse(courseId)
+    ElMessage.success('退选成功')
+    loadCourses()
+  } catch (error) {
+    if (error !== 'cancel') {
       ElMessage.error('退选失败：' + (error.message || '未知错误'))
-    } finally {
-      loading.value = false
     }
+  } finally {
+    loading.value = false
   }
 }
 

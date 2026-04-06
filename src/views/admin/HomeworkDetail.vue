@@ -150,19 +150,19 @@ const evaluateHomework = async () => {
 
 // 下载作业附件
 const downloadHomework = async () => {
-  if (!homework.value || !homework.value.homeworkUrl) {
+  if (!homework.value || !homework.value.attachment) {
     ElMessage.warning('作业附件不存在')
     return
   }
   
   try {
-    const response = await homeworkApi.downloadHomework(homework.value.homeworkUrl)
+    const response = await homeworkApi.downloadHomework(homework.value.attachment)
     // 创建下载链接
     const url = window.URL.createObjectURL(new Blob([response.data]))
     const link = document.createElement('a')
     link.href = url
     // 从URL中提取文件名
-    const fileName = homework.value.homeworkUrl.split('/').pop()
+    const fileName = homework.value.attachment.split('/').pop()
     link.setAttribute('download', fileName)
     document.body.appendChild(link)
     link.click()
@@ -174,19 +174,19 @@ const downloadHomework = async () => {
 
 // 下载学生作业附件
 const downloadStudentHomework = async () => {
-  if (!studentHomework.value || !studentHomework.value.homeworkUrl) {
+  if (!studentHomework.value || !studentHomework.value.studentHomeworkAttachment) {
     ElMessage.warning('学生作业附件不存在')
     return
   }
   
   try {
-    const response = await homeworkApi.downloadStudentHomework(studentHomework.value.homeworkUrl)
+    const response = await homeworkApi.downloadStudentHomework(studentHomework.value.studentHomeworkAttachment)
     // 创建下载链接
     const url = window.URL.createObjectURL(new Blob([response.data]))
     const link = document.createElement('a')
     link.href = url
     // 从URL中提取文件名
-    const fileName = studentHomework.value.homeworkUrl.split('/').pop()
+    const fileName = studentHomework.value.studentHomeworkAttachment.split('/').pop()
     link.setAttribute('download', fileName)
     document.body.appendChild(link)
     link.click()
@@ -198,7 +198,7 @@ const downloadStudentHomework = async () => {
 
 // 返回作业列表
 const goBack = () => {
-  router.push('/homework')
+  router.push('/admin/homework')
 }
 
 // 生命周期
@@ -227,21 +227,18 @@ onMounted(() => {
     <div class="content" v-if="homework" :loading="loading">
       <el-card shadow="hover" class="homework-card">
         <div class="homework-header">
-          <h3>{{ homework.homeworkName }}</h3>
+          <h3>{{ homework.name }}</h3>
           <div class="homework-actions">
-            <el-button v-if="homework.homeworkUrl" @click="downloadHomework">下载作业附件</el-button>
+            <el-button v-if="homework.attachment" @click="downloadHomework">下载作业附件</el-button>
           </div>
         </div>
         
         <el-descriptions :column="1" border>
           <el-descriptions-item label="作业类型">
-            {{ homework.homeworkType === 'HOMEWORK' ? '作业' : '考试' }}
+            {{ homework.type === 'HOMEWORK' ? '作业' : '考试' }}
           </el-descriptions-item>
           <el-descriptions-item label="截至时间">
             {{ homework.deadline }}
-          </el-descriptions-item>
-          <el-descriptions-item label="课程ID">
-            {{ homework.courseId }}
           </el-descriptions-item>
           <el-descriptions-item label="提交人数">
             {{ homework.submitCount || 0 }}
@@ -250,11 +247,11 @@ onMounted(() => {
             {{ homework.createTime }}
           </el-descriptions-item>
           <el-descriptions-item label="作业内容">
-            {{ homework.homeworkContent }}
+            {{ homework.content }}
           </el-descriptions-item>
           <el-descriptions-item label="作业附件">
-            <span v-if="homework.homeworkUrl">
-              {{ homework.homeworkUrl.split('/').pop() }}
+            <span v-if="homework.attachment">
+              {{ homework.attachment.split('/').pop() }}
             </span>
             <span v-else>
               暂无作业附件
@@ -316,8 +313,8 @@ onMounted(() => {
             {{ studentHomework.submitTime }}
           </el-descriptions-item>
           <el-descriptions-item label="学生作业附件">
-            <span v-if="studentHomework.homeworkUrl">
-              {{ studentHomework.homeworkUrl.split('/').pop() }}
+            <span v-if="studentHomework.studentHomeworkAttachment">
+              {{ studentHomework.studentHomeworkAttachment.split('/').pop() }}
               <el-button type="text" @click="downloadStudentHomework">下载</el-button>
             </span>
             <span v-else>
@@ -326,11 +323,11 @@ onMounted(() => {
           </el-descriptions-item>
           <el-descriptions-item label="评定状态">
             {{ 
-              studentHomework.status === 'UNSUBMITTED' ? '未提交' :
-              studentHomework.status === 'PENDING' ? '未评定' :
-              studentHomework.status === 'APPROVED' ? '评定通过' :
-              studentHomework.status === 'REJECTED' ? '评定未通过' :
-              studentHomework.status 
+              studentHomework.reviewStatus === 'UNSUBMITTED' ? '未提交' :
+              studentHomework.reviewStatus === 'PENDING' ? '未评定' :
+              studentHomework.reviewStatus === 'APPROVED' ? '评定通过' :
+              studentHomework.reviewStatus === 'REJECTED' ? '评定未通过' :
+              studentHomework.reviewStatus 
             }}
           </el-descriptions-item>
           <el-descriptions-item label="分数">
