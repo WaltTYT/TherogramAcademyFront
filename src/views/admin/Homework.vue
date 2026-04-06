@@ -25,12 +25,12 @@ const searchForm = reactive({
   homeworkName: '',
   homeworkType: '',
   isFilterDeleted: false,
-  startSubmitCount: 0,
-  endSubmitCount: 150,
-  startDeadline: '2025-01-01T12:00:00',
-  endDeadline: '2027-12-01T12:00:00',
-  startCreateTime: '2025-01-01T12:00:00',
-  endCreateTime: '2027-01-01T12:00:00',
+  startSubmitCount: '',
+  endSubmitCount: '',
+  startDeadline: '',
+  endDeadline: '',
+  startCreateTime: '',
+  endCreateTime: '',
   sortType: '0',
   isAsc: true
 })
@@ -136,12 +136,12 @@ const getHomeworks = async () => {
       name: searchForm.homeworkName,
       type: searchForm.homeworkType || "HOMEWORK",
       isDeleted: "false",
-      startSubmitCount: searchForm.startSubmitCount || 0,
-      endSubmitCount: searchForm.endSubmitCount || 150,
-      startDeadline: searchForm.startDeadline || "2025-01-01T12:00:00",
-      endDeadline: searchForm.endDeadline || "2027-12-01T12:00:00",
-      startCreateTime: searchForm.startCreateTime || "2025-01-01T12:00:00",
-      endCreateTime: searchForm.endCreateTime || "2027-01-01T12:00:00",
+      startSubmitCount: searchForm.startSubmitCount,
+      endSubmitCount: searchForm.endSubmitCount,
+      startDeadline: searchForm.startDeadline,
+      endDeadline: searchForm.endDeadline,
+      startCreateTime: searchForm.startCreateTime,
+      endCreateTime: searchForm.endCreateTime,
       sortType: searchForm.sortType || "0",
       isAsc: searchForm.isAsc?.toString() || "true",
       pageNum: currentPage.value,
@@ -171,12 +171,12 @@ const handleReset = () => {
   searchForm.homeworkName = ''
   searchForm.homeworkType = ''
   searchForm.isFilterDeleted = false
-  searchForm.startSubmitCount = 0
-  searchForm.endSubmitCount = 150
-  searchForm.startDeadline = '2025-01-01T12:00:00'
-  searchForm.endDeadline = '2027-12-01T12:00:00'
-  searchForm.startCreateTime = '2025-01-01T12:00:00'
-  searchForm.endCreateTime = '2027-01-01T12:00:00'
+  searchForm.startSubmitCount = ''
+  searchForm.endSubmitCount = ''
+  searchForm.startDeadline = ''
+  searchForm.endDeadline = ''
+  searchForm.startCreateTime = ''
+  searchForm.endCreateTime = ''
   searchForm.sortType = '0'
   searchForm.isAsc = true
   currentPage.value = 1
@@ -190,12 +190,12 @@ const toggleAdvancedSearch = () => {
     searchForm.homeworkName = ''
     searchForm.homeworkType = ''
     searchForm.isFilterDeleted = false
-    searchForm.startSubmitCount = 0
-    searchForm.endSubmitCount = 150
-    searchForm.startDeadline = '2025-01-01T12:00:00'
-    searchForm.endDeadline = '2027-12-01T12:00:00'
-    searchForm.startCreateTime = '2025-01-01T12:00:00'
-    searchForm.endCreateTime = '2027-01-01T12:00:00'
+    searchForm.startSubmitCount = ''
+    searchForm.endSubmitCount = ''
+    searchForm.startDeadline = ''
+    searchForm.endDeadline = ''
+    searchForm.startCreateTime = ''
+    searchForm.endCreateTime = ''
     searchForm.sortType = '0'
     searchForm.isAsc = true
   }

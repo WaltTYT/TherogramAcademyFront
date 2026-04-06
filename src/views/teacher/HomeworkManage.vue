@@ -110,7 +110,7 @@ const loadHomeworks = async () => {
       pageSize: pageSize.value,
       courseId: searchForm.value.courseId ? parseInt(searchForm.value.courseId) : null,
       name: searchForm.value.homeworkName,
-      type: searchForm.value.homeworkType,
+      type: searchForm.value.homeworkType || "HOMEWORK",
       startScore: searchForm.value.startScore,
       endScore: searchForm.value.endScore,
       startDeadline: searchForm.value.startDeadline,
@@ -121,9 +121,9 @@ const loadHomeworks = async () => {
       endSubmitTime: searchForm.value.endSubmitTime,
       startSubmitCount: '',
       endSubmitCount: '',
-      sortType: 0,
-      isAsc: true,
-      isDeleted: false
+      sortType: "0",
+      isAsc: "true",
+      isDeleted: "false"
     })
     homeworks.value = response.data.data.records
     total.value = response.data.data.total
