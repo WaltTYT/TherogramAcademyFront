@@ -59,7 +59,8 @@ const resourceForm = reactive({
   orderId: '',
   name: '',
   resourceType: '',
-  courseId: ''
+  courseId: '',
+  uri: ''
 })
 
 const resourceFormRules = {
@@ -207,6 +208,7 @@ const openCreateDialog = () => {
   resourceForm.name = ''
   resourceForm.resourceType = ''
   resourceForm.courseId = ''
+  resourceForm.uri = ''
   fileList.value = []
   dialogVisible.value = true
 }
@@ -221,6 +223,7 @@ const openEditDialog = (resource) => {
   resourceForm.name = resource.name
   resourceForm.resourceType = resource.resourceType
   resourceForm.courseId = resource.courseId
+  resourceForm.uri = resource.uri || ''
   fileList.value = resource.uri ? [{ url: resource.uri }] : []
   dialogVisible.value = true
 }
@@ -234,9 +237,12 @@ const saveResource = async () => {
         if (isEdit.value) {
           response = await courseResourceApi.modifyCourseResource(resourceForm)
         } else {
-          // 创建教学资源时不传递id字段，并确保courseId是字符串类型
+          // 创建教学资源时不传递id字段，并确保字段类型正确
           const { id, ...createData } = resourceForm
-          createData.courseId = String(createData.courseId)
+          createData.orderId = Number(createData.orderId)
+          createData.courseId = Number(createData.courseId)
+          // 确保uri字段存在
+          createData.uri = createData.uri || ''
           response = await courseResourceApi.createCourseResource(createData)
         }
         if (response.data.code === 200) {

@@ -53,9 +53,12 @@ const handleSubmit = async () => {
   loading.value = true
   try {
     console.log('开始创建教学资源，表单数据:', form)
-    // 先创建教学资源，确保courseId是字符串类型
+    // 先创建教学资源，确保字段类型正确
     const createData = { ...form }
-    createData.courseId = String(createData.courseId)
+    createData.orderId = Number(createData.orderId)
+    createData.courseId = Number(createData.courseId)
+    // 确保uri字段存在
+    createData.uri = createData.uri || ''
     const createResponse = await createCourseResource(createData)
     console.log('创建教学资源响应:', createResponse)
     const resourceId = createResponse.data.data
