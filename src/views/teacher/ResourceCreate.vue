@@ -7,8 +7,8 @@ import { getCreateCoursePage } from '../../api/course'
 const emit = defineEmits(['resource-created', 'cancel'])
 
 const form = reactive({
-  sortId: '',
-  resourceName: '',
+  orderId: '',
+  name: '',
   resourceType: '',
   courseId: ''
 })
@@ -53,8 +53,10 @@ const handleSubmit = async () => {
   loading.value = true
   try {
     console.log('开始创建教学资源，表单数据:', form)
-    // 先创建教学资源
-    const createResponse = await createCourseResource(form)
+    // 先创建教学资源，确保courseId是字符串类型
+    const createData = { ...form }
+    createData.courseId = String(createData.courseId)
+    const createResponse = await createCourseResource(createData)
     console.log('创建教学资源响应:', createResponse)
     const resourceId = createResponse.data.data
     
@@ -94,10 +96,10 @@ loadCourses()
   <div class="resource-create-container">
     <el-form :model="form" label-width="120px" label-position="left">
       <el-form-item label="排序ID" required>
-        <el-input v-model="form.sortId" type="number" style="width: 100%"></el-input>
+        <el-input v-model="form.orderId" type="number" style="width: 100%"></el-input>
       </el-form-item>
       <el-form-item label="资源名称" required>
-        <el-input v-model="form.resourceName" style="width: 100%"></el-input>
+        <el-input v-model="form.name" style="width: 100%"></el-input>
       </el-form-item>
       <el-form-item label="资源类型" required>
         <el-select v-model="form.resourceType" style="width: 100%">

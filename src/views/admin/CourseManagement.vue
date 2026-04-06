@@ -513,6 +513,16 @@ onMounted(() => {
             {{ courseTypes.find(t => t.value == row.courseType)?.label || row.courseType }}
           </template>
         </el-table-column>
+        <el-table-column prop="reviewStatus" label="审核状态" width="120">
+          <template #default="{ row }">
+            {{ 
+              row.reviewStatus === 'PENDING' ? '待审核' :
+              row.reviewStatus === 'APPROVED' ? '已通过' :
+              row.reviewStatus === 'REJECTED' ? '已拒绝' :
+              row.reviewStatus 
+            }}
+          </template>
+        </el-table-column>
         <el-table-column prop="createTime" label="创建时间" width="180" />
         <el-table-column label="操作" width="400">
           <template #default="{ row }">

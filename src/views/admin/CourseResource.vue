@@ -56,17 +56,17 @@ const isEdit = ref(false)
 // 教学资源表单
 const resourceForm = reactive({
   id: '',
-  sortId: '',
-  resourceName: '',
+  orderId: '',
+  name: '',
   resourceType: '',
   courseId: ''
 })
 
 const resourceFormRules = {
-  sortId: [
+  orderId: [
     { required: true, message: '请输入排序ID', trigger: 'blur' }
   ],
-  resourceName: [
+  name: [
     { required: true, message: '请输入资源名称', trigger: 'blur' }
   ],
   resourceType: [
@@ -203,8 +203,8 @@ const openCreateDialog = () => {
   isEdit.value = false
   // 重置表单
   resourceForm.id = ''
-  resourceForm.sortId = ''
-  resourceForm.resourceName = ''
+  resourceForm.orderId = ''
+  resourceForm.name = ''
   resourceForm.resourceType = ''
   resourceForm.courseId = ''
   fileList.value = []
@@ -217,8 +217,8 @@ const openEditDialog = (resource) => {
   isEdit.value = true
   // 填充表单
   resourceForm.id = resource.id
-  resourceForm.sortId = resource.orderId
-  resourceForm.resourceName = resource.name
+  resourceForm.orderId = resource.orderId
+  resourceForm.name = resource.name
   resourceForm.resourceType = resource.resourceType
   resourceForm.courseId = resource.courseId
   fileList.value = resource.uri ? [{ url: resource.uri }] : []
@@ -234,7 +234,10 @@ const saveResource = async () => {
         if (isEdit.value) {
           response = await courseResourceApi.modifyCourseResource(resourceForm)
         } else {
-          response = await courseResourceApi.createCourseResource(resourceForm)
+          // 创建教学资源时不传递id字段，并确保courseId是字符串类型
+          const { id, ...createData } = resourceForm
+          createData.courseId = String(createData.courseId)
+          response = await courseResourceApi.createCourseResource(createData)
         }
         if (response.data.code === 200) {
           ElMessage.success(isEdit.value ? '修改教学资源成功' : '创建教学资源成功')
@@ -490,11 +493,11 @@ onMounted(() => {
     <!-- 教学资源编辑对话框 -->
     <el-dialog v-model="dialogVisible" :title="dialogTitle" width="900px">
       <el-form ref="resourceFormRef" :model="resourceForm" :rules="resourceFormRules" label-width="120px">
-        <el-form-item label="排序ID" prop="sortId">
-          <el-input v-model="resourceForm.sortId" style="width: 100%"></el-input>
+        <el-form-item label="排序ID" prop="orderId">
+          <el-input v-model="resourceForm.orderId" style="width: 100%"></el-input>
         </el-form-item>
-        <el-form-item label="资源名称" prop="resourceName">
-          <el-input v-model="resourceForm.resourceName" style="width: 100%"></el-input>
+        <el-form-item label="资源名称" prop="name">
+          <el-input v-model="resourceForm.name" style="width: 100%"></el-input>
         </el-form-item>
         <el-form-item label="资源类型" prop="resourceType">
           <el-select v-model="resourceForm.resourceType" style="width: 100%">
