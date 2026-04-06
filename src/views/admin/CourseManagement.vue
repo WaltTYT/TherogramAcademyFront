@@ -271,7 +271,18 @@ const saveCourse = async () => {
         if (isEdit.value) {
           response = await courseApi.modifyCourse(courseForm)
         } else {
-          response = await courseApi.createCourse(courseForm)
+          // 映射字段名称为后端API期望的格式
+          const createCourseData = {
+            name: courseForm.courseName,
+            profile: courseForm.courseIntroduction,
+            target: courseForm.courseObjective,
+            content: courseForm.courseContent,
+            outline: courseForm.courseOutline,
+            subjectId: courseForm.courseSubject,
+            typeId: courseForm.courseType,
+            cover: courseForm.cover
+          }
+          response = await courseApi.createCourse(createCourseData)
         }
         if (response.data.code === 200) {
           ElMessage.success(isEdit.value ? '修改课程成功' : '创建课程成功')
