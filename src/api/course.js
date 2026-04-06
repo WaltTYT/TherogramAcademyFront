@@ -52,7 +52,7 @@ export const getSelectCourseDetail = (id) => {
 
 // 审核课程
 export const reviewCourse = (data) => {
-  return request.post('/course/review', data)
+  return request.post('/course/review1', data)//先禁用
 }
 
 // 选修课程
