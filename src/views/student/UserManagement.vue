@@ -358,9 +358,9 @@ const handleAvatarUpload = async (uploadFile) => {
   if (!currentUser.value) return
 
   try {
-    const res = await uploadUserAvatar(currentUser.value.id, uploadFile.raw)
+    const res = await uploadUserAvatar(currentUser.value.id, uploadFile.file)
     if (res.data.code === 200) {
-      editForm.value.avatar = URL.createObjectURL(uploadFile.raw)
+      editForm.value.avatar = URL.createObjectURL(uploadFile.file)
       ElMessage.success('头像上传成功')
     } else {
       ElMessage.error(res.data.message || '头像上传失败')
@@ -373,13 +373,14 @@ const handleAvatarUpload = async (uploadFile) => {
 // 下载头像
 const handleDownloadAvatar = async (user) => {
   const targetUser = user || currentUser.value
-  if (!targetUser || !targetUser.avatar) {
+  if (!targetUser || (!targetUser.portrait && !targetUser.avatar)) {
     ElMessage.warning('当前没有头像')
     return
   }
 
   try {
-    const res = await downloadUserAvatar(targetUser.avatar)
+    const portraitPath = targetUser.portrait || targetUser.avatar
+    const res = await downloadUserAvatar(portraitPath)
     const blob = new Blob([res.data])
     const link = document.createElement('a')
     link.href = URL.createObjectURL(blob)
