@@ -21,8 +21,8 @@ const searchForm = ref({
   courseType: '',
   startSelectCount: '',
   endSelectCount: '',
-  startCreateTime: '2025-01-01T00:00:00',
-  endCreateTime: '2027-01-01T12:00:00',
+  startCreateTime: '',
+  endCreateTime: '',
   sortType: '0',
   ascending: true
 })
@@ -104,8 +104,8 @@ const getCourses = async () => {
       typeId: searchForm.value.courseType,
       startSelectCount: searchForm.value.startSelectCount,
       endSelectCount: searchForm.value.endSelectCount,
-      startCreateTime: searchForm.value.startCreateTime || '2025-01-01T00:00:00',
-      endCreateTime: searchForm.value.endCreateTime || '2027-01-01T12:00:00',
+      startCreateTime: searchForm.value.startCreateTime,
+      endCreateTime: searchForm.value.endCreateTime,
       sortType: searchForm.value.sortType || '0',
       isAsc: searchForm.value.ascending?.toString() || 'true',
       pageNum: page.value.toString(),
@@ -133,8 +133,8 @@ const handleReset = () => {
     courseType: '',
     startSelectCount: '',
     endSelectCount: '',
-    startCreateTime: '2025-01-01T00:00:00',
-    endCreateTime: '2027-01-01T12:00:00',
+    startCreateTime: '',
+    endCreateTime: '',
     sortType: '0',
     ascending: true
   }
