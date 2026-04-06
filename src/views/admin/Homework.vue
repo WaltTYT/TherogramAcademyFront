@@ -254,10 +254,20 @@ const saveHomework = async () => {
     if (valid) {
       try {
         let response
+        // 映射字段名到正确的格式
+        const homeworkData = {
+          name: homeworkForm.homeworkName,
+          type: homeworkForm.homeworkType,
+          deadline: homeworkForm.deadline,
+          content: homeworkForm.homeworkContent,
+          courseId: homeworkForm.courseId
+        }
+        // 编辑时需要包含id
         if (isEdit.value) {
-          response = await homeworkApi.modifyHomework(homeworkForm)
+          homeworkData.id = homeworkForm.id
+          response = await homeworkApi.modifyHomework(homeworkData)
         } else {
-          response = await homeworkApi.createHomework(homeworkForm)
+          response = await homeworkApi.createHomework(homeworkData)
         }
         if (response.data.code === 200) {
           ElMessage.success(isEdit.value ? '修改作业成功' : '创建作业成功')

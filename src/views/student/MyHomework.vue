@@ -137,6 +137,7 @@ const loadHomeworks = async () => {
       endSubmitTime: searchForm.value.endSubmitTime || null,
       sortType: parseInt(searchForm.value.sortType),
       isAsc: searchForm.value.ascending,
+      isDeleted: "false",
       pageNum: currentPage.value,
       pageSize: pageSize.value
     })

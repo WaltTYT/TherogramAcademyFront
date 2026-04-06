@@ -355,12 +355,20 @@ const handleDelete = async (homework) => {
     )
     
     loading.value = true
-    await deleteHomework(homework.id)
+    const homeworkId = homework.id || homework.homeworkId
+    console.log('删除作业ID:', homeworkId)
+    console.log('API调用前')
+    const response = await deleteHomework(homeworkId)
+    console.log('API调用成功，响应:', response)
     ElMessage.success('作业删除成功')
     loadHomeworks()
   } catch (error) {
+    console.log('删除作业失败:', error)
     if (error !== 'cancel') {
       ElMessage.error('作业删除失败：' + (error.message || '未知错误'))
+      if (error.response) {
+        console.log('错误响应:', error.response)
+      }
     }
   } finally {
     loading.value = false
