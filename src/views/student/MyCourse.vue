@@ -440,10 +440,10 @@ onMounted(() => {
           {{ scoreStatusMap[scope.row.score] || scope.row.score }}
         </template>
       </el-table-column>
-      <el-table-column label="操作" width="200">
+      <el-table-column label="操作" width="240">
         <template #default="scope">
           <div class="button-group">
-            <el-button type="primary" size="small" @click="handleCourseDetail(scope.row.id)" style="margin-right: 8px">查看详情</el-button>
+            <el-button type="primary" size="small" @click="handleCourseDetail(scope.row.id)">查看详情</el-button>
             <el-button type="danger" size="small" @click="handleDeselect(scope.row.id)">退选</el-button>
           </div>
         </template>

@@ -34,10 +34,10 @@ const handleEnterStatistic = () => {
 onMounted(async () => {
   try {
     // 模拟数据，实际应该从后端获取
-    courseCount.value = 5
+    courseCount.value = 4
     resourceCount.value = 24
     homeworkCount.value = 12
-    studentCount.value = 156
+    studentCount.value = 150
   } catch (error) {
     ElMessage.error('获取数据失败')
   }

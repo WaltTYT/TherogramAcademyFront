@@ -199,19 +199,19 @@ const handleSubmit = async () => {
 const getCourses = async () => {
   try {
     loading.value = true
-    const response = await courseApi.getCreateCoursePage({
-      name: searchForm.value.courseName,
-      subjectId: searchForm.value.courseSubject,
-      typeId: searchForm.value.courseType,
-      isSelected: "false",
-      startSelectCount: searchForm.value.startSelectCount || "0",
-      endSelectCount: searchForm.value.endSelectCount || "7",
-      startCreateTime: searchForm.value.startCreateTime || "2025-01-01T12:00:00",
-      endCreateTime: searchForm.value.endCreateTime || "2027-01-01T12:00:00",
-      sortType: searchForm.value.sortType || "1",
-      isAsc: searchForm.value.ascending?.toString() || "true",
-      pageNum: page.value,
-      pageSize: pageSize.value
+    const response = await courseApi.getCreateCoursePage({ 
+      name: searchForm.value.courseName || null,                    // 空值转null 
+      subjectId: searchForm.value.courseSubject ? Number(searchForm.value.courseSubject) : null,  // 转数字或null 
+      typeId: searchForm.value.courseType ? Number(searchForm.value.courseType) : null,          // 转数字或null 
+      isSelected: false,                                            // 直接使用布尔值 
+      startSelectCount: Number(searchForm.value.startSelectCount || 0),      // 转数字 
+      endSelectCount: Number(searchForm.value.endSelectCount || 7),          // 转数字 
+      startCreateTime: searchForm.value.startCreateTime || "2025-01-01T12:00:00", 
+      endCreateTime: searchForm.value.endCreateTime || "2027-01-01T12:00:00", 
+      sortType: Number(searchForm.value.sortType || 1),             // 转数字 
+      isAsc: searchForm.value.ascending !== false,                  // 布尔值判断 
+      pageNum: page.value, 
+      pageSize: pageSize.value 
     })
     courses.value = response.data.data.records
     total.value = response.data.data.total
