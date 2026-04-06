@@ -125,8 +125,10 @@ const loadHomeworks = async () => {
       isAsc: "true",
       isDeleted: "false"
     })
-    homeworks.value = response.data.data.records
-    total.value = response.data.data.total
+    // 过滤掉已删除的作业
+    const records = response.data.data.records || []
+    homeworks.value = records.filter(homework => !homework.isDeleted)
+    total.value = homeworks.value.length
   } catch (error) {
     ElMessage.error('获取作业失败：' + (error.message || '未知错误'))
   } finally {

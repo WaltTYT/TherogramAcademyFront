@@ -142,12 +142,15 @@ const getCourseResources = async () => {
       endCreateTime: searchForm.endCreateTime,
       sortType: searchForm.sortType,
       ascending: searchForm.ascending,
+      isDeleted: "false",
       pageNum: currentPage.value,
       pageSize: pageSize.value
     })
     if (response.data.code === 200) {
-      courseResources.value = response.data.data.records
-      total.value = response.data.data.total
+      // 过滤掉已删除的教学资源
+      const records = response.data.data.records || []
+      courseResources.value = records.filter(resource => !resource.isDeleted)
+      total.value = courseResources.value.length
     } else {
       ElMessage.error(response.data.message || '获取教学资源列表失败')
     }

@@ -149,18 +149,21 @@ const loadHomeworks = async () => {
       // 检查数据结构
       if (Array.isArray(response.data.data)) {
         console.log('直接返回数组:', response.data.data)
-        homeworks.value = response.data.data
+        // 过滤掉已删除的作业
+        homeworks.value = response.data.data.filter(homework => !homework.isDeleted)
         total.value = homeworks.value.length
       } else if (response.data.data && Array.isArray(response.data.data.records)) {
         // 适配分页数据结构
         console.log('返回分页数据:', response.data.data.records)
+        // 过滤掉已删除的作业
+        const records = response.data.data.records.filter(homework => !homework.isDeleted)
         // 处理作业数据，确保 reviewStatus 字段正确
-        homeworks.value = response.data.data.records.map(homework => {
+        homeworks.value = records.map(homework => {
           // 检查作业数据结构
           console.log('作业数据:', homework)
           return homework
         })
-        total.value = response.data.data.total || 0
+        total.value = homeworks.value.length
       } else {
         console.log('返回数据结构异常:', response.data.data)
         homeworks.value = []

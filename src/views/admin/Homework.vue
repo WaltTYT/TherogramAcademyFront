@@ -154,8 +154,10 @@ const getHomeworks = async () => {
       pageSize: pageSize.value
     })
     if (response.data.code === 200) {
-      homeworks.value = response.data.data.records
-      total.value = response.data.data.total
+      // 过滤掉已删除的作业
+      const records = response.data.data.records || []
+      homeworks.value = records.filter(homework => !homework.isDeleted)
+      total.value = homeworks.value.length
     } else {
       ElMessage.error(response.data.message || '获取作业列表失败')
     }
