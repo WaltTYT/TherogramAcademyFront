@@ -515,14 +515,26 @@ onMounted(async () => {
 }
 
 .chart-content {
-  height: 300px;
+  min-height: 200px;
   display: flex;
+  flex-direction: column;
   align-items: center;
-  justify-content: center;
   background: #f5f7fa;
   border-radius: 8px;
   margin: 20px;
-  overflow-y: auto;
+  padding: 20px;
+}
+
+.rank-list {
+  width: 100%;
+  padding: 0;
+}
+
+.rank-item {
+  display: flex;
+  align-items: center;
+  padding: 15px 0;
+  border-bottom: 1px solid #ebeef5;
 }
 
 .empty-text {

@@ -594,14 +594,15 @@ onMounted(async () => {
 }
 
 .chart-content {
-  height: 300px;
+  min-height: 200px;
   display: flex;
+  flex-direction: column;
   align-items: center;
-  justify-content: center;
   background: #f5f7fa;
   border-radius: 8px;
   margin: 20px;
-  overflow-y: auto;
+  padding: 20px;
+  overflow: visible;
 }
 
 .empty-text {
@@ -611,14 +612,16 @@ onMounted(async () => {
 
 .rank-list {
   width: 100%;
-  padding: 10px;
+  padding: 0;
+  overflow: visible;
 }
 
 .rank-item {
   display: flex;
   align-items: center;
-  padding: 10px 0;
+  padding: 15px 0;
   border-bottom: 1px solid #ebeef5;
+  overflow: visible;
 }
 
 .rank-item:last-child {
