@@ -271,7 +271,18 @@ const saveCourse = async () => {
         if (isEdit.value) {
           response = await courseApi.modifyCourse(courseForm)
         } else {
-          response = await courseApi.createCourse(courseForm)
+          // 映射字段名称为后端API期望的格式
+          const createCourseData = {
+            name: courseForm.courseName,
+            profile: courseForm.courseIntroduction,
+            target: courseForm.courseObjective,
+            content: courseForm.courseContent,
+            outline: courseForm.courseOutline,
+            subjectId: courseForm.courseSubject,
+            typeId: courseForm.courseType,
+            cover: courseForm.cover
+          }
+          response = await courseApi.createCourse(createCourseData)
         }
         if (response.data.code === 200) {
           ElMessage.success(isEdit.value ? '修改课程成功' : '创建课程成功')
@@ -321,7 +332,17 @@ const getPendingCourses = async () => {
   try {
     const response = await courseApi.getPendingCourses()
     if (response.data.code === 200) {
-      pendingCourses.value = response.data.data
+      // 映射后端返回的字段名到前端使用的字段名
+      pendingCourses.value = response.data.data.map(course => ({
+        ...course,
+        courseName: course.name || course.courseName,
+        courseIntroduction: course.profile || course.courseIntroduction,
+        courseObjective: course.target || course.courseObjective,
+        courseContent: course.content || course.courseContent,
+        courseOutline: course.outline || course.courseOutline,
+        courseSubject: course.subjectId || course.courseSubject,
+        courseType: course.typeId || course.courseType
+      }))
     } else {
       ElMessage.error(response.data.message || '获取待审核课程失败')
     }
