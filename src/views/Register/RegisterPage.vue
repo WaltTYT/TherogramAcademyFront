@@ -136,7 +136,6 @@ const goToLogin = () => {
           </el-form-item>
           <el-form-item label="用户类型" prop="userType">
             <el-select v-model="registerForm.userType" placeholder="请选择用户类型">
-              <el-option label="管理员" value="ADMIN"></el-option>
               <el-option label="教师" value="TEACHER"></el-option>
               <el-option label="学生" value="STUDENT"></el-option>
             </el-select>
