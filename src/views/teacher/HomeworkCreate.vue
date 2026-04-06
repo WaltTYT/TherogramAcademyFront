@@ -1,16 +1,16 @@
 <script setup>
 import { ref, reactive } from 'vue'
 import { ElMessage, ElLoading } from 'element-plus'
-import { createHomework } from '../../api/homework'
+import { createHomework, uploadHomework } from '../../api/homework'
 import { getCreateCoursePage } from '../../api/course'
 
 const emit = defineEmits(['homework-created', 'cancel'])
 
 const form = reactive({
-  homeworkName: '',
-  homeworkType: '',
+  name: '',
+  type: '',
   deadline: '',
-  homeworkContent: '',
+  content: '',
   courseId: '',
   homeworkAttachment: ''
 })
@@ -52,7 +52,21 @@ const handleFileChange = (file) => {
 const handleSubmit = async () => {
   loading.value = true
   try {
-    await createHomework(form)
+    // 确保字段类型正确，并且不传递homeworkAttachment字段
+    const createData = { ...form }
+    createData.courseId = Number(createData.courseId)
+    const homeworkAttachment = createData.homeworkAttachment
+    delete createData.homeworkAttachment
+    
+    // 创建作业
+    const response = await createHomework(createData)
+    const homeworkId = response.data.data
+    
+    // 如果有附件，上传附件
+    if (homeworkAttachment) {
+      await uploadHomework(homeworkId, homeworkAttachment)
+    }
+    
     ElMessage.success('作业创建成功')
     emit('homework-created')
   } catch (error) {
@@ -74,10 +88,10 @@ loadCourses()
   <div class="homework-create-container">
     <el-form :model="form" label-width="120px" label-position="left">
       <el-form-item label="作业名称" required>
-        <el-input v-model="form.homeworkName" style="width: 100%"></el-input>
+        <el-input v-model="form.name" style="width: 100%"></el-input>
       </el-form-item>
       <el-form-item label="作业类型" required>
-        <el-select v-model="form.homeworkType" style="width: 100%">
+        <el-select v-model="form.type" style="width: 100%">
           <el-option v-for="(option, index) in homeworkTypeOptions" :key="index" :label="option.label" :value="option.value" />
         </el-select>
       </el-form-item>
@@ -94,7 +108,7 @@ loadCourses()
         </el-select>
       </el-form-item>
       <el-form-item label="作业内容" required>
-        <el-input type="textarea" v-model="form.homeworkContent" rows="5" style="width: 100%"></el-input>
+        <el-input type="textarea" v-model="form.content" rows="5" style="width: 100%"></el-input>
       </el-form-item>
       <el-form-item label="作业附件">
         <el-upload

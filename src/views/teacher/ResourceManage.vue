@@ -90,7 +90,7 @@ const loadCourses = async () => {
       sortType: "1",
       isAsc: "true",
       pageNum: 1,
-      pageSize: 10
+      pageSize: 100
     })
     courses.value = response.data.data.records
   } catch (error) {
