@@ -200,18 +200,17 @@ const getCourses = async () => {
   try {
     loading.value = true
     const response = await courseApi.getCreateCoursePage({ 
-      name: searchForm.value.courseName || null,                    // 空值转null 
-      subjectId: searchForm.value.courseSubject ? Number(searchForm.value.courseSubject) : null,  // 转数字或null 
-      typeId: searchForm.value.courseType ? Number(searchForm.value.courseType) : null,          // 转数字或null 
-      isSelected: false,                                            // 直接使用布尔值 
-      startSelectCount: Number(searchForm.value.startSelectCount || 0),      // 转数字 
-      endSelectCount: Number(searchForm.value.endSelectCount || 7),          // 转数字 
-      startCreateTime: searchForm.value.startCreateTime || "2025-01-01T12:00:00", 
-      endCreateTime: searchForm.value.endCreateTime || "2027-01-01T12:00:00", 
-      sortType: Number(searchForm.value.sortType || 1),             // 转数字 
-      isAsc: searchForm.value.ascending !== false,                  // 布尔值判断 
-      pageNum: page.value, 
-      pageSize: pageSize.value 
+      name: "",
+      subjectId: "",
+      typeId: "",
+      startSelectCount: "",
+      endSelectCount: "",
+      startCreateTime: "",
+      endCreateTime: "",
+      sortType: "1",
+      isAsc: "true",
+      pageNum: page.value,
+      pageSize: pageSize.value
     })
     courses.value = response.data.data.records
     total.value = response.data.data.total
