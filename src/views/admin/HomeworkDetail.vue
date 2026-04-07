@@ -237,7 +237,7 @@ onMounted(() => {
           <el-descriptions-item label="作业类型">
             {{ homework.type === 'HOMEWORK' ? '作业' : '考试' }}
           </el-descriptions-item>
-          <el-descriptions-item label="截至时间">
+          <el-descriptions-item label="截止时间">
             {{ homework.deadline }}
           </el-descriptions-item>
           <el-descriptions-item label="提交人数">

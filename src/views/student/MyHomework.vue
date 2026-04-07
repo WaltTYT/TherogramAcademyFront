@@ -129,12 +129,12 @@ const loadHomeworks = async () => {
       reviewStatus: searchForm.value.status || null,
       startScore: searchForm.value.startScore || null,
       endScore: searchForm.value.endScore || null,
-      startDeadline: searchForm.value.startDeadline || null,
-      endDeadline: searchForm.value.endDeadline || null,
-      startCreateTime: searchForm.value.startCreateTime || null,
-      endCreateTime: searchForm.value.endCreateTime || null,
-      startSubmitTime: searchForm.value.startSubmitTime || null,
-      endSubmitTime: searchForm.value.endSubmitTime || null,
+      startDeadline: searchForm.value.startDeadline ? searchForm.value.startDeadline.replace(' ', 'T') : null,
+      endDeadline: searchForm.value.endDeadline ? searchForm.value.endDeadline.replace(' ', 'T') : null,
+      startCreateTime: searchForm.value.startCreateTime ? searchForm.value.startCreateTime.replace(' ', 'T') : null,
+      endCreateTime: searchForm.value.endCreateTime ? searchForm.value.endCreateTime.replace(' ', 'T') : null,
+      startSubmitTime: searchForm.value.startSubmitTime ? searchForm.value.startSubmitTime.replace(' ', 'T') : null,
+      endSubmitTime: searchForm.value.endSubmitTime ? searchForm.value.endSubmitTime.replace(' ', 'T') : null,
       sortType: parseInt(searchForm.value.sortType),
       isAsc: searchForm.value.ascending,
       isDeleted: "false",
@@ -578,7 +578,7 @@ onMounted(() => {
                 v-model="searchForm.startDeadline"
                 type="datetime"
                 placeholder="起始时间"
-                value-format="YYYY-MM-DDTHH:mm:ss"
+                value-format="YYYY-MM-DD HH:mm:ss"
                 style="width: 48%;"
               />
               <span style="margin: 0 4%;">-</span>
@@ -586,7 +586,7 @@ onMounted(() => {
                 v-model="searchForm.endDeadline"
                 type="datetime"
                 placeholder="结束时间"
-                value-format="YYYY-MM-DDTHH:mm:ss"
+                value-format="YYYY-MM-DD HH:mm:ss"
                 style="width: 48%;"
               />
             </el-form-item>
@@ -597,7 +597,7 @@ onMounted(() => {
                 v-model="searchForm.startCreateTime"
                 type="datetime"
                 placeholder="起始时间"
-                value-format="YYYY-MM-DDTHH:mm:ss"
+                value-format="YYYY-MM-DD HH:mm:ss"
                 style="width: 48%;"
               />
               <span style="margin: 0 4%;">-</span>
@@ -605,7 +605,7 @@ onMounted(() => {
                 v-model="searchForm.endCreateTime"
                 type="datetime"
                 placeholder="结束时间"
-                value-format="YYYY-MM-DDTHH:mm:ss"
+                value-format="YYYY-MM-DD HH:mm:ss"
                 style="width: 48%;"
               />
             </el-form-item>
@@ -619,7 +619,7 @@ onMounted(() => {
                 v-model="searchForm.startSubmitTime"
                 type="datetime"
                 placeholder="起始时间"
-                value-format="YYYY-MM-DDTHH:mm:ss"
+                value-format="YYYY-MM-DD HH:mm:ss"
                 style="width: 48%;"
               />
               <span style="margin: 0 4%;">-</span>
@@ -627,7 +627,7 @@ onMounted(() => {
                 v-model="searchForm.endSubmitTime"
                 type="datetime"
                 placeholder="结束时间"
-                value-format="YYYY-MM-DDTHH:mm:ss"
+                value-format="YYYY-MM-DD HH:mm:ss"
                 style="width: 48%;"
               />
             </el-form-item>

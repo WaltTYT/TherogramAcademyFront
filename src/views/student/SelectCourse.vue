@@ -102,14 +102,14 @@ const getCourses = async () => {
       name: searchForm.value.courseName,
       subjectId: searchForm.value.courseSubject,
       typeId: searchForm.value.courseType,
-      startSelectCount: searchForm.value.startSelectCount,
-      endSelectCount: searchForm.value.endSelectCount,
-      startCreateTime: searchForm.value.startCreateTime,
-      endCreateTime: searchForm.value.endCreateTime,
-      sortType: searchForm.value.sortType || '0',
-      isAsc: searchForm.value.ascending?.toString() || 'true',
-      pageNum: page.value.toString(),
-      pageSize: pageSize.value.toString()
+      startSelectCount: searchForm.value.startSelectCount || null,
+      endSelectCount: searchForm.value.endSelectCount || null,
+      startCreateTime: searchForm.value.startCreateTime ? searchForm.value.startCreateTime.replace(' ', 'T') : null,
+      endCreateTime: searchForm.value.endCreateTime ? searchForm.value.endCreateTime.replace(' ', 'T') : null,
+      sortType: parseInt(searchForm.value.sortType || '0'),
+      isAsc: searchForm.value.ascending,
+      pageNum: page.value,
+      pageSize: pageSize.value
     }
     const response = await courseApi.getCoursePage(params)
     courses.value = response.data.data.records
@@ -242,7 +242,7 @@ onMounted(() => {
                 v-model="searchForm.startCreateTime"
                 type="datetime"
                 placeholder="起始时间"
-                value-format="YYYY-MM-DDTHH:mm:ss"
+                value-format="YYYY-MM-DD HH:mm:ss"
                 style="width: 48%;"
               />
               <span style="margin: 0 4%;">-</span>
@@ -250,7 +250,7 @@ onMounted(() => {
                 v-model="searchForm.endCreateTime"
                 type="datetime"
                 placeholder="结束时间"
-                value-format="YYYY-MM-DDTHH:mm:ss"
+                value-format="YYYY-MM-DD HH:mm:ss"
                 style="width: 48%;"
               />
             </el-form-item>

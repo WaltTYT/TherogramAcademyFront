@@ -95,22 +95,22 @@ const loadCourses = async () => {
       name: searchForm.value.courseName,
       subjectId: searchForm.value.courseSubject,
       typeId: searchForm.value.courseType,
-      startSelectCount: searchForm.value.startSelectCount,
-      endSelectCount: searchForm.value.endSelectCount,
-      startProgress: searchForm.value.startProgress,
-      endProgress: searchForm.value.endProgress,
-      startStudyTime: searchForm.value.startStudyTime,
-      endStudyTime: searchForm.value.endStudyTime,
-      startScore: searchForm.value.startScore,
-      endScore: searchForm.value.endScore,
-      startCreateTime: searchForm.value.startCreateTime,
-      endCreateTime: searchForm.value.endCreateTime,
-      startSelectTime: searchForm.value.startSelectTime,
-      endSelectTime: searchForm.value.endSelectTime,
-      sortType: searchForm.value.sortType || "4",
-      isAsc: searchForm.value.ascending?.toString() || "true",
-      pageNum: currentPage.value.toString(),
-      pageSize: pageSize.value.toString()
+      startSelectCount: searchForm.value.startSelectCount || null,
+      endSelectCount: searchForm.value.endSelectCount || null,
+      startProgress: searchForm.value.startProgress || null,
+      endProgress: searchForm.value.endProgress || null,
+      startStudyTime: searchForm.value.startStudyTime || null,
+      endStudyTime: searchForm.value.endStudyTime || null,
+      startScore: searchForm.value.startScore || null,
+      endScore: searchForm.value.endScore || null,
+      startCreateTime: searchForm.value.startCreateTime ? searchForm.value.startCreateTime.replace(' ', 'T') : null,
+      endCreateTime: searchForm.value.endCreateTime ? searchForm.value.endCreateTime.replace(' ', 'T') : null,
+      startSelectTime: searchForm.value.startSelectTime ? searchForm.value.startSelectTime.replace(' ', 'T') : null,
+      endSelectTime: searchForm.value.endSelectTime ? searchForm.value.endSelectTime.replace(' ', 'T') : null,
+      sortType: parseInt(searchForm.value.sortType || "4"),
+      isAsc: searchForm.value.ascending,
+      pageNum: currentPage.value,
+      pageSize: pageSize.value
     })
     courses.value = response.data.data.records
     total.value = response.data.data.total
@@ -287,7 +287,7 @@ onMounted(() => {
                 v-model="searchForm.startCreateTime"
                 type="datetime"
                 placeholder="起始时间"
-                value-format="YYYY-MM-DDTHH:mm:ss"
+                value-format="YYYY-MM-DD HH:mm:ss"
                 style="width: 48%;"
               />
               <span style="margin: 0 4%;">-</span>
@@ -295,7 +295,7 @@ onMounted(() => {
                 v-model="searchForm.endCreateTime"
                 type="datetime"
                 placeholder="结束时间"
-                value-format="YYYY-MM-DDTHH:mm:ss"
+                value-format="YYYY-MM-DD HH:mm:ss"
                 style="width: 48%;"
               />
             </el-form-item>
@@ -388,7 +388,7 @@ onMounted(() => {
                 v-model="searchForm.startSelectTime"
                 type="datetime"
                 placeholder="起始时间"
-                value-format="YYYY-MM-DDTHH:mm:ss"
+                value-format="YYYY-MM-DD HH:mm:ss"
                 style="width: 48%;"
               />
               <span style="margin: 0 4%;">-</span>
@@ -396,7 +396,7 @@ onMounted(() => {
                 v-model="searchForm.endSelectTime"
                 type="datetime"
                 placeholder="结束时间"
-                value-format="YYYY-MM-DDTHH:mm:ss"
+                value-format="YYYY-MM-DD HH:mm:ss"
                 style="width: 48%;"
               />
             </el-form-item>
