@@ -430,12 +430,12 @@ onMounted(() => {
         </template>
       </el-table-column>
       <el-table-column prop="profile" label="课程简介" min-width="200" />
-      <el-table-column prop="subjectId" label="课程科目" width="120">
+      <el-table-column prop="subjectId" label="课程科目" width="180">
         <template #default="scope">
           {{ courseSubjectOptions.find(option => option.value === scope.row.subjectId)?.label || scope.row.subjectId }}
         </template>
       </el-table-column>
-      <el-table-column prop="typeId" label="课程类型" width="120">
+      <el-table-column prop="typeId" label="课程类型" width="180">
         <template #default="scope">
           {{ courseTypeOptions.find(option => option.value === scope.row.typeId)?.label || scope.row.typeId }}
         </template>
@@ -445,8 +445,8 @@ onMounted(() => {
           <el-progress :percentage="Math.min(100, Math.max(0, (typeof scope.row.progress === 'string' ? parseFloat(scope.row.progress.replace('%', '')) : scope.row.progress) || 0))" :stroke-width="10" />
         </template>
       </el-table-column>
-      <el-table-column prop="studyTime" label="学习时长(分钟)" width="120" />
-      <el-table-column prop="score" label="成绩" width="80">
+      <el-table-column prop="studyTime" label="学习时长(分钟)" width="200" />
+      <el-table-column prop="score" label="成绩" width="100">
         <template #default="scope">
           {{ scoreStatusMap[scope.row.score] || scope.row.score }}
         </template>
