@@ -475,9 +475,9 @@ onMounted(() => {
         :cell-style="{ textAlign: 'center' }"
         :header-cell-style="{ textAlign: 'center', fontWeight: 'bold', backgroundColor: '#f5f7fa' }"
       >
-        <el-table-column prop="orderId" label="排序ID" width="80" />
-        <el-table-column prop="name" label="资源名称" min-width="300" />
-        <el-table-column prop="resourceType" label="资源类型" width="120">
+        <el-table-column prop="orderId" label="排序ID" width="100" />
+        <el-table-column prop="name" label="资源名称" min-width="270" />
+        <el-table-column prop="resourceType" label="资源类型" width="150">
           <template #default="{ row }">
             {{ resourceTypes.find(t => t.value == row.resourceType)?.label || row.resourceType }}
           </template>

@@ -517,7 +517,7 @@ onMounted(() => {
       >
         <el-table-column prop="id" label="课程ID" width="100" />
         <el-table-column prop="courseName" label="课程名称" min-width="300" />
-        <el-table-column prop="courseSubject" label="课程科目" width="120">
+        <el-table-column prop="courseSubject" label="课程科目" width="150">
           <template #default="{ row }">
             {{ courseSubjects.find(s => s.value == row.courseSubject)?.label || row.courseSubject }}
           </template>
@@ -527,7 +527,7 @@ onMounted(() => {
             {{ courseTypes.find(t => t.value == row.courseType)?.label || row.courseType }}
           </template>
         </el-table-column>
-        <el-table-column prop="reviewStatus" label="审核状态" width="120">
+        <el-table-column prop="reviewStatus" label="审核状态" width="150">
           <template #default="{ row }">
             {{ 
               row.reviewStatus === 'PENDING' ? '待审核' :
@@ -634,7 +634,7 @@ onMounted(() => {
         >
           <el-table-column prop="id" label="课程ID" width="100" />
           <el-table-column prop="courseName" label="课程名称" min-width="300" />
-          <el-table-column prop="courseSubject" label="课程科目" width="120">
+          <el-table-column prop="courseSubject" label="课程科目" width="150">
             <template #default="{ row }">
               {{ courseSubjects.find(s => s.value == row.courseSubject)?.label || row.courseSubject }}
             </template>

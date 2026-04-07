@@ -500,19 +500,19 @@ onMounted(() => {
         :cell-style="{ textAlign: 'center' }"
         :header-cell-style="{ textAlign: 'center', fontWeight: 'bold', backgroundColor: '#f5f7fa' }"
       >
-        <el-table-column label="作业名称" min-width="300">
+        <el-table-column label="作业名称" min-width="220">
           <template #default="{ row }">
             {{ row.name || row.homeworkName }}
           </template>
         </el-table-column>
-        <el-table-column label="作业类型" width="120">
+        <el-table-column label="作业类型" width="150">
           <template #default="{ row }">
             {{ homeworkTypes.find(t => t.value == (row.type || row.homeworkType))?.label || (row.type || row.homeworkType) }}
           </template>
         </el-table-column>
         <el-table-column prop="deadline" label="截至时间" width="180" />
         <el-table-column prop="createTime" label="创建时间" width="180" />
-        <el-table-column prop="submitCount" label="提交人数" width="100" />
+        <el-table-column prop="submitCount" label="提交人数" width="150" />
         <el-table-column label="操作" width="320">
           <template #default="{ row }">
             <el-button size="small" @click="viewHomeworkDetail(row)" style="margin-right: 5px">查看</el-button>
