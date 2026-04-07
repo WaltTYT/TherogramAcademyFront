@@ -46,19 +46,20 @@ const loadResourceDetail = async () => {
 
 // 下载教学资源
 const handleDownload = async () => {
-  if (!resource.value || !resource.value.uri) {
-    ElMessage.warning('资源文件不存在')
+  if (!resource.value || !resource.value.uri || !resource.value.id) {
+    ElMessage.warning('资源文件不存在或资源ID缺失')
     return
   }
   
   try {
-    const response = await downloadCourseResource(resource.value.uri)
+    // 从路径中提取文件名
+    const fileName = resource.value.uri.split('/').pop()
+    
+    const response = await downloadCourseResource(resource.value.id, fileName)
     // 创建下载链接
     const url = window.URL.createObjectURL(new Blob([response.data]))
     const link = document.createElement('a')
     link.href = url
-    // 从URL中提取文件名
-    const fileName = resource.value.uri.split('/').pop()
     link.setAttribute('download', fileName)
     document.body.appendChild(link)
     link.click()

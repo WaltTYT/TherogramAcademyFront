@@ -70,28 +70,22 @@ const handleBack = () => {
 // 下载资源
 const handleDownloadResource = async (resource) => {
   const resourcePath = resource.attachmentUrl || resource.uri
-  if (!resource || !resourcePath) {
-    ElMessage.warning('该资源没有附件')
+  if (!resource || !resourcePath || !resource.id) {
+    ElMessage.warning('该资源没有附件或资源ID')
     return
   }
   
   try {
-    const loadingInstance = ElLoading.service({
-      lock: true,
-      text: '正在下载资源...',
-      background: 'rgba(0, 0, 0, 0.7)'
-    })
+    // 从路径中提取文件名
+    const fileName = resourcePath.split('/').pop()
     
-    const response = await downloadCourseResource(resourcePath)
+    const response = await downloadCourseResource(resource.id, fileName)
     
     // 创建下载链接
     const blob = new Blob([response.data])
     const url = window.URL.createObjectURL(blob)
     const link = document.createElement('a')
     link.href = url
-    
-    // 从URL中提取文件名
-    const fileName = resourcePath.split('/').pop()
     link.download = fileName
     
     document.body.appendChild(link)
@@ -99,7 +93,6 @@ const handleDownloadResource = async (resource) => {
     document.body.removeChild(link)
     window.URL.revokeObjectURL(url)
     
-    loadingInstance.close()
     ElMessage.success('下载成功')
   } catch (error) {
     ElMessage.error('下载失败：' + (error.message || '未知错误'))
