@@ -684,21 +684,21 @@ const getRoleTypeTagType = (roleType) => {
       
       <!-- 高级搜索区域 -->
       <el-card v-if="searchMode === 'advanced'" class="search-card" shadow="never">
-        <el-form :model="advancedSearchForm" label-width="100px" class="search-form">
+        <el-form :model="advancedSearchForm" label-width="100px" class="search-form" inline>
           <el-row :gutter="20">
             <el-col :span="8">
-              <el-form-item label="账号">
-                <el-input v-model="advancedSearchForm.account" placeholder="请输入账号" clearable />
+              <el-form-item label="账号" style="width: 100%;">
+                <el-input v-model="advancedSearchForm.account" placeholder="请输入账号" clearable style="width: 100%;" />
               </el-form-item>
             </el-col>
             <el-col :span="8">
-              <el-form-item label="用户名">
-                <el-input v-model="advancedSearchForm.username" placeholder="请输入用户名" clearable />
+              <el-form-item label="用户名" style="width: 100%;">
+                <el-input v-model="advancedSearchForm.username" placeholder="请输入用户名" clearable style="width: 100%;" />
               </el-form-item>
             </el-col>
             <el-col :span="8">
-              <el-form-item label="用户类型">
-                <el-select v-model="advancedSearchForm.roleType" placeholder="请选择用户类型" clearable style="width: 100%">
+              <el-form-item label="用户类型" style="width: 100%;">
+                <el-select v-model="advancedSearchForm.roleType" placeholder="请选择用户类型" clearable style="width: 100%;">
                   <el-option
                     v-for="item in roleTypeOptions"
                     :key="item.value"
@@ -711,43 +711,40 @@ const getRoleTypeTagType = (roleType) => {
           </el-row>
           <el-row :gutter="20">
             <el-col :span="8">
-              <el-form-item label="创建时间">
+              <el-form-item label="创建时间" style="width: 100%;">
                 <el-date-picker
                   v-model="advancedSearchForm.startCreateTime"
                   type="datetime"
                   placeholder="起始时间"
                   value-format="YYYY-MM-DDTHH:mm:ss"
-                  style="width: 100%"
+                  style="width: 48%;"
                 />
-              </el-form-item>
-            </el-col>
-            <el-col :span="8">
-              <el-form-item label="至">
+                <span style="margin: 0 4%;">-</span>
                 <el-date-picker
                   v-model="advancedSearchForm.endCreateTime"
                   type="datetime"
                   placeholder="结束时间"
                   value-format="YYYY-MM-DDTHH:mm:ss"
-                  style="width: 100%"
+                  style="width: 48%;"
                 />
               </el-form-item>
             </el-col>
             <el-col :span="8">
-              <el-form-item>
+              <el-form-item style="width: 100%;">
                 <el-checkbox v-model="advancedSearchForm.filterDeleted">过滤已注销用户</el-checkbox>
               </el-form-item>
             </el-col>
           </el-row>
           <el-row :gutter="20">
             <el-col :span="8">
-              <el-form-item label="排序方式">
-                <el-select v-model="advancedSearchForm.sortType" style="width: 100%">
+              <el-form-item label="排序方式" style="width: 100%;">
+                <el-select v-model="advancedSearchForm.sortType" style="width: 100%;">
                   <el-option label="按创建时间排序" :value="0" />
                 </el-select>
               </el-form-item>
             </el-col>
             <el-col :span="8">
-              <el-form-item label="排序方向">
+              <el-form-item label="排序方向" style="width: 100%;">
                 <el-radio-group v-model="advancedSearchForm.isAsc">
                   <el-radio-button :label="true">升序</el-radio-button>
                   <el-radio-button :label="false">降序</el-radio-button>
@@ -755,7 +752,7 @@ const getRoleTypeTagType = (roleType) => {
               </el-form-item>
             </el-col>
             <el-col :span="8">
-              <el-form-item>
+              <el-form-item style="width: 100%;">
                 <el-button type="primary" @click="handleSearch">
                   <Search /> 搜索
                 </el-button>
@@ -770,20 +767,20 @@ const getRoleTypeTagType = (roleType) => {
       
       <!-- 关键字搜索区域 -->
       <el-card v-else class="search-card" shadow="never">
-        <el-form :model="keywordSearchForm" label-width="100px" class="search-form">
+        <el-form :model="keywordSearchForm" label-width="100px" class="search-form" inline>
           <el-row :gutter="20">
             <el-col :span="8">
-              <el-form-item label="账号关键字">
-                <el-input v-model="keywordSearchForm.account" placeholder="请输入账号关键字" clearable />
+              <el-form-item label="账号关键字" style="width: 100%;">
+                <el-input v-model="keywordSearchForm.account" placeholder="请输入账号关键字" clearable style="width: 100%;" />
               </el-form-item>
             </el-col>
             <el-col :span="8">
-              <el-form-item label="用户名关键字">
-                <el-input v-model="keywordSearchForm.username" placeholder="请输入用户名关键字" clearable />
+              <el-form-item label="用户名关键字" style="width: 100%;">
+                <el-input v-model="keywordSearchForm.username" placeholder="请输入用户名关键字" clearable style="width: 100%;" />
               </el-form-item>
             </el-col>
             <el-col :span="8">
-              <el-form-item label="排序方向">
+              <el-form-item label="排序方向" style="width: 100%;">
                 <el-radio-group v-model="keywordSearchForm.isAsc">
                   <el-radio-button :label="true">升序</el-radio-button>
                   <el-radio-button :label="false">降序</el-radio-button>
@@ -826,18 +823,18 @@ const getRoleTypeTagType = (roleType) => {
           </el-table-column>
           <el-table-column prop="bio" label="简介" show-overflow-tooltip />
           <el-table-column prop="createTime" label="创建时间" width="180" />
-          <el-table-column label="操作" width="380" fixed="right">
+          <el-table-column label="操作" width="450" fixed="right">
             <template #default="{ row }">
-              <el-button type="primary" size="small" @click="handleViewDetail(row)">
+              <el-button type="primary" size="small" @click="handleViewDetail(row)" style="margin-right: 8px;">
                 查看详情
               </el-button>
-              <el-button type="success" size="small" @click="handleSelectUser(row)">
+              <el-button type="success" size="small" @click="handleSelectUser(row)" style="margin-right: 8px;">
                 选择展示
               </el-button>
-              <el-button type="warning" size="small" @click="handleEdit(row)">
+              <el-button type="warning" size="small" @click="handleEdit(row)" style="margin-right: 8px;">
                 <Edit /> 编辑
               </el-button>
-              <el-button type="danger" size="small" @click="handleDelete(row)">
+              <el-button type="danger" size="small" @click="handleDelete(row)" style="margin-right: 8px;">
                 <Delete /> 删除
               </el-button>
               <el-button size="small" @click="handleDownloadAvatar(row)">
