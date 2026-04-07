@@ -28,10 +28,18 @@ export const deleteCourseResource = (id) => {
 
 // 获取教学资源分页
 export const getCourseResourcePage = (data) => {
+  // 修复字段名
+  const fixedData = {
+    ...data,
+    name: data.resourceName,
+    isAsc: data.ascending
+  }
+  delete fixedData.resourceName
+  delete fixedData.ascending
   return request({
     url: '/courseResource/page',
     method: 'post',
-    data
+    data: fixedData
   })
 }
 

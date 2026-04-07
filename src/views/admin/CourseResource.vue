@@ -29,7 +29,7 @@ const searchForm = reactive({
   startCreateTime: '',
   endCreateTime: '',
   sortType: 0,
-  ascending: true
+  isAsc: true
 })
 
 const showAdvancedSearch = ref(false)
@@ -141,7 +141,7 @@ const getCourseResources = async () => {
       startCreateTime: searchForm.startCreateTime,
       endCreateTime: searchForm.endCreateTime,
       sortType: searchForm.sortType,
-      ascending: searchForm.ascending,
+      isAsc: searchForm.isAsc,
       isDeleted: "false",
       pageNum: currentPage.value,
       pageSize: pageSize.value
@@ -176,7 +176,7 @@ const handleReset = () => {
   searchForm.startCreateTime = ''
   searchForm.endCreateTime = ''
   searchForm.sortType = 0
-  searchForm.ascending = true
+  searchForm.isAsc = true
   currentPage.value = 1
   getCourseResources()
 }
@@ -192,7 +192,7 @@ const toggleAdvancedSearch = () => {
     searchForm.startCreateTime = ''
     searchForm.endCreateTime = ''
     searchForm.sortType = 0
-    searchForm.ascending = true
+    searchForm.isAsc = true
   }
 }
 

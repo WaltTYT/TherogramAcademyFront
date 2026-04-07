@@ -220,6 +220,8 @@ const saveHomework = async () => {
         const modifyData = { ...homeworkForm.value }
         const homeworkAttachment = modifyData.homeworkAttachment
         delete modifyData.homeworkAttachment
+        // 确保courseId是数字类型
+        modifyData.courseId = Number(modifyData.courseId)
         
         // 修改作业
         const response = await modifyHomework(modifyData)
