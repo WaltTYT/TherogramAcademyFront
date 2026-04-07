@@ -225,7 +225,8 @@ const getCourses = async () => {
       pageNum: page.value,
       pageSize: pageSize.value
     })
-    courses.value = response.data.data.records
+    // 过滤掉已删除的课程
+    courses.value = response.data.data.records.filter(course => !course.isDeleted)
     total.value = response.data.data.total
   } catch (error) {
     ElMessage.error('获取课程列表失败')

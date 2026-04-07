@@ -147,17 +147,19 @@ const getCourses = async () => {
     })
     console.log('getCourses response:', response)
     if (response.data.code === 200) {
-      // 映射后端返回的字段名到前端使用的字段名
-      courses.value = response.data.data.records.map(course => ({
-        ...course,
-        courseName: course.name || course.courseName,
-        courseIntroduction: course.profile || course.courseIntroduction,
-        courseObjective: course.target || course.courseObjective,
-        courseContent: course.content || course.courseContent,
-        courseOutline: course.outline || course.courseOutline,
-        courseSubject: course.subjectId || course.courseSubject,
-        courseType: course.typeId || course.courseType
-      }))
+      // 映射后端返回的字段名到前端使用的字段名，并过滤掉已删除的课程
+      courses.value = response.data.data.records
+        .filter(course => !course.isDeleted)
+        .map(course => ({
+          ...course,
+          courseName: course.name || course.courseName,
+          courseIntroduction: course.profile || course.courseIntroduction,
+          courseObjective: course.target || course.courseObjective,
+          courseContent: course.content || course.courseContent,
+          courseOutline: course.outline || course.courseOutline,
+          courseSubject: course.subjectId || course.courseSubject,
+          courseType: course.typeId || course.courseType
+        }))
       total.value = response.data.data.total
       console.log('getCourses success: courses.length =', courses.value.length, 'total =', total.value)
     } else {
