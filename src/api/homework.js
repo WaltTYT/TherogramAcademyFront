@@ -120,7 +120,7 @@ export const uploadStudentHomework = (studentId, homeworkId, file) => {
 // 下载作业附件
 export const downloadHomework = (homeworkId, fileName) => {
   return request({
-    url: `/homework/downloadHomework/${homeworkId}/${fileName}`,
+    url: `/homework/downloadHomework/Homework/${homeworkId}/${fileName}`,
     method: 'get',
     responseType: 'blob'
   })

@@ -2,7 +2,7 @@
 import { ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ElMessage, ElButton, ElCard, ElDescriptions, ElDescriptionsItem, ElSkeleton, ElMessageBox } from 'element-plus'
-import { getHomeworkDetail, deleteHomework } from '../../api/homework'
+import { getHomeworkDetail, deleteHomework, downloadHomework } from '../../api/homework'
 import { useUserStore } from '../../stores/user'
 
 const route = useRoute()
@@ -44,14 +44,28 @@ const loadHomeworkDetail = async () => {
 }
 
 // 下载作业
-const handleDownload = () => {
+const handleDownload = async () => {
   if (!homework.value || !homework.value.attachment) {
     ElMessage.warning('作业附件不存在')
     return
   }
   
-  // 构建下载链接
-  window.location.href = `http://localhost:8085/api/homework/downloadHomework${homework.value.attachment}`
+  try {
+    // 从attachment中提取文件名
+    const fileName = homework.value.attachment.split('/').pop()
+    const response = await downloadHomework(homework.value.id, fileName)
+    // 创建下载链接
+    const url = window.URL.createObjectURL(new Blob([response.data]))
+    const link = document.createElement('a')
+    link.href = url
+    link.setAttribute('download', fileName)
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+    ElMessage.success('附件下载成功')
+  } catch (error) {
+    ElMessage.error('下载失败：' + (error.message || '未知错误'))
+  }
 }
 
 // 返回作业列表

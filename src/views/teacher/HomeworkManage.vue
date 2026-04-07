@@ -2,7 +2,7 @@
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage, ElLoading, ElDialog, ElInputNumber, ElDatePicker, ElSwitch, ElSelect, ElOption, ElMessageBox } from 'element-plus'
-import { getHomeworkPage, deleteHomework, modifyHomework, uploadHomework } from '../../api/homework'
+import { getHomeworkPage, deleteHomework, modifyHomework, uploadHomework, downloadHomework } from '../../api/homework'
 import { getCreateCoursePage } from '../../api/course'
 import HomeworkCreate from './HomeworkCreate.vue'
 
@@ -244,16 +244,28 @@ const saveHomework = async () => {
 }
 
 // 下载作业
-const handleDownload = (homework) => {
+const handleDownload = async (homework) => {
   if (!homework.attachment) {
     ElMessage.error('作业附件不存在')
     return
   }
   
-  // 从attachment中提取文件名
-  const fileName = homework.attachment.split('/').pop()
-  // 构建下载链接
-  window.location.href = `http://localhost:8085/api/homework/downloadHomework/${homework.id}/${fileName}`
+  try {
+    // 从attachment中提取文件名
+    const fileName = homework.attachment.split('/').pop()
+    const response = await downloadHomework(homework.id, fileName)
+    // 创建下载链接
+    const url = window.URL.createObjectURL(new Blob([response.data]))
+    const link = document.createElement('a')
+    link.href = url
+    link.setAttribute('download', fileName)
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+    ElMessage.success('附件下载成功')
+  } catch (error) {
+    ElMessage.error('下载失败：' + (error.message || '未知错误'))
+  }
 }
 
 // 批改对话框

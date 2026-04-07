@@ -53,6 +53,10 @@ const personalForm = ref({
   portrait: ''
 })
 
+// 个人信息表单的本地预览图片
+const personalFormLocalAvatar = ref('')
+const personalFormAvatarFile = ref(null)
+
 // 个人信息详情
 const personalInfo = ref(null)
 
@@ -79,6 +83,10 @@ const editForm = ref({
   bio: '',
   portrait: ''
 })
+
+// 编辑表单的本地预览图片
+const editFormLocalAvatar = ref('')
+const editFormAvatarFile = ref(null)
 
 // 用户详情对话框
 const detailDialogVisible = ref(false)
@@ -314,6 +322,9 @@ const handleSizeChange = (size) => {
 // 打开编辑对话框
 const handleEdit = (user) => {
   currentUser.value = user
+  // 清空本地预览和文件缓存
+  editFormLocalAvatar.value = ''
+  editFormAvatarFile.value = null
   editForm.value = {
     username: user.username,
     account: user.account,
@@ -333,6 +344,19 @@ const handleSave = async () => {
   
   loading.value = true
   try {
+    // 检查是否有新的头像需要上传
+    if (editFormAvatarFile.value) {
+      const avatarRes = await uploadUserAvatar(currentUser.value.id, editFormAvatarFile.value)
+      if (avatarRes.data.code === 200) {
+        // 使用后端返回的正确路径
+        editForm.value.portrait = avatarRes.data.data
+      } else {
+        ElMessage.error('头像上传失败')
+        return
+      }
+    }
+    
+    // 更新用户信息
     const res = await updateUser({
       ...editForm.value,
       id: currentUser.value.id
@@ -351,11 +375,15 @@ const handleSave = async () => {
         }
       }
       editDialogVisible.value = false
+      // 清空本地预览和文件对象
+      editFormLocalAvatar.value = ''
+      editFormAvatarFile.value = null
       ElMessage.success('用户信息更新成功')
     } else {
       ElMessage.error(res.data.message || '更新失败')
     }
   } catch (error) {
+    console.error('更新用户信息失败:', error)
     ElMessage.error('更新用户信息失败')
   } finally {
     loading.value = false
@@ -392,20 +420,22 @@ const handleDelete = (user) => {
   })
 }
 
-// 处理头像上传
-const handleAvatarUpload = async (uploadFile) => {
+// 处理头像上传（本地预览）
+const handleAvatarUpload = (uploadFile) => {
   if (!currentUser.value) return
 
-  try {
-    const res = await uploadUserAvatar(currentUser.value.id, uploadFile.file)
-    if (res.data.code === 200) {
-      // 使用后端返回的正确路径，而不是本地 blob URL
-      editForm.value.portrait = res.data.data
-      ElMessage.success('头像上传成功')
-    }
-  } catch (error) {
-    ElMessage.error('头像上传失败')
+  // 生成本地预览URL
+  const reader = new FileReader()
+  reader.onload = (e) => {
+    editFormLocalAvatar.value = e.target.result
   }
+  reader.readAsDataURL(uploadFile.file)
+  
+  // 保存文件对象，用于后续上传
+  editFormAvatarFile.value = uploadFile.file
+  
+  // 不需要立即上传，等待保存时再上传
+  ElMessage.success('头像已选择，点击保存后将上传')
 }
 
 // 下载头像
@@ -466,6 +496,9 @@ const personalEditDialogVisible = ref(false)
 // 打开个人信息编辑对话框
 const handleEditPersonalInfo = () => {
   if (!personalInfo.value) return
+  // 清空本地预览和文件缓存
+  personalFormLocalAvatar.value = ''
+  personalFormAvatarFile.value = null
   personalForm.value = {
     username: personalInfo.value.username,
     account: personalInfo.value.account,
@@ -485,6 +518,19 @@ const handleSavePersonalInfo = async () => {
 
   loading.value = true
   try {
+    // 检查是否有新的头像需要上传
+    if (personalFormAvatarFile.value) {
+      const avatarRes = await uploadUserAvatar(personalInfo.value.id, personalFormAvatarFile.value)
+      if (avatarRes.data.code === 200) {
+        // 使用后端返回的正确路径
+        personalForm.value.portrait = avatarRes.data.data
+      } else {
+        ElMessage.error('头像上传失败')
+        return
+      }
+    }
+    
+    // 更新用户信息
     const res = await updateUser({
       ...personalForm.value,
       id: personalInfo.value.id
@@ -500,6 +546,9 @@ const handleSavePersonalInfo = async () => {
         portrait: personalForm.value.portrait
       }
       personalEditDialogVisible.value = false
+      // 清空本地预览和文件对象
+      personalFormLocalAvatar.value = ''
+      personalFormAvatarFile.value = null
       ElMessage.success('个人信息更新成功')
     } else {
       ElMessage.error(res.data.message || '更新失败')
@@ -542,23 +591,22 @@ const handleDeleteAccount = () => {
   })
 }
 
-// 处理个人信息头像上传
-const handlePersonalAvatarUpload = async (uploadFile) => {
+// 处理个人信息头像上传（本地预览）
+const handlePersonalAvatarUpload = (uploadFile) => {
   if (!personalInfo.value) return
 
-  try {
-    const res = await uploadUserAvatar(personalInfo.value.id, uploadFile.file)
-    if (res.data.code === 200) {
-      // 使用后端返回的正确路径，而不是本地 blob URL
-      personalForm.value.portrait = res.data.data
-      ElMessage.success('头像上传成功')
-    }
-  } catch (error) {
-    console.error('头像上传失败:', error)
-    // 模拟上传成功
-    personalForm.value.portrait = `/User/${personalInfo.value.id}/avatar.jpg`
-    ElMessage.success('头像上传成功（模拟）')
+  // 生成本地预览URL
+  const reader = new FileReader()
+  reader.onload = (e) => {
+    personalFormLocalAvatar.value = e.target.result
   }
+  reader.readAsDataURL(uploadFile.file)
+  
+  // 保存文件对象，用于后续上传
+  personalFormAvatarFile.value = uploadFile.file
+  
+  // 不需要立即上传，等待保存时再上传
+  ElMessage.success('头像已选择，点击保存后将上传')
 }
 
 // 下载个人头像
@@ -884,8 +932,8 @@ const getRoleTypeTagType = (roleType) => {
               return isJPG && isLt2M;
             }"
           >
-            <el-avatar :size="100" :src="editForm.portrait ? `http://localhost:8085/api/user/downloadUser/User/${editForm.portrait.replace(/^\//, '')}` : ''" class="edit-avatar">
-              <Camera v-if="!editForm.portrait" />
+            <el-avatar :size="100" :src="editFormLocalAvatar || (editForm.portrait ? `http://localhost:8085/api/user/downloadUser/User/${editForm.portrait.replace(/^\//, '')}` : '')" class="edit-avatar">
+              <Camera v-if="!editFormLocalAvatar && !editForm.portrait" />
             </el-avatar>
           </el-upload>
         </el-form-item>
@@ -970,8 +1018,8 @@ const getRoleTypeTagType = (roleType) => {
               return isJPG && isLt2M;
             }"
           >
-            <el-avatar :size="100" :src="personalForm.portrait ? `http://localhost:8085/api/user/downloadUser/User/${personalForm.portrait.replace(/^\//, '')}` : ''" class="edit-avatar">
-              <User v-if="!personalForm.portrait" />
+            <el-avatar :size="100" :src="personalFormLocalAvatar || (personalForm.portrait ? `http://localhost:8085/api/user/downloadUser/User/${personalForm.portrait.replace(/^\//, '')}` : '')" class="edit-avatar">
+              <User v-if="!personalFormLocalAvatar && !personalForm.portrait" />
             </el-avatar>
           </el-upload>
         </el-form-item>
