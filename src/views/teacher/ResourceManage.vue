@@ -2,7 +2,7 @@
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage, ElLoading, ElDialog, ElInputNumber, ElDatePicker, ElSwitch, ElSelect, ElOption, ElMessageBox } from 'element-plus'
-import { getCourseResourcePage, deleteCourseResource, modifyCourseResource, downloadCourseResource } from '../../api/courseResource'
+import { getCourseResourcePage, deleteCourseResource, modifyCourseResource, downloadCourseResource, uploadCourseResource } from '../../api/courseResource'
 import { getCreateCoursePage } from '../../api/course'
 import ResourceCreate from './ResourceCreate.vue'
 
@@ -50,6 +50,11 @@ const resourceFormRef = ref(null)
 // 上传文件
 const uploadUrl = '/api/courseResource/uploadCourseResource'
 const fileList = ref([])
+
+// 处理文件变化
+const handleFileChange = (file, files) => {
+  fileList.value = files
+}
 
 const searchForm = ref({
   courseId: '',
@@ -208,7 +213,13 @@ const saveResource = async () => {
       try {
         const response = await modifyCourseResource(resourceForm.value)
         if (response.data.code === 200) {
-          ElMessage.success('修改教学资源成功')
+          // 如果有文件，上传附件
+          if (fileList.value.length > 0 && fileList.value[0].raw) {
+            await uploadCourseResource(resourceForm.value.id, fileList.value[0].raw)
+            ElMessage.success('修改教学资源和上传文件成功')
+          } else {
+            ElMessage.success('修改教学资源成功')
+          }
           editDialogVisible.value = false
           loadResources()
         } else {
@@ -488,12 +499,11 @@ onMounted(() => {
         <el-form-item label="资源文件">
           <el-upload
             class="upload-demo"
-            :action="uploadUrl"
-            :on-success="handleResourceUpload"
-            :on-remove="handleResourceRemove"
-            :file-list="fileList"
+            :action="''"
             :auto-upload="false"
-            :data="{ id: resourceForm.id }"
+            :on-change="handleFileChange"
+            :file-list="fileList"
+            :limit="1"
           >
             <el-button type="primary">点击上传</el-button>
             <template #tip>

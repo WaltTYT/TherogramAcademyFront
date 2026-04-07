@@ -88,12 +88,10 @@ const homeworkFormRef = ref(null)
 // 上传文件
 const uploadUrl = '/api/homework/uploadHomework'
 const fileList = ref([])
-const handleHomeworkUpload = (response, uploadFile) => {
-  if (response.data.code === 200) {
-    ElMessage.success('作业附件上传成功')
-  } else {
-    ElMessage.error('作业附件上传失败')
-  }
+
+// 处理文件变化
+const handleFileChange = (file, files) => {
+  fileList.value = files
 }
 
 const handleHomeworkRemove = (file, fileList) => {
@@ -256,6 +254,7 @@ const saveHomework = async () => {
     if (valid) {
       try {
         let response
+        let homeworkId
         // 映射字段名到正确的格式
         const homeworkData = {
           name: homeworkForm.homeworkName,
@@ -268,11 +267,19 @@ const saveHomework = async () => {
         if (isEdit.value) {
           homeworkData.id = homeworkForm.id
           response = await homeworkApi.modifyHomework(homeworkData)
+          homeworkId = homeworkForm.id
         } else {
           response = await homeworkApi.createHomework(homeworkData)
+          homeworkId = response.data.data
         }
         if (response.data.code === 200) {
-          ElMessage.success(isEdit.value ? '修改作业成功' : '创建作业成功')
+          // 如果有文件，上传附件
+          if (fileList.value.length > 0 && fileList.value[0].raw) {
+            await homeworkApi.uploadHomework(homeworkId, fileList.value[0].raw)
+            ElMessage.success(isEdit.value ? '修改作业和上传文件成功' : '创建作业和上传文件成功')
+          } else {
+            ElMessage.success(isEdit.value ? '修改作业成功' : '创建作业成功')
+          }
           dialogVisible.value = false
           getHomeworks()
         } else {
@@ -563,12 +570,11 @@ onMounted(() => {
         <el-form-item label="作业附件">
           <el-upload
             class="upload-demo"
-            :action="uploadUrl"
-            :on-success="handleHomeworkUpload"
-            :on-remove="handleHomeworkRemove"
-            :file-list="fileList"
+            :action="''"
             :auto-upload="false"
-            :data="{ id: homeworkForm.id }"
+            :on-change="handleFileChange"
+            :file-list="fileList"
+            :limit="1"
           >
             <el-button type="primary">点击上传</el-button>
             <template #tip>

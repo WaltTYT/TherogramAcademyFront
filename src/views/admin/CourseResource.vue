@@ -83,12 +83,10 @@ const resourceFormRef = ref(null)
 // 上传文件
 const uploadUrl = '/api/courseResource/uploadCourseResource'
 const fileList = ref([])
-const handleResourceUpload = (response, uploadFile) => {
-  if (response.data.code === 200) {
-    ElMessage.success('资源上传成功')
-  } else {
-    ElMessage.error('资源上传失败')
-  }
+
+// 处理文件变化
+const handleFileChange = (file, files) => {
+  fileList.value = files
 }
 
 const handleResourceRemove = (file, fileList) => {
@@ -243,8 +241,10 @@ const saveResource = async () => {
     if (valid) {
       try {
         let response
+        let resourceId
         if (isEdit.value) {
           response = await courseResourceApi.modifyCourseResource(resourceForm)
+          resourceId = resourceForm.id
         } else {
           // 创建教学资源时不传递id字段，并确保字段类型正确
           const { id, ...createData } = resourceForm
@@ -253,9 +253,16 @@ const saveResource = async () => {
           // 确保uri字段存在
           createData.uri = createData.uri || ''
           response = await courseResourceApi.createCourseResource(createData)
+          resourceId = response.data.data
         }
         if (response.data.code === 200) {
-          ElMessage.success(isEdit.value ? '修改教学资源成功' : '创建教学资源成功')
+          // 如果有文件，上传附件
+          if (fileList.value.length > 0 && fileList.value[0].raw) {
+            await courseResourceApi.uploadCourseResource(resourceId, fileList.value[0].raw)
+            ElMessage.success(isEdit.value ? '修改教学资源和上传文件成功' : '创建教学资源和上传文件成功')
+          } else {
+            ElMessage.success(isEdit.value ? '修改教学资源成功' : '创建教学资源成功')
+          }
           dialogVisible.value = false
           getCourseResources()
         } else {
@@ -527,12 +534,11 @@ onMounted(() => {
         <el-form-item label="资源文件">
           <el-upload
             class="upload-demo"
-            :action="uploadUrl"
-            :on-success="handleResourceUpload"
-            :on-remove="handleResourceRemove"
-            :file-list="fileList"
+            :action="''"
             :auto-upload="false"
-            :data="{ id: resourceForm.id }"
+            :on-change="handleFileChange"
+            :file-list="fileList"
+            :limit="1"
           >
             <el-button type="primary">点击上传</el-button>
             <template #tip>
