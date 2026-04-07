@@ -211,6 +211,10 @@ const saveResource = async () => {
   await resourceFormRef.value.validate(async (valid) => {
     if (valid) {
       try {
+        // // 构建符合要求的path格式：CourseResource/{课程资源ID}/{文件名}
+        // const path = `CourseResource/${resource.id}/${fileName}`
+        // const response = await downloadCourseResource(path)
+        
         const response = await modifyCourseResource(resourceForm.value)
         if (response.data.code === 200) {
           // 如果有文件，上传附件
