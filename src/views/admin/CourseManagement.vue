@@ -269,7 +269,19 @@ const saveCourse = async () => {
       try {
         let response
         if (isEdit.value) {
-          response = await courseApi.modifyCourse(courseForm)
+          // 映射字段名称为后端API期望的格式
+          const modifyCourseData = {
+            id: courseForm.id,
+            name: courseForm.courseName,
+            profile: courseForm.courseIntroduction,
+            target: courseForm.courseObjective,
+            content: courseForm.courseContent,
+            outline: courseForm.courseOutline,
+            subjectId: courseForm.courseSubject,
+            typeId: courseForm.courseType,
+            cover: courseForm.cover
+          }
+          response = await courseApi.modifyCourse(modifyCourseData)
         } else {
           // 映射字段名称为后端API期望的格式
           const createCourseData = {
