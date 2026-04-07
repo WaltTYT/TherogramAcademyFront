@@ -246,17 +246,14 @@ const handleDownload = async (resource) => {
   try {
     console.log('资源对象:', resource)
     // 从uri中提取文件名
-    const fileName = resource.uri.split('/').pop()
-    console.log('提取的文件名:', fileName)
-    // 构建符合要求的path格式：/{courseId}/{fileName}
-    const path = `/${resource.courseId}/${fileName}`
-    console.log('构建的下载路径:', path)
-    const response = await downloadCourseResource(path)
+    const file = resource.uri.split('/').pop()
+    console.log('提取的文件名:', file)
+    const response = await downloadCourseResource(resource.id, file)
     // 创建下载链接
     const url = window.URL.createObjectURL(new Blob([response.data]))
     const link = document.createElement('a')
     link.href = url
-    link.setAttribute('download', fileName)
+    link.setAttribute('download', file)
     document.body.appendChild(link)
     link.click()
     document.body.removeChild(link)
