@@ -300,19 +300,19 @@ onMounted(() => {
       :header-cell-style="{ textAlign: 'center', fontWeight: 'bold', backgroundColor: '#f5f7fa' }"
     >
       <el-table-column prop="id" label="课程ID" width="100" />
-      <el-table-column prop="name" label="课程名称" min-width="300" />
-      <el-table-column prop="subjectId" label="课程科目" width="120">
+      <el-table-column prop="name" label="课程名称" min-width="250" />
+      <el-table-column prop="subjectId" label="课程科目" width="180">
         <template #default="scope">
           {{ courseSubjectOptions.find(opt => opt.value === scope.row.subjectId?.toString())?.label || scope.row.subjectId }}
         </template>
       </el-table-column>
-      <el-table-column prop="typeId" label="课程类型" width="120">
+      <el-table-column prop="typeId" label="课程类型" width="180">
         <template #default="scope">
           {{ courseTypeOptions.find(opt => opt.value === scope.row.typeId?.toString())?.label || scope.row.typeId }}
         </template>
       </el-table-column>
       <el-table-column prop="profile" label="课程简介" min-width="200" />
-      <el-table-column prop="reviewStatus" label="审核状态" width="120">
+      <el-table-column prop="reviewStatus" label="审核状态" width="180">
         <template #default="scope">
           {{ reviewStatusMap[scope.row.reviewStatus] || scope.row.reviewStatus }}
         </template>
