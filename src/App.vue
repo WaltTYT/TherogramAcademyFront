@@ -43,11 +43,11 @@ body {
 
 /* 选择器 */
 .el-select {
-  font-size: var(--base-font-size) !important;
+  font-size: 28px !important;
 }
 
 .el-select-dropdown__item {
-  font-size: var(--base-font-size) !important;
+  font-size: 28px !important;
 }
 
 /* 按钮 */
@@ -128,17 +128,17 @@ h1, h2, h3, h4, h5, h6 {
 
 /* 调整下拉选择框的字体大小 */
 .el-select-dropdown {
-  font-size: var(--base-font-size) !important;
+  font-size: 28px !important;
 }
 
 .el-select-dropdown__item {
-  padding: 10px 20px !important;
-  font-size: var(--base-font-size) !important;
+  padding: 8px 20px !important;
+  font-size: 20px !important;
 }
 
 /* 调整下拉选择框的placeholder文本大小 */
 .el-select .el-input__placeholder {
-  font-size: var(--base-font-size) !important;
+  font-size: 28px !important;
 }
 
 /* 调整登录页面的下拉选择框 */
