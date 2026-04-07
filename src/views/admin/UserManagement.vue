@@ -732,7 +732,7 @@ const getRoleTypeTagType = (roleType) => {
       
       <!-- 高级搜索区域 -->
       <el-card v-if="searchMode === 'advanced'" class="search-card" shadow="never">
-        <el-form :model="advancedSearchForm" label-width="100px" class="search-form" inline>
+        <el-form :model="advancedSearchForm" label-width="140px" class="search-form" inline>
           <el-row :gutter="20">
             <el-col :span="8">
               <el-form-item label="账号" style="width: 100%;">
@@ -815,7 +815,7 @@ const getRoleTypeTagType = (roleType) => {
       
       <!-- 关键字搜索区域 -->
       <el-card v-else class="search-card" shadow="never">
-        <el-form :model="keywordSearchForm" label-width="100px" class="search-form" inline>
+        <el-form :model="keywordSearchForm" label-width="220px" class="search-form" inline>
           <el-row :gutter="20">
             <el-col :span="8">
               <el-form-item label="账号关键字" style="width: 100%;">
@@ -870,7 +870,7 @@ const getRoleTypeTagType = (roleType) => {
             </template>
           </el-table-column>
           <el-table-column prop="bio" label="简介" show-overflow-tooltip />
-          <el-table-column prop="createTime" label="创建时间" width="180" />
+          <el-table-column prop="createTime" label="创建时间" width="200" />
           <el-table-column label="操作" width="450" fixed="right">
             <template #default="{ row }">
               <el-button type="primary" size="small" @click="handleViewDetail(row)" style="margin-right: 8px;">
