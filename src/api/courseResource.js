@@ -67,21 +67,14 @@ export const uploadCourseResource = (id, file) => {
 }
 
 // 下载教学资源
-export const downloadCourseResource = (resourceId, fileName) => {
+export const downloadCourseResource = (path) => {
   return request({
-    url: `/courseResource/downloadCourseResource?path=/${resourceId}/${fileName}`,
-    // url: `/courseResource/downloadCourseResource?path=CourseResource/${resourceId}/${fileName}`,
+    url: `/courseResource/downloadCourseResource?path=${encodeURIComponent(path)}`,
     method: 'get',
     responseType: 'blob'
   })
 }
-// export const downloadCourseResource = (path) => {
-//   return request({
-//     url: `/courseResource/downloadCourseResource?path=${encodeURIComponent(path)}`,
-//     method: 'get',
-//     responseType: 'blob'
-//   })
-// }
+
 
 // 通过课程获取所有未删除的教学资源
 export const getCourseResourcesByCourseId = (courseId) => {
