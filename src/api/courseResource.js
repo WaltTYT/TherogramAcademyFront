@@ -61,7 +61,7 @@ export const uploadCourseResource = (id, file) => {
 // 下载教学资源
 export const downloadCourseResource = (resourceId, fileName) => {
   return request({
-    url: `/courseResource/downloadCourseResource/${resourceId}/${fileName}`,
+    url: `/courseResource/downloadCourseResource/CourseResource/${resourceId}/${fileName}`,
     method: 'get',
     responseType: 'blob'
   })

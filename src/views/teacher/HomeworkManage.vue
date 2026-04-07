@@ -2,7 +2,7 @@
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage, ElLoading, ElDialog, ElInputNumber, ElDatePicker, ElSwitch, ElSelect, ElOption, ElMessageBox } from 'element-plus'
-import { getHomeworkPage, deleteHomework, modifyHomework } from '../../api/homework'
+import { getHomeworkPage, deleteHomework, modifyHomework, uploadHomework } from '../../api/homework'
 import { getCreateCoursePage } from '../../api/course'
 import HomeworkCreate from './HomeworkCreate.vue'
 
@@ -28,7 +28,8 @@ const homeworkForm = ref({
   type: '',
   deadline: '',
   content: '',
-  courseId: ''
+  courseId: '',
+  homeworkAttachment: ''
 })
 
 const homeworkFormRules = {
@@ -206,6 +207,7 @@ const handleEdit = (homework) => {
   homeworkForm.value.deadline = homework.deadline
   homeworkForm.value.content = homework.content
   homeworkForm.value.courseId = homework.courseId
+  homeworkForm.value.homeworkAttachment = ''
   editDialogVisible.value = true
 }
 
@@ -214,8 +216,18 @@ const saveHomework = async () => {
   await homeworkFormRef.value.validate(async (valid) => {
     if (valid) {
       try {
-        const response = await modifyHomework(homeworkForm.value)
+        // 确保字段类型正确，并且不传递homeworkAttachment字段
+        const modifyData = { ...homeworkForm.value }
+        const homeworkAttachment = modifyData.homeworkAttachment
+        delete modifyData.homeworkAttachment
+        
+        // 修改作业
+        const response = await modifyHomework(modifyData)
         if (response.data.code === 200) {
+          // 如果有附件，上传附件
+          if (homeworkAttachment) {
+            await uploadHomework(homeworkForm.value.id, homeworkAttachment)
+          }
           ElMessage.success('修改作业成功')
           editDialogVisible.value = false
           loadHomeworks()
@@ -636,6 +648,23 @@ onMounted(() => {
           <el-select v-model="homeworkForm.courseId" style="width: 100%">
               <el-option v-for="course in courses" :key="course.id" :label="course.name" :value="course.id" />
             </el-select>
+        </el-form-item>
+        <el-form-item label="作业附件">
+          <el-upload
+            class="upload-demo"
+            action="#"
+            :auto-upload="false"
+            :on-change="(file) => { homeworkForm.homeworkAttachment = file.raw }"
+            :show-file-list="false"
+            :limit="1"
+          >
+            <el-button type="primary">点击上传</el-button>
+            <template #tip>
+              <div class="el-upload__tip">
+                以上传作业附件
+              </div>
+            </template>
+          </el-upload>
         </el-form-item>
       </el-form>
       <template #footer>

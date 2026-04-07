@@ -15,7 +15,7 @@ const userInfo = ref({
   username: 'admin',
   account: 'admin',
   bio: '管理员账号',
-  avatar: ''
+  portrait: ''
 })
 
 // 编辑对话框状态
@@ -27,7 +27,7 @@ const editForm = ref({
   account: '',
   password: '',
   bio: '',
-  avatar: ''
+  portrait: ''
 })
 
 // 模拟用户数据
@@ -37,21 +37,21 @@ const userData = [
     username: 'admin',
     account: 'admin',
     bio: '管理员账号',
-    avatar: ''
+    portrait: ''
   },
   {
     id: 2,
     username: 'teacher1',
     account: 'teacher1',
     bio: '教师账号',
-    avatar: ''
+    portrait: ''
   },
   {
     id: 3,
     username: 'student1',
     account: 'student1',
     bio: '学生账号',
-    avatar: ''
+    portrait: ''
   }
 ]
 
@@ -80,7 +80,7 @@ const handleEdit = () => {
     account: userInfo.value.account,
     password: '',
     bio: userInfo.value.bio,
-    avatar: userInfo.value.avatar
+    portrait: userInfo.value.portrait
   }
   editDialogVisible.value = true
 }
@@ -98,7 +98,7 @@ const handleSave = () => {
     username: editForm.value.username,
     account: editForm.value.account,
     bio: editForm.value.bio,
-    avatar: editForm.value.avatar
+    portrait: editForm.value.portrait
   }
   
   editDialogVisible.value = false
@@ -107,19 +107,19 @@ const handleSave = () => {
 
 // 处理头像上传
 const handleAvatarUpload = (response, uploadFile) => {
-  editForm.value.avatar = URL.createObjectURL(uploadFile.raw)
+  editForm.value.portrait = URL.createObjectURL(uploadFile.raw)
   ElMessage.success('头像上传成功')
 }
 
 // 下载头像
 const handleDownloadAvatar = () => {
-  if (!userInfo.value.avatar) {
+  if (!userInfo.value.portrait) {
     ElMessage.warning('当前用户没有头像')
     return
   }
   
   const link = document.createElement('a')
-  link.href = userInfo.value.avatar
+  link.href = userInfo.value.portrait
   link.download = `${userInfo.value.username}_avatar.png`
   link.click()
   ElMessage.success('头像下载成功')
@@ -142,8 +142,8 @@ const handleBack = () => {
     
     <el-card shadow="hover" class="user-detail-card">
       <div class="user-avatar-section">
-        <el-avatar :size="120" :src="userInfo.avatar" class="user-avatar">
-          <User v-if="!userInfo.avatar" />
+        <el-avatar :size="120" :src="userInfo.portrait" class="user-avatar">
+          <User v-if="!userInfo.portrait" />
         </el-avatar>
         <div class="avatar-actions">
           <el-button type="primary" size="small" @click="handleDownloadAvatar">
@@ -191,8 +191,8 @@ const handleBack = () => {
               return isJPG && isLt2M;
             }"
           >
-            <el-avatar :size="100" :src="editForm.avatar" class="edit-avatar">
-              <Camera v-if="!editForm.avatar" />
+            <el-avatar :size="100" :src="editForm.portrait" class="edit-avatar">
+              <Camera v-if="!editForm.portrait" />
             </el-avatar>
           </el-upload>
         </el-form-item>

@@ -54,7 +54,7 @@ const editForm = ref({
   account: '',
   password: '',
   bio: '',
-  avatar: ''
+  portrait: ''
 })
 
 // 用户类型选项
@@ -287,7 +287,7 @@ const handleEdit = () => {
     account: currentUser.value.account,
     password: '',
     bio: currentUser.value.bio,
-    avatar: currentUser.value.avatar
+    portrait: currentUser.value.portrait
   }
   editDialogVisible.value = true
 }
@@ -312,7 +312,7 @@ const handleSave = async () => {
         username: editForm.value.username,
         account: editForm.value.account,
         bio: editForm.value.bio,
-        avatar: editForm.value.avatar
+        portrait: editForm.value.portrait
       }
       editDialogVisible.value = false
       ElMessage.success('用户信息更新成功')
@@ -360,7 +360,8 @@ const handleAvatarUpload = async (uploadFile) => {
   try {
     const res = await uploadUserAvatar(currentUser.value.id, uploadFile.file)
     if (res.data.code === 200) {
-      editForm.value.avatar = URL.createObjectURL(uploadFile.file)
+      // 使用后端返回的正确路径，而不是本地 blob URL
+      editForm.value.portrait = res.data.data
       ElMessage.success('头像上传成功')
     } else {
       ElMessage.error(res.data.message || '头像上传失败')
@@ -449,8 +450,8 @@ const getMockUsers = () => [
     <template v-if="mainMode === 'personal'">
       <el-card v-if="currentUser" shadow="hover" class="user-info-card">
         <div class="user-info-header">
-          <el-avatar :size="100" :src="currentUser.avatar">
-            <User v-if="!currentUser.avatar" />
+          <el-avatar :size="100" :src="currentUser.portrait ? `http://localhost:8085/api/user/downloadUser/User/${currentUser.portrait.replace(/^\//, '')}` : ''">
+            <User v-if="!currentUser.portrait" />
           </el-avatar>
           <div class="user-info-basic">
             <h3>{{ currentUser.username }}</h3>
@@ -490,7 +491,7 @@ const getMockUsers = () => [
           <el-button type="danger" @click="handleDelete">
             <Delete /> 注销账号
           </el-button>
-          <el-button @click="handleDownloadAvatar()" :disabled="!currentUser.avatar">
+          <el-button @click="handleDownloadAvatar()" :disabled="!currentUser.portrait">
             <Download /> 下载头像
           </el-button>
         </div>
@@ -700,8 +701,8 @@ const getMockUsers = () => [
               return isJPG && isLt2M;
             }"
           >
-            <el-avatar :size="100" :src="editForm.avatar" class="edit-avatar">
-              <User v-if="!editForm.avatar" />
+            <el-avatar :size="100" :src="editForm.portrait ? `http://localhost:8085/api/user/downloadUser/User/${editForm.portrait.replace(/^\//, '')}` : ''" class="edit-avatar">
+              <User v-if="!editForm.portrait" />
             </el-avatar>
           </el-upload>
         </el-form-item>
@@ -740,8 +741,8 @@ const getMockUsers = () => [
           </el-tag>
         </el-descriptions-item>
         <el-descriptions-item label="头像" :span="2">
-          <el-avatar :size="80" :src="selectedUser.avatar">
-            <User v-if="!selectedUser.avatar" />
+          <el-avatar :size="80" :src="selectedUser.portrait ? `http://localhost:8085/api/user/downloadUser/User/${selectedUser.portrait.replace(/^\//, '')}` : ''">
+            <User v-if="!selectedUser.portrait" />
           </el-avatar>
         </el-descriptions-item>
         <el-descriptions-item label="用户名" :span="1">{{ selectedUser.username }}</el-descriptions-item>

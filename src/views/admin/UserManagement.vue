@@ -50,7 +50,7 @@ const personalForm = ref({
   account: '',
   password: '',
   bio: '',
-  avatar: ''
+  portrait: ''
 })
 
 // 个人信息详情
@@ -77,7 +77,7 @@ const editForm = ref({
   account: '',
   password: '',
   bio: '',
-  avatar: ''
+  portrait: ''
 })
 
 // 用户详情对话框
@@ -319,7 +319,7 @@ const handleEdit = (user) => {
     account: user.account,
     password: '',
     bio: user.bio,
-    avatar: user.avatar
+    portrait: user.portrait
   }
   editDialogVisible.value = true
 }
@@ -347,7 +347,7 @@ const handleSave = async () => {
           username: editForm.value.username,
           account: editForm.value.account,
           bio: editForm.value.bio,
-          avatar: editForm.value.avatar
+          portrait: editForm.value.portrait
         }
       }
       editDialogVisible.value = false
@@ -399,7 +399,8 @@ const handleAvatarUpload = async (uploadFile) => {
   try {
     const res = await uploadUserAvatar(currentUser.value.id, uploadFile.file)
     if (res.data.code === 200) {
-      editForm.value.avatar = URL.createObjectURL(uploadFile.file)
+      // 使用后端返回的正确路径，而不是本地 blob URL
+      editForm.value.portrait = res.data.data
       ElMessage.success('头像上传成功')
     }
   } catch (error) {
@@ -454,7 +455,7 @@ const handleEditDisplayedUser = () => {
     account: displayedUser.value.account,
     password: '',
     bio: displayedUser.value.bio,
-    avatar: displayedUser.value.avatar
+    portrait: displayedUser.value.portrait
   }
   editDialogVisible.value = true
 }
@@ -470,7 +471,7 @@ const handleEditPersonalInfo = () => {
     account: personalInfo.value.account,
     password: '',
     bio: personalInfo.value.bio,
-    avatar: personalInfo.value.avatar
+    portrait: personalInfo.value.portrait
   }
   personalEditDialogVisible.value = true
 }
@@ -496,7 +497,7 @@ const handleSavePersonalInfo = async () => {
         username: personalForm.value.username,
         account: personalForm.value.account,
         bio: personalForm.value.bio,
-        avatar: personalForm.value.avatar
+        portrait: personalForm.value.portrait
       }
       personalEditDialogVisible.value = false
       ElMessage.success('个人信息更新成功')
@@ -548,26 +549,27 @@ const handlePersonalAvatarUpload = async (uploadFile) => {
   try {
     const res = await uploadUserAvatar(personalInfo.value.id, uploadFile.file)
     if (res.data.code === 200) {
-      personalForm.value.avatar = URL.createObjectURL(uploadFile.file)
+      // 使用后端返回的正确路径，而不是本地 blob URL
+      personalForm.value.portrait = res.data.data
       ElMessage.success('头像上传成功')
     }
   } catch (error) {
     console.error('头像上传失败:', error)
     // 模拟上传成功
-    personalForm.value.avatar = URL.createObjectURL(uploadFile.file)
+    personalForm.value.portrait = `/User/${personalInfo.value.id}/avatar.jpg`
     ElMessage.success('头像上传成功（模拟）')
   }
 }
 
 // 下载个人头像
 const handleDownloadPersonalAvatar = async () => {
-  if (!personalInfo.value || !personalInfo.value.avatar) {
+  if (!personalInfo.value || !personalInfo.value.portrait) {
     ElMessage.warning('当前没有头像')
     return
   }
 
   try {
-    const res = await downloadUserAvatar(personalInfo.value.avatar)
+    const res = await downloadUserAvatar(personalInfo.value.portrait)
     // 创建下载链接
     const blob = new Blob([res.data])
     const link = document.createElement('a')
@@ -808,8 +810,8 @@ const getRoleTypeTagType = (roleType) => {
           <el-table-column prop="id" label="ID" width="80" />
           <el-table-column label="头像" width="100">
             <template #default="{ row }">
-              <el-avatar :size="50" :src="row.avatar">
-                <User v-if="!row.avatar" />
+              <el-avatar :size="50" :src="row.portrait ? `http://localhost:8085/api/user/downloadUser/User/${row.portrait.replace(/^\//, '')}` : ''">
+                <User v-if="!row.portrait" />
               </el-avatar>
             </template>
           </el-table-column>
@@ -885,8 +887,8 @@ const getRoleTypeTagType = (roleType) => {
               return isJPG && isLt2M;
             }"
           >
-            <el-avatar :size="100" :src="editForm.avatar" class="edit-avatar">
-              <Camera v-if="!editForm.avatar" />
+            <el-avatar :size="100" :src="editForm.portrait ? `http://localhost:8085/api/user/downloadUser/User/${editForm.portrait.replace(/^\//, '')}` : ''" class="edit-avatar">
+              <Camera v-if="!editForm.portrait" />
             </el-avatar>
           </el-upload>
         </el-form-item>
@@ -925,8 +927,8 @@ const getRoleTypeTagType = (roleType) => {
           </el-tag>
         </el-descriptions-item>
         <el-descriptions-item label="头像" :span="2">
-          <el-avatar :size="80" :src="userDetail.avatar">
-            <User v-if="!userDetail.avatar" />
+          <el-avatar :size="80" :src="userDetail.portrait ? `http://localhost:8085/api/user/downloadUser/User/${userDetail.portrait.replace(/^\//, '')}` : ''">
+            <User v-if="!userDetail.portrait" />
           </el-avatar>
         </el-descriptions-item>
         <el-descriptions-item label="用户名" :span="1">{{ userDetail.username }}</el-descriptions-item>
@@ -971,8 +973,8 @@ const getRoleTypeTagType = (roleType) => {
               return isJPG && isLt2M;
             }"
           >
-            <el-avatar :size="100" :src="personalForm.avatar" class="edit-avatar">
-              <User v-if="!personalForm.avatar" />
+            <el-avatar :size="100" :src="personalForm.portrait ? `http://localhost:8085/api/user/downloadUser/User/${personalForm.portrait.replace(/^\//, '')}` : ''" class="edit-avatar">
+              <User v-if="!personalForm.portrait" />
             </el-avatar>
           </el-upload>
         </el-form-item>
