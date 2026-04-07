@@ -596,7 +596,7 @@ const getMockUsers = () => [
       
       <!-- 关键字搜索区域 -->
       <el-card v-else class="search-card" shadow="never">
-        <el-form :model="keywordSearchForm" label-width="180px" class="search-form">
+        <el-form :model="keywordSearchForm" label-width="200px" class="search-form">
           <el-row :gutter="20">
             <el-col :span="8">
               <el-form-item label="账号关键字">

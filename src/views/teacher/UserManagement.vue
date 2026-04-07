@@ -512,20 +512,20 @@ const getMockUsers = () => [
       
       <!-- 高级搜索区域 -->
       <el-card v-if="searchMode === 'advanced'" class="search-card" shadow="never">
-        <el-form :model="advancedSearchForm" label-width="100px" class="search-form" inline>
+        <el-form :model="advancedSearchForm" label-width="120px" class="search-form">
           <el-row :gutter="20">
             <el-col :span="8">
-              <el-form-item label="账号" style="width: 100%;">
+              <el-form-item label="账号">
                 <el-input v-model="advancedSearchForm.account" placeholder="请输入账号" clearable style="width: 100%;" />
               </el-form-item>
             </el-col>
             <el-col :span="8">
-              <el-form-item label="用户名" style="width: 100%;">
+              <el-form-item label="用户名">
                 <el-input v-model="advancedSearchForm.username" placeholder="请输入用户名" clearable style="width: 100%;" />
               </el-form-item>
             </el-col>
             <el-col :span="8">
-              <el-form-item label="用户类型" style="width: 100%;">
+              <el-form-item label="用户类型">
                 <el-select v-model="advancedSearchForm.roleType" placeholder="请选择用户类型" clearable style="width: 100%;">
                   <el-option
                     v-for="item in roleTypeOptions"
@@ -539,7 +539,7 @@ const getMockUsers = () => [
           </el-row>
           <el-row :gutter="20">
             <el-col :span="8">
-              <el-form-item label="创建时间" style="width: 100%;">
+              <el-form-item label="创建时间">
                 <el-date-picker
                   v-model="advancedSearchForm.startCreateTime"
                   type="datetime"
@@ -558,36 +558,37 @@ const getMockUsers = () => [
               </el-form-item>
             </el-col>
             <el-col :span="8">
-              <el-form-item style="width: 100%;">
+              <el-form-item>
                 <el-checkbox v-model="advancedSearchForm.filterDeleted">过滤已注销用户</el-checkbox>
               </el-form-item>
             </el-col>
           </el-row>
           <el-row :gutter="20">
             <el-col :span="8">
-              <el-form-item label="排序方式" style="width: 100%;">
+              <el-form-item label="排序方式">
                 <el-select v-model="advancedSearchForm.sortType" style="width: 100%;">
                   <el-option label="按创建时间排序" :value="0" />
                 </el-select>
               </el-form-item>
             </el-col>
             <el-col :span="8">
-              <el-form-item label="排序方向" style="width: 100%;">
+              <el-form-item label="排序方向">
                 <el-radio-group v-model="advancedSearchForm.isAsc">
                   <el-radio-button :label="true">升序</el-radio-button>
                   <el-radio-button :label="false">降序</el-radio-button>
                 </el-radio-group>
               </el-form-item>
             </el-col>
-            <el-col :span="8">
-              <el-form-item style="width: 100%;">
-                <el-button type="primary" @click="handleSearch">
-                  <Search /> 搜索
-                </el-button>
-                <el-button @click="handleReset">
-                  <Refresh /> 重置
-                </el-button>
-              </el-form-item>
+          </el-row>
+          <!-- 按钮行（所有搜索条件的下一行） -->
+          <el-row :gutter="20" style="margin-top: 15px;">
+            <el-col :span="24" style="display: flex; justify-content: flex-end;">
+              <el-button type="primary" @click="handleSearch">
+                <Search /> 搜索
+              </el-button>
+              <el-button @click="handleReset" style="margin-left: 10px;">
+                <Refresh /> 重置
+              </el-button>
             </el-col>
           </el-row>
         </el-form>
@@ -595,20 +596,20 @@ const getMockUsers = () => [
       
       <!-- 关键字搜索区域 -->
       <el-card v-else class="search-card" shadow="never">
-        <el-form :model="keywordSearchForm" label-width="100px" class="search-form" inline>
+        <el-form :model="keywordSearchForm" label-width="180px" class="search-form">
           <el-row :gutter="20">
             <el-col :span="8">
-              <el-form-item label="账号关键字" style="width: 100%;">
+              <el-form-item label="账号关键字">
                 <el-input v-model="keywordSearchForm.account" placeholder="请输入账号关键字" clearable style="width: 100%;" />
               </el-form-item>
             </el-col>
             <el-col :span="8">
-              <el-form-item label="用户名关键字" style="width: 100%;">
+              <el-form-item label="用户名关键字">
                 <el-input v-model="keywordSearchForm.username" placeholder="请输入用户名关键字" clearable style="width: 100%;" />
               </el-form-item>
             </el-col>
             <el-col :span="8">
-              <el-form-item label="排序方向" style="width: 100%;">
+              <el-form-item label="排序方向">
                 <el-radio-group v-model="keywordSearchForm.isAsc">
                   <el-radio-button :label="true">升序</el-radio-button>
                   <el-radio-button :label="false">降序</el-radio-button>
@@ -616,12 +617,13 @@ const getMockUsers = () => [
               </el-form-item>
             </el-col>
           </el-row>
-          <el-row>
-            <el-col :span="24" style="text-align: center;">
+          <!-- 按钮行（所有搜索条件的下一行） -->
+          <el-row :gutter="20" style="margin-top: 15px;">
+            <el-col :span="24" style="display: flex; justify-content: flex-end;">
               <el-button type="primary" @click="handleSearch">
                 <Search /> 搜索
               </el-button>
-              <el-button @click="handleReset">
+              <el-button @click="handleReset" style="margin-left: 10px;">
                 <Refresh /> 重置
               </el-button>
             </el-col>
