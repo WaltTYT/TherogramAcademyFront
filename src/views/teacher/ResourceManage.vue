@@ -214,7 +214,7 @@ const saveResource = async () => {
         // // 构建符合要求的path格式：CourseResource/{课程资源ID}/{文件名}
         // const path = `CourseResource/${resource.id}/${fileName}`
         // const response = await downloadCourseResource(path)
-        
+
         const response = await modifyCourseResource(resourceForm.value)
         if (response.data.code === 200) {
           // 如果有文件，上传附件
@@ -435,9 +435,9 @@ onMounted(() => {
       :cell-style="{ textAlign: 'center' }"
       :header-cell-style="{ textAlign: 'center', fontWeight: 'bold', backgroundColor: '#f5f7fa' }"
     >
-      <el-table-column prop="orderId" label="排序ID" width="80" />
+      <el-table-column prop="orderId" label="排序ID" width="140" />
       <el-table-column prop="name" label="资源名称" min-width="300" />
-      <el-table-column prop="resourceType" label="资源类型" width="120">
+      <el-table-column prop="resourceType" label="资源类型" width="140">
         <template #default="scope">
           {{ scope.row.resourceType === 'VIDEO' ? '视频' : scope.row.resourceType === 'MATERIAL' ? '课件' : '参考资料' }}
         </template>

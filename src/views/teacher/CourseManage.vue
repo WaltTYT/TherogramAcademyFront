@@ -434,12 +434,12 @@ onMounted(() => {
     >
       <el-table-column prop="id" label="课程ID" width="100" />
       <el-table-column prop="name" label="课程名称" min-width="300" />
-      <el-table-column label="课程科目" width="120">
+      <el-table-column label="课程科目" width="180">
         <template #default="scope">
           {{ courseSubjects.find(s => s.value === scope.row.subjectId)?.label || scope.row.subjectId }}
         </template>
       </el-table-column>
-      <el-table-column label="课程类型" width="120">
+      <el-table-column label="课程类型" width="180">
         <template #default="scope">
           {{ courseTypes.find(t => t.value === scope.row.typeId)?.label || scope.row.typeId }}
         </template>

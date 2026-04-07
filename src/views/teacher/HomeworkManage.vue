@@ -596,14 +596,14 @@ onMounted(() => {
       :header-cell-style="{ textAlign: 'center', fontWeight: 'bold', backgroundColor: '#f5f7fa' }"
     >
       <el-table-column prop="name" label="作业名称" min-width="300" />
-      <el-table-column prop="type" label="作业类型" width="120">
+      <el-table-column prop="type" label="作业类型" width="180">
         <template #default="scope">
           {{ scope.row.type === 'HOMEWORK' ? '作业' : '考试' }}
         </template>
       </el-table-column>
       <el-table-column prop="deadline" label="截止时间" width="180" />
         <el-table-column prop="createTime" label="创建时间" width="180" />
-        <el-table-column prop="submitCount" label="提交人数" width="100" />
+        <el-table-column prop="submitCount" label="提交人数" width="180" />
       <el-table-column label="操作" width="300">
         <template #default="scope">
           <el-button size="small" @click="handleHomeworkDetail(scope.row.id)" style="margin-right: 5px">查看</el-button>
