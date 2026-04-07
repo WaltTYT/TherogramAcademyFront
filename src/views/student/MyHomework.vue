@@ -677,19 +677,19 @@ onMounted(() => {
       :header-cell-style="{ textAlign: 'center', fontWeight: 'bold', backgroundColor: '#f5f7fa' }"
     >
       <el-table-column prop="name" label="作业名称" min-width="300" />
-      <el-table-column prop="type" label="作业类型" width="120">
+      <el-table-column prop="type" label="作业类型" width="180">
         <template #default="scope">
           {{ scope.row.type === 'HOMEWORK' ? '作业' : scope.row.type === 'EXAM' ? '考试' : '未知' }}
         </template>
       </el-table-column>
       <el-table-column prop="deadline" label="截止时间" width="180" />
       <el-table-column prop="studentHomeworkSubmitTime" label="提交时间" width="180" />
-      <el-table-column prop="score" label="成绩" width="80">
+      <el-table-column prop="score" label="成绩" width="100">
         <template #default="scope">
           {{ scope.row.score === 'PENDING' ? '未评定' : scope.row.score }}
         </template>
       </el-table-column>
-      <el-table-column prop="reviewStatus" label="提交状态" width="120">
+      <el-table-column prop="reviewStatus" label="提交状态" width="180">
         <template #default="scope">
           <el-tag v-if="scope.row.reviewStatus === 'UNSUBMITTED'" type="warning">未提交</el-tag>
           <el-tag v-else-if="scope.row.reviewStatus === 'PENDING'" type="info">未评定</el-tag>
