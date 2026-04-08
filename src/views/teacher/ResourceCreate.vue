@@ -63,7 +63,7 @@ const handleSubmit = async () => {
     const resourceId = createResponse.data.data
     
     // 如果有文件，上传附件
-    if (fileList.value.length > 0) {
+    if (fileList.value.length > 0 && fileList.value[0].raw) {
       console.log('开始上传附件，资源ID:', resourceId)
       console.log('文件信息:', fileList.value[0])
       await uploadCourseResource(resourceId, fileList.value[0].raw)
