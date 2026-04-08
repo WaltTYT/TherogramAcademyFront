@@ -64,9 +64,10 @@ const handleSubmit = async () => {
     
     // 如果有文件，上传附件
     if (fileList.value.length > 0) {
-      console.log('开始上传附件，课程ID: null')
+      const courseId = Number(form.courseId)
+      console.log('开始上传附件，课程ID:', courseId)
       console.log('文件信息:', fileList.value[0])
-      await uploadCourseResource(null, fileList.value[0].raw)
+      await uploadCourseResource(courseId, fileList.value[0].raw)
       console.log('附件上传成功')
     }
     

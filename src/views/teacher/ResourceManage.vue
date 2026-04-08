@@ -219,9 +219,10 @@ const saveResource = async () => {
         if (response.data.code === 200) {
           // 如果有文件，上传附件
           if (fileList.value.length > 0 && fileList.value[0].raw) {
-            console.log('准备上传文件，课程ID: null')
+            const courseId = Number(resourceForm.value.courseId)
+            console.log('准备上传文件，课程ID:', courseId)
             console.log('文件信息:', fileList.value[0])
-            await uploadCourseResource(null, fileList.value[0].raw)
+            await uploadCourseResource(courseId, fileList.value[0].raw)
             ElMessage.success('修改教学资源和上传文件成功')
           } else {
             ElMessage.success('修改教学资源成功')
