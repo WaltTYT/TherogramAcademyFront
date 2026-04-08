@@ -253,7 +253,9 @@ const saveResource = async () => {
           // 确保uri字段存在
           createData.uri = createData.uri || ''
           response = await courseResourceApi.createCourseResource(createData)
-          resourceId = response.data.data
+          // 从返回的对象中提取 id 字段
+          resourceId = response.data.data.id || response.data.data
+          console.log('提取的资源ID:', resourceId)
         }
         if (response.data.code === 200) {
           // 如果有文件，上传附件

@@ -44,8 +44,8 @@ const loadCourses = async () => {
   }
 }
 
-const handleFileChange = (file, fileList) => {
-  fileList.value = fileList
+const handleFileChange = (file, files) => {
+  fileList.value = files
 }
 
 const handleSubmit = async () => {
@@ -60,18 +60,30 @@ const handleSubmit = async () => {
     createData.uri = createData.uri || ''
     const createResponse = await createCourseResource(createData)
     console.log('创建教学资源响应:', createResponse)
-    const resourceId = createResponse.data.data
+    console.log('创建教学资源响应.data:', createResponse.data)
+    console.log('创建教学资源响应.data.data:', createResponse.data.data)
+    console.log('创建教学资源响应.data.code:', createResponse.data.code)
+    console.log('创建教学资源响应.data.msg:', createResponse.data.msg)
     
-    // 如果有文件，上传附件
-    if (fileList.value.length > 0 && fileList.value[0].raw) {
-      console.log('开始上传附件，资源ID:', resourceId)
-      console.log('文件信息:', fileList.value[0])
-      await uploadCourseResource(resourceId, fileList.value[0].raw)
-      console.log('附件上传成功')
+    if (createResponse.data.code === 200) {
+      // 从返回的对象中提取 id 字段
+      const resourceId = createResponse.data.data.id || createResponse.data.data
+      console.log('提取的资源ID:', resourceId)
+      
+      // 如果有文件，上传附件
+      if (fileList.value.length > 0 && fileList.value[0].raw) {
+        console.log('开始上传附件，资源ID:', resourceId)
+        console.log('文件信息:', fileList.value[0])
+        await uploadCourseResource(resourceId, fileList.value[0].raw)
+        console.log('附件上传成功')
+        ElMessage.success('创建教学资源和上传文件成功')
+      } else {
+        ElMessage.success('创建教学资源成功')
+      }
+      emit('resource-created')
+    } else {
+      ElMessage.error(createResponse.data.msg || '创建教学资源失败')
     }
-    
-    ElMessage.success('教学资源创建成功')
-    emit('resource-created')
   } catch (error) {
     console.error('教学资源创建失败:', error)
     console.error('错误响应:', error.response)
