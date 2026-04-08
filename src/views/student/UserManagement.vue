@@ -381,7 +381,7 @@ const handleDownloadAvatar = async (user) => {
 
   try {
     const portraitPath = targetUser.portrait || targetUser.avatar
-    const res = await downloadUserAvatar(portraitPath)
+    const res = await downloadUserAvatar(targetUser.id, portraitPath)
     const blob = new Blob([res.data])
     const link = document.createElement('a')
     link.href = URL.createObjectURL(blob)

@@ -2,11 +2,13 @@
 import { ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ElMessage, ElLoading } from 'element-plus'
-import { getHomeworkDetail } from '../../api/homework'
+import { getHomeworkDetail, downloadHomework, downloadStudentHomework } from '../../api/homework'
+import { useUserStore } from '../../stores/user'
 
 const route = useRoute()
 const router = useRouter()
 const homeworkId = route.params.id
+const userStore = useUserStore()
 
 const homework = ref(null)
 const loading = ref(false)
@@ -35,6 +37,74 @@ const handleBack = () => {
   router.push('/student/my-homework')
 }
 
+// 下载作业附件
+const downloadHomeworkFile = async () => {
+  if (!homework.value || !homework.value.attachment) {
+    ElMessage.warning('作业附件不存在')
+    return
+  }
+  
+  try {
+    // 从attachment中提取文件名
+    const fileName = homework.value.attachment.split('/').pop()
+    const response = await downloadHomework(homework.value.id, fileName)
+    // 创建下载链接
+    const url = window.URL.createObjectURL(new Blob([response.data]))
+    const link = document.createElement('a')
+    link.href = url
+    link.setAttribute('download', fileName)
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+    ElMessage.success('附件下载成功')
+  } catch (error) {
+    console.error('下载作业附件失败:', error)
+    ElMessage.error('下载附件失败：' + (error.message || '未知错误'))
+  }
+}
+
+// 下载学生作业附件
+const downloadMySubmission = async () => {
+  if (!homework.value || !homework.value.studentHomeworkAttachment) {
+    ElMessage.warning('学生作业附件不存在')
+    return
+  }
+  
+  try {
+    // 从studentHomeworkAttachment中提取文件名
+    const fileName = homework.value.studentHomeworkAttachment.split('/').pop()
+    
+    // 获取学生ID
+    let studentId = userStore.userId
+    if (!studentId) {
+      // 尝试从userInfo中获取
+      studentId = userStore.userInfo?.id
+    }
+    
+    if (!studentId) {
+      ElMessage.error('无法获取学生信息，无法下载附件')
+      return
+    }
+    
+    console.log('学生ID:', studentId)
+    console.log('作业ID:', homework.value.id)
+    console.log('文件名:', fileName)
+    
+    const response = await downloadStudentHomework(studentId, homework.value.id, fileName)
+    // 创建下载链接
+    const url = window.URL.createObjectURL(new Blob([response.data]))
+    const link = document.createElement('a')
+    link.href = url
+    link.setAttribute('download', fileName)
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+    ElMessage.success('附件下载成功')
+  } catch (error) {
+    console.error('下载学生作业附件失败:', error)
+    ElMessage.error('下载附件失败：' + (error.message || '未知错误'))
+  }
+}
 
 </script>
 
@@ -67,6 +137,7 @@ const handleBack = () => {
           </el-descriptions-item>
           <el-descriptions-item v-if="homework.attachment" label="作业附件" :span="2">
             {{ homework.attachment.split('/').pop() }}
+            <el-button type="primary" size="small" @click="downloadHomeworkFile" style="margin-left: 10px;">下载</el-button>
           </el-descriptions-item>
         </el-descriptions>
       </div>
@@ -79,6 +150,10 @@ const handleBack = () => {
       <div v-if="homework.reviewStatus !== 'UNSUBMITTED'" class="submission-section">
         <h3>我的提交</h3>
         <div class="submission-content">{{ homework.studentHomeworkContent || '无提交内容' }}</div>
+        <div v-if="homework.studentHomeworkAttachment" style="margin-top: 15px;">
+          <span>提交附件：{{ homework.studentHomeworkAttachment.split('/').pop() }}</span>
+          <el-button type="primary" size="small" @click="downloadMySubmission" style="margin-left: 10px;">下载</el-button>
+        </div>
       </div>
       
       <div v-if="homework.reviewStatus === 'APPROVED' || homework.reviewStatus === 'REJECTED'" class="evaluation-section">

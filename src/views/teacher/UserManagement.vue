@@ -361,12 +361,27 @@ const handleAvatarUpload = async (uploadFile) => {
     const res = await uploadUserAvatar(currentUser.value.id, uploadFile.file)
     if (res.data.code === 200) {
       // 使用后端返回的正确路径，而不是本地 blob URL
-      editForm.value.portrait = res.data.data
+      const portraitPath = res.data.data
+      editForm.value.portrait = portraitPath
+      // 同时更新当前用户信息，确保头像立即回显
+      currentUser.value = {
+        ...currentUser.value,
+        portrait: portraitPath
+      }
+      // 如果当前显示的用户是当前用户，也更新显示用户的头像
+      if (displayedUser.value && displayedUser.value.id === currentUser.value.id) {
+        displayedUser.value = {
+          ...displayedUser.value,
+          portrait: portraitPath
+        }
+      }
+      console.log('头像上传成功，路径:', portraitPath)
       ElMessage.success('头像上传成功')
     } else {
       ElMessage.error(res.data.message || '头像上传失败')
     }
   } catch (error) {
+    console.error('头像上传失败:', error)
     ElMessage.error('头像上传失败')
   }
 }
@@ -381,7 +396,7 @@ const handleDownloadAvatar = async (user) => {
 
   try {
     const portraitPath = targetUser.portrait || targetUser.avatar
-    const res = await downloadUserAvatar(portraitPath)
+    const res = await downloadUserAvatar(targetUser.id, portraitPath)
     const blob = new Blob([res.data])
     const link = document.createElement('a')
     link.href = URL.createObjectURL(blob)
@@ -450,7 +465,7 @@ const getMockUsers = () => [
     <template v-if="mainMode === 'personal'">
       <el-card v-if="currentUser" shadow="hover" class="user-info-card">
         <div class="user-info-header">
-          <el-avatar :size="100" :src="currentUser.portrait ? `http://localhost:8085/api/user/downloadUser/User/${currentUser.portrait.replace(/^\//, '')}` : ''">
+          <el-avatar :size="100" :src="currentUser.portrait ? `http://localhost:8085/api/user/downloadUser/User/${currentUser.id}/${currentUser.portrait.replace(/^\//, '')}` : ''">
             <User v-if="!currentUser.portrait" />
           </el-avatar>
           <div class="user-info-basic">
@@ -637,7 +652,7 @@ const getMockUsers = () => [
           <el-table-column prop="id" label="ID" width="80" />
           <el-table-column label="头像" width="100">
             <template #default="{ row }">
-              <el-avatar :size="50" :src="row.avatar">
+              <el-avatar :size="50" :src="row.avatar ? `http://localhost:8085/api/user/downloadUser/User/${row.id}/${row.avatar}` : ''">
                 <User v-if="!row.avatar" />
               </el-avatar>
             </template>
@@ -700,7 +715,7 @@ const getMockUsers = () => [
               return isJPG && isLt2M;
             }"
           >
-            <el-avatar :size="100" :src="editForm.portrait ? `http://localhost:8085/api/user/downloadUser/User/${editForm.portrait.replace(/^\//, '')}` : ''" class="edit-avatar">
+            <el-avatar :size="100" :src="editForm.portrait ? `http://localhost:8085/api/user/downloadUser/User/${currentUser.id}/${editForm.portrait.replace(/^\//, '')}` : ''" class="edit-avatar">
               <User v-if="!editForm.portrait" />
             </el-avatar>
           </el-upload>
@@ -740,7 +755,7 @@ const getMockUsers = () => [
           </el-tag>
         </el-descriptions-item>
         <el-descriptions-item label="头像" :span="2">
-          <el-avatar :size="80" :src="selectedUser.portrait ? `http://localhost:8085/api/user/downloadUser/User/${selectedUser.portrait.replace(/^\//, '')}` : ''">
+          <el-avatar :size="80" :src="selectedUser.portrait ? `http://localhost:8085/api/user/downloadUser/User/${selectedUser.id}/${selectedUser.portrait.replace(/^\//, '')}` : ''">
             <User v-if="!selectedUser.portrait" />
           </el-avatar>
         </el-descriptions-item>

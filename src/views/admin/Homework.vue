@@ -88,10 +88,12 @@ const homeworkFormRef = ref(null)
 // 上传文件
 const uploadUrl = '/api/homework/uploadHomework'
 const fileList = ref([])
-
-// 处理文件变化
-const handleFileChange = (file, files) => {
-  fileList.value = files
+const handleHomeworkUpload = (response, uploadFile) => {
+  if (response.data.code === 200) {
+    ElMessage.success('作业附件上传成功')
+  } else {
+    ElMessage.error('作业附件上传失败')
+  }
 }
 
 const handleHomeworkRemove = (file, fileList) => {
@@ -254,7 +256,6 @@ const saveHomework = async () => {
     if (valid) {
       try {
         let response
-        let homeworkId
         // 映射字段名到正确的格式
         const homeworkData = {
           name: homeworkForm.homeworkName,
@@ -267,19 +268,11 @@ const saveHomework = async () => {
         if (isEdit.value) {
           homeworkData.id = homeworkForm.id
           response = await homeworkApi.modifyHomework(homeworkData)
-          homeworkId = homeworkForm.id
         } else {
           response = await homeworkApi.createHomework(homeworkData)
-          homeworkId = response.data.data
         }
         if (response.data.code === 200) {
-          // 如果有文件，上传附件
-          if (fileList.value.length > 0 && fileList.value[0].raw) {
-            await homeworkApi.uploadHomework(homeworkId, fileList.value[0].raw)
-            ElMessage.success(isEdit.value ? '修改作业和上传文件成功' : '创建作业和上传文件成功')
-          } else {
-            ElMessage.success(isEdit.value ? '修改作业成功' : '创建作业成功')
-          }
+          ElMessage.success(isEdit.value ? '修改作业成功' : '创建作业成功')
           dialogVisible.value = false
           getHomeworks()
         } else {
@@ -500,19 +493,19 @@ onMounted(() => {
         :cell-style="{ textAlign: 'center' }"
         :header-cell-style="{ textAlign: 'center', fontWeight: 'bold', backgroundColor: '#f5f7fa' }"
       >
-        <el-table-column label="作业名称" min-width="220">
+        <el-table-column label="作业名称" min-width="300">
           <template #default="{ row }">
             {{ row.name || row.homeworkName }}
           </template>
         </el-table-column>
-        <el-table-column label="作业类型" width="150">
+        <el-table-column label="作业类型" width="120">
           <template #default="{ row }">
             {{ homeworkTypes.find(t => t.value == (row.type || row.homeworkType))?.label || (row.type || row.homeworkType) }}
           </template>
         </el-table-column>
         <el-table-column prop="deadline" label="截至时间" width="180" />
         <el-table-column prop="createTime" label="创建时间" width="180" />
-        <el-table-column prop="submitCount" label="提交人数" width="150" />
+        <el-table-column prop="submitCount" label="提交人数" width="100" />
         <el-table-column label="操作" width="320">
           <template #default="{ row }">
             <el-button size="small" @click="viewHomeworkDetail(row)" style="margin-right: 5px">查看</el-button>
@@ -570,11 +563,12 @@ onMounted(() => {
         <el-form-item label="作业附件">
           <el-upload
             class="upload-demo"
-            :action="''"
-            :auto-upload="false"
-            :on-change="handleFileChange"
+            :action="uploadUrl"
+            :on-success="handleHomeworkUpload"
+            :on-remove="handleHomeworkRemove"
             :file-list="fileList"
-            :limit="1"
+            :auto-upload="false"
+            :data="{ id: homeworkForm.id }"
           >
             <el-button type="primary">点击上传</el-button>
             <template #tip>

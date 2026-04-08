@@ -446,7 +446,21 @@ const downloadMySubmission = async (homework) => {
     const fileName = homework.studentHomeworkAttachment.split('/').pop()
     // 获取学生ID（需要从用户信息中获取）
     const userStore = useUserStore()
-    const studentId = userStore.userId
+    let studentId = userStore.userId
+    if (!studentId) {
+      // 尝试从userInfo中获取
+      studentId = userStore.userInfo?.id
+    }
+    
+    if (!studentId) {
+      ElMessage.error('无法获取学生信息，无法下载附件')
+      return
+    }
+    
+    console.log('学生ID:', studentId)
+    console.log('作业ID:', homework.id)
+    console.log('文件名:', fileName)
+    
     const response = await downloadStudentHomework(studentId, homework.id, fileName)
     // 创建下载链接
     const url = window.URL.createObjectURL(new Blob([response.data]))

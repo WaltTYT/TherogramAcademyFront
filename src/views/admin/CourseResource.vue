@@ -29,7 +29,7 @@ const searchForm = reactive({
   startCreateTime: '',
   endCreateTime: '',
   sortType: 0,
-  ascending: true
+  isAsc: true
 })
 
 const showAdvancedSearch = ref(false)
@@ -83,10 +83,12 @@ const resourceFormRef = ref(null)
 // 上传文件
 const uploadUrl = '/api/courseResource/uploadCourseResource'
 const fileList = ref([])
-
-// 处理文件变化
-const handleFileChange = (file, files) => {
-  fileList.value = files
+const handleResourceUpload = (response, uploadFile) => {
+  if (response.data.code === 200) {
+    ElMessage.success('资源上传成功')
+  } else {
+    ElMessage.error('资源上传失败')
+  }
 }
 
 const handleResourceRemove = (file, fileList) => {
@@ -139,7 +141,7 @@ const getCourseResources = async () => {
       startCreateTime: searchForm.startCreateTime,
       endCreateTime: searchForm.endCreateTime,
       sortType: searchForm.sortType,
-      ascending: searchForm.ascending,
+      isAsc: searchForm.isAsc,
       isDeleted: "false",
       pageNum: currentPage.value,
       pageSize: pageSize.value
@@ -174,7 +176,7 @@ const handleReset = () => {
   searchForm.startCreateTime = ''
   searchForm.endCreateTime = ''
   searchForm.sortType = 0
-  searchForm.ascending = true
+  searchForm.isAsc = true
   currentPage.value = 1
   getCourseResources()
 }
@@ -190,7 +192,7 @@ const toggleAdvancedSearch = () => {
     searchForm.startCreateTime = ''
     searchForm.endCreateTime = ''
     searchForm.sortType = 0
-    searchForm.ascending = true
+    searchForm.isAsc = true
   }
 }
 
@@ -241,10 +243,8 @@ const saveResource = async () => {
     if (valid) {
       try {
         let response
-        let resourceId
         if (isEdit.value) {
           response = await courseResourceApi.modifyCourseResource(resourceForm)
-          resourceId = resourceForm.id
         } else {
           // 创建教学资源时不传递id字段，并确保字段类型正确
           const { id, ...createData } = resourceForm
@@ -253,20 +253,9 @@ const saveResource = async () => {
           // 确保uri字段存在
           createData.uri = createData.uri || ''
           response = await courseResourceApi.createCourseResource(createData)
-          // 从返回的对象中提取 id 字段
-          resourceId = response.data.data.id || response.data.data
-          console.log('提取的资源ID:', resourceId)
         }
         if (response.data.code === 200) {
-          // 如果有文件，上传附件
-          if (fileList.value.length > 0 && fileList.value[0].raw) {
-            console.log('准备上传文件，资源ID:', resourceId)
-            console.log('文件信息:', fileList.value[0])
-            await courseResourceApi.uploadCourseResource(resourceId, fileList.value[0].raw)
-            ElMessage.success(isEdit.value ? '修改教学资源和上传文件成功' : '创建教学资源和上传文件成功')
-          } else {
-            ElMessage.success(isEdit.value ? '修改教学资源成功' : '创建教学资源成功')
-          }
+          ElMessage.success(isEdit.value ? '修改教学资源成功' : '创建教学资源成功')
           dialogVisible.value = false
           getCourseResources()
         } else {
@@ -479,9 +468,9 @@ onMounted(() => {
         :cell-style="{ textAlign: 'center' }"
         :header-cell-style="{ textAlign: 'center', fontWeight: 'bold', backgroundColor: '#f5f7fa' }"
       >
-        <el-table-column prop="orderId" label="排序ID" width="100" />
-        <el-table-column prop="name" label="资源名称" min-width="270" />
-        <el-table-column prop="resourceType" label="资源类型" width="150">
+        <el-table-column prop="orderId" label="排序ID" width="80" />
+        <el-table-column prop="name" label="资源名称" min-width="300" />
+        <el-table-column prop="resourceType" label="资源类型" width="120">
           <template #default="{ row }">
             {{ resourceTypes.find(t => t.value == row.resourceType)?.label || row.resourceType }}
           </template>
@@ -538,11 +527,12 @@ onMounted(() => {
         <el-form-item label="资源文件">
           <el-upload
             class="upload-demo"
-            :action="''"
-            :auto-upload="false"
-            :on-change="handleFileChange"
+            :action="uploadUrl"
+            :on-success="handleResourceUpload"
+            :on-remove="handleResourceRemove"
             :file-list="fileList"
-            :limit="1"
+            :auto-upload="false"
+            :data="{ id: resourceForm.id }"
           >
             <el-button type="primary">点击上传</el-button>
             <template #tip>

@@ -180,18 +180,32 @@ const downloadStudentHomework = async () => {
   }
   
   try {
-    const response = await homeworkApi.downloadStudentHomework(studentHomework.value.studentHomeworkAttachment)
+    // 从studentHomeworkAttachment中提取文件名
+    const fileName = studentHomework.value.studentHomeworkAttachment.split('/').pop()
+    // 获取学生ID和作业ID
+    const studentId = studentHomework.value.studentId
+    const homeworkId = route.params.id
+    
+    if (!studentId) {
+      ElMessage.error('无法获取学生信息，无法下载附件')
+      return
+    }
+    
+    console.log('学生ID:', studentId)
+    console.log('作业ID:', homeworkId)
+    console.log('文件名:', fileName)
+    
+    const response = await homeworkApi.downloadStudentHomework(studentId, homeworkId, fileName)
     // 创建下载链接
     const url = window.URL.createObjectURL(new Blob([response.data]))
     const link = document.createElement('a')
     link.href = url
-    // 从URL中提取文件名
-    const fileName = studentHomework.value.studentHomeworkAttachment.split('/').pop()
     link.setAttribute('download', fileName)
     document.body.appendChild(link)
     link.click()
     document.body.removeChild(link)
   } catch (error) {
+    console.error('下载学生作业附件失败:', error)
     ElMessage.error('下载学生作业附件失败')
   }
 }

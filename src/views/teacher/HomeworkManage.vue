@@ -2,7 +2,7 @@
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage, ElLoading, ElDialog, ElInputNumber, ElDatePicker, ElSwitch, ElSelect, ElOption, ElMessageBox } from 'element-plus'
-import { getHomeworkPage, deleteHomework, modifyHomework, uploadHomework, downloadHomework } from '../../api/homework'
+import { getHomeworkPage, deleteHomework, modifyHomework, uploadHomework } from '../../api/homework'
 import { getCreateCoursePage } from '../../api/course'
 import HomeworkCreate from './HomeworkCreate.vue'
 
@@ -244,28 +244,16 @@ const saveHomework = async () => {
 }
 
 // 下载作业
-const handleDownload = async (homework) => {
+const handleDownload = (homework) => {
   if (!homework.attachment) {
     ElMessage.error('作业附件不存在')
     return
   }
   
-  try {
-    // 从attachment中提取文件名
-    const fileName = homework.attachment.split('/').pop()
-    const response = await downloadHomework(homework.id, fileName)
-    // 创建下载链接
-    const url = window.URL.createObjectURL(new Blob([response.data]))
-    const link = document.createElement('a')
-    link.href = url
-    link.setAttribute('download', fileName)
-    document.body.appendChild(link)
-    link.click()
-    document.body.removeChild(link)
-    ElMessage.success('附件下载成功')
-  } catch (error) {
-    ElMessage.error('下载失败：' + (error.message || '未知错误'))
-  }
+  // 从attachment中提取文件名
+  const fileName = homework.attachment.split('/').pop()
+  // 构建下载链接
+  window.location.href = `http://localhost:8085/api/homework/downloadHomework/Homework/${homework.id}/${fileName}`
 }
 
 // 批改对话框
@@ -596,14 +584,14 @@ onMounted(() => {
       :header-cell-style="{ textAlign: 'center', fontWeight: 'bold', backgroundColor: '#f5f7fa' }"
     >
       <el-table-column prop="name" label="作业名称" min-width="300" />
-      <el-table-column prop="type" label="作业类型" width="180">
+      <el-table-column prop="type" label="作业类型" width="140">
         <template #default="scope">
           {{ scope.row.type === 'HOMEWORK' ? '作业' : '考试' }}
         </template>
       </el-table-column>
       <el-table-column prop="deadline" label="截止时间" width="180" />
-        <el-table-column prop="createTime" label="创建时间" width="180" />
-        <el-table-column prop="submitCount" label="提交人数" width="180" />
+      <el-table-column prop="createTime" label="创建时间" width="180" />
+      <el-table-column prop="submitCount" label="提交人数" width="140" />
       <el-table-column label="操作" width="300">
         <template #default="scope">
           <el-button size="small" @click="handleHomeworkDetail(scope.row.id)" style="margin-right: 5px">查看</el-button>

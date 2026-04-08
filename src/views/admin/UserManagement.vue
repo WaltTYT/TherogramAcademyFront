@@ -447,7 +447,7 @@ const handleDownloadAvatar = async (user) => {
   
   try {
     const portraitPath = user.portrait || user.avatar
-    const res = await downloadUserAvatar(portraitPath)
+    const res = await downloadUserAvatar(user.id, portraitPath)
     const blob = new Blob([res.data])
     const link = document.createElement('a')
     link.href = URL.createObjectURL(blob)
@@ -617,7 +617,7 @@ const handleDownloadPersonalAvatar = async () => {
   }
 
   try {
-    const res = await downloadUserAvatar(personalInfo.value.portrait)
+    const res = await downloadUserAvatar(personalInfo.value.id, personalInfo.value.portrait)
     // 创建下载链接
     const blob = new Blob([res.data])
     const link = document.createElement('a')
