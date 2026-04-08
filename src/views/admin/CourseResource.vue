@@ -29,7 +29,7 @@ const searchForm = reactive({
   startCreateTime: '',
   endCreateTime: '',
   sortType: 0,
-  isAsc: true
+  ascending: true
 })
 
 const showAdvancedSearch = ref(false)
@@ -139,7 +139,7 @@ const getCourseResources = async () => {
       startCreateTime: searchForm.startCreateTime,
       endCreateTime: searchForm.endCreateTime,
       sortType: searchForm.sortType,
-      isAsc: searchForm.isAsc,
+      ascending: searchForm.ascending,
       isDeleted: "false",
       pageNum: currentPage.value,
       pageSize: pageSize.value
@@ -174,7 +174,7 @@ const handleReset = () => {
   searchForm.startCreateTime = ''
   searchForm.endCreateTime = ''
   searchForm.sortType = 0
-  searchForm.isAsc = true
+  searchForm.ascending = true
   currentPage.value = 1
   getCourseResources()
 }
@@ -190,7 +190,7 @@ const toggleAdvancedSearch = () => {
     searchForm.startCreateTime = ''
     searchForm.endCreateTime = ''
     searchForm.sortType = 0
-    searchForm.isAsc = true
+    searchForm.ascending = true
   }
 }
 
@@ -258,7 +258,9 @@ const saveResource = async () => {
         if (response.data.code === 200) {
           // 如果有文件，上传附件
           if (fileList.value.length > 0 && fileList.value[0].raw) {
-            await courseResourceApi.uploadCourseResource(resourceId, fileList.value[0].raw)
+            console.log('准备上传文件，课程ID: null')
+            console.log('文件信息:', fileList.value[0])
+            await courseResourceApi.uploadCourseResource(null, fileList.value[0].raw)
             ElMessage.success(isEdit.value ? '修改教学资源和上传文件成功' : '创建教学资源和上传文件成功')
           } else {
             ElMessage.success(isEdit.value ? '修改教学资源成功' : '创建教学资源成功')

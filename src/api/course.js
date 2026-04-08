@@ -82,14 +82,21 @@ export const getRecommendedCourses = (params) => {
 
 // 上传课程封面
 export const uploadCourseCover = (id, file) => {
+  console.log('上传课程封面 - ID:', id)
+  console.log('上传课程封面 - 文件:', file)
+  console.log('上传课程封面 - 文件类型:', file?.type)
+  console.log('上传课程封面 - 文件大小:', file?.size)
+  
   const formData = new FormData()
   formData.append('id', id)
   formData.append('file', file)
-  return request.post('/course/uploadCourse', formData, {
-    headers: {
-      'Content-Type': 'multipart/form-data'
-    }
-  })
+  
+  // 验证 FormData 内容
+  for (let pair of formData.entries()) {
+    console.log('FormData -', pair[0], ':', pair[1])
+  }
+  
+  return request.post('/course/uploadCourse', formData)
 }
 
 // 下载课程封面

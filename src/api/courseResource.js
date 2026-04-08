@@ -53,16 +53,24 @@ export const getCourseResourceDetail = (id) => {
 
 // 上传教学资源
 export const uploadCourseResource = (id, file) => {
+  console.log('上传教学资源 - ID:', id)
+  console.log('上传教学资源 - 文件:', file)
+  console.log('上传教学资源 - 文件大小:', file?.size)
+  console.log('上传教学资源 - 文件类型:', file?.type)
+  
   const formData = new FormData()
   formData.append('id', id)
   formData.append('file', file)
+  
+  // 验证 FormData 内容
+  for (let pair of formData.entries()) {
+    console.log('FormData -', pair[0], ':', pair[1])
+  }
+  
   return request({
     url: '/courseResource/uploadCourseResource',
     method: 'post',
-    data: formData,
-    headers: {
-      'Content-Type': 'multipart/form-data'
-    }
+    data: formData
   })
 }
 
